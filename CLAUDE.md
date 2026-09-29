@@ -25,6 +25,7 @@ public/assets/images/  Sprites, tilesets, backgrounds
 public/assets/audio/   Music and sound effects
 public/assets/data/    JSON data (levels, dialogue, config)
 docs/                Design docs; GAME_DESIGN.md is the source of truth
+tools/art/           Prototype art generators (make_sample_art.py, needs Pillow)
 .claude/skills/      Official Phaser 4 agent skills
 .github/workflows/   GitHub Pages deploy workflow
 ```
