@@ -43,4 +43,5 @@ tools/art/           Prototype art generators (make_sample_art.py, needs Pillow)
 - Run `npm run build` after changes to confirm nothing broke.
 - Commit after each working feature with a clear message. Never force-push.
 - Assets go in `public/assets/`. Never hotlink images or audio from the internet.
+- All asset loads go through src/systems/assetUrl.js (or the loader's version option) so deploys cache-bust.
 - Keep performance reasonable for low-end Chromebooks: avoid huge textures, and cap particle counts.
