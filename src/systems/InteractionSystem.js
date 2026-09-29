@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { pixelText } from './pixelText.js';
 
 /**
  * Tile-based interactables. The nearest enabled one within `range` px of the player's
@@ -15,17 +16,7 @@ export default class InteractionSystem {
     this.promptHidden = false; // set true while a message covers the prompt's spot
     this.key = scene.input.keyboard.addKey(key);
     this.keyLabel = key;
-    this.prompt = scene.add
-      .text(0, 0, key, {
-        fontFamily: 'monospace',
-        fontSize: '8px',
-        color: '#ffffff',
-        stroke: '#000000',
-        strokeThickness: 3,
-      })
-      .setOrigin(0.5, 1)
-      .setDepth(1000)
-      .setVisible(false);
+    this.prompt = pixelText(scene, 0, 0, key).setOrigin(0, 1).setDepth(1000).setVisible(false);
   }
 
   /**
@@ -67,10 +58,9 @@ export default class InteractionSystem {
       this.prompt.setVisible(false);
       return;
     }
-    this.prompt
-      .setText(`${this.keyLabel}: ${best.prompt}`)
-      .setPosition(Math.round((best.tileX + 0.5) * ts), best.tileY * ts - 2)
-      .setVisible(!this.promptHidden);
+    this.prompt.setText(`${this.keyLabel}: ${best.prompt}`).setVisible(!this.promptHidden);
+    // Centre over the tile using a whole-pixel left edge so glyphs stay on the pixel grid.
+    this.prompt.setPosition(Math.round((best.tileX + 0.5) * ts - this.prompt.width / 2), best.tileY * ts - 2);
 
     if (Phaser.Input.Keyboard.JustDown(this.key)) best.handler(best);
   }

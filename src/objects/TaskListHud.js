@@ -1,11 +1,8 @@
-const STYLE = {
-  fontFamily: 'monospace',
-  fontSize: '8px',
-  color: '#ffffff',
-  stroke: '#000000',
-  strokeThickness: 3,
-};
-const DONE_COLOR = '#8fd18f';
+import { pixelText } from '../systems/pixelText.js';
+
+const WHITE = 0xffffff;
+const DONE_COLOR = 0x8fd18f;
+const CARRY_COLOR = 0xf0d080;
 const LINE_H = 11;
 
 /** Checklist in the top-left corner, fixed to the camera, with a "Carrying" line below. */
@@ -14,12 +11,11 @@ export default class TaskListHud {
     this.taskList = taskList;
     this.lines = new Map();
     taskList.tasks.forEach((task, i) => {
-      const line = scene.add.text(6, 6 + i * LINE_H, '', STYLE).setScrollFactor(0).setDepth(2000);
+      const line = pixelText(scene, 6, 6 + i * LINE_H, '').setScrollFactor(0).setDepth(2000);
       this.lines.set(task.id, line);
       this.refresh(task);
     });
-    this.carryLine = scene.add
-      .text(6, 6 + taskList.tasks.length * LINE_H + 3, '', { ...STYLE, color: '#f0d080' })
+    this.carryLine = pixelText(scene, 6, 6 + taskList.tasks.length * LINE_H + 3, '', { color: CARRY_COLOR })
       .setScrollFactor(0)
       .setDepth(2000);
 
@@ -33,6 +29,6 @@ export default class TaskListHud {
     this.lines
       .get(task.id)
       .setText(`${task.done ? '[x]' : '[ ]'} ${task.label}${count}`)
-      .setColor(task.done ? DONE_COLOR : '#ffffff');
+      .setTint(task.done ? DONE_COLOR : WHITE);
   }
 }

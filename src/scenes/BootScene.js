@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { assetUrl } from '../systems/assetUrl.js';
+import { FONT_KEY } from '../systems/pixelText.js';
 import { PLAYER_TEXTURE, createPlayerAnimations } from '../objects/Player.js';
 
 export default class BootScene extends Phaser.Scene {
@@ -14,6 +15,11 @@ export default class BootScene extends Phaser.Scene {
     });
     this.load.image('border_tiles', assetUrl('assets/images/border_tiles.png'));
     this.load.json('movement_test_map', assetUrl('assets/data/movement_test_map.json'));
+    this.load.bitmapFont(
+      FONT_KEY,
+      assetUrl('assets/fonts/pixel_operator_8.png'),
+      assetUrl('assets/fonts/pixel_operator_8.xml'),
+    );
     this.load.image('restaurant_tiles', assetUrl('assets/images/restaurant_tiles.png'));
     this.load.json('restaurant_map', assetUrl('assets/data/restaurant_map.json'));
     this.load.json('closing_tasks', assetUrl('assets/data/closing_tasks.json'));

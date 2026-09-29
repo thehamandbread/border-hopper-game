@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import Player from '../objects/Player.js';
 import TaskListHud from '../objects/TaskListHud.js';
+import { pixelText } from '../systems/pixelText.js';
 import InteractionSystem from '../systems/InteractionSystem.js';
 import TaskList from '../systems/TaskList.js';
 
@@ -17,13 +18,6 @@ const TILE = {
   TRASH_EMPTY: 11,
 };
 const TRASH_BAG = 'trash bag';
-const TEXT_STYLE = {
-  fontFamily: 'monospace',
-  fontSize: '8px',
-  color: '#ffffff',
-  stroke: '#000000',
-  strokeThickness: 3,
-};
 
 export default class RestaurantScene extends Phaser.Scene {
   constructor() {
@@ -148,12 +142,12 @@ export default class RestaurantScene extends Phaser.Scene {
   showNearPlayerMessage(text, ms) {
     this.clearMessage();
     const cam = this.cameras.main;
-    const msg = this.add.text(0, 0, text, TEXT_STYLE).setOrigin(0.5, 1).setDepth(3000);
+    const msg = pixelText(this, 0, 0, text).setOrigin(0, 1).setDepth(3000);
     // Keep it fully on screen.
     const half = msg.width / 2;
     const x = Phaser.Math.Clamp(this.player.x, cam.scrollX + half + 4, cam.scrollX + cam.width - half - 4);
     const y = Math.max(this.player.y - 36, cam.scrollY + msg.height + 4);
-    msg.setPosition(Math.round(x), Math.round(y));
+    msg.setPosition(Math.round(x - half), Math.round(y));
     this.setMessage(msg, ms);
   }
 
@@ -161,11 +155,8 @@ export default class RestaurantScene extends Phaser.Scene {
   showCenterMessage(text, ms) {
     this.clearMessage();
     const cam = this.cameras.main;
-    const msg = this.add
-      .text(cam.width / 2, cam.height / 2, text, { ...TEXT_STYLE, fontSize: '16px', strokeThickness: 4 })
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setDepth(3000);
+    const msg = pixelText(this, 0, 0, text, { size: 16 }).setScrollFactor(0).setDepth(3000);
+    msg.setPosition(Math.round((cam.width - msg.width) / 2), Math.round((cam.height - msg.height) / 2));
     this.setMessage(msg, ms);
   }
 
