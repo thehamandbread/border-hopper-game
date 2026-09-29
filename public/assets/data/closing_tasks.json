@@ -1,0 +1,19 @@
+{
+  "tasks": [
+    {
+      "id": "wipe_tables",
+      "label": "Wipe the tables",
+      "count": 3
+    },
+    {
+      "id": "take_out_trash",
+      "label": "Take out the trash",
+      "count": 1
+    },
+    {
+      "id": "turn_off_stove",
+      "label": "Turn off the stove",
+      "count": 1
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import BootScene from './scenes/BootScene.js';
 import MovementTestScene from './scenes/MovementTestScene.js';
+import RestaurantScene from './scenes/RestaurantScene.js';
 
 const game = new Phaser.Game({
   type: Phaser.AUTO,
@@ -17,7 +18,7 @@ const game = new Phaser.Game({
     default: 'arcade',
     arcade: { debug: false },
   },
-  scene: [BootScene, MovementTestScene],
+  scene: [BootScene, MovementTestScene, RestaurantScene],
 });
 
 // Dev-only handle for browser tests.

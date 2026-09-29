@@ -43,6 +43,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.setCollideWorldBounds(true);
 
     this.facing = 'down';
+    this.carrying = null;
     this.keys = scene.input.keyboard.addKeys({
       up: 'W',
       down: 'S',
@@ -53,6 +54,17 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       leftArrow: 'LEFT',
       rightArrow: 'RIGHT',
     });
+  }
+
+  /** Centre of the feet collision box (used for interaction range checks). */
+  getFeet() {
+    return this.body.center;
+  }
+
+  /** Name of the carried item (e.g. 'trash bag'), or null. Emits 'carrying-changed'. */
+  setCarrying(item) {
+    this.carrying = item;
+    this.emit('carrying-changed', item);
   }
 
   update() {

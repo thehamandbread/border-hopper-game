@@ -5,6 +5,10 @@ This document is the source of truth for design. Technical rules live in CLAUDE.
 ## Overview
 A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-year-old forced to work for a cartel to pay off a debt, repeatedly crossing the border between two fictional twin towns. Gameplay mixes dialogue-driven border encounters (wit) with real-time stealth traversal (skill). Choices shape relationships, available missions, and the ending.
 
+## Controls
+- Move: WASD or arrow keys.
+- Interact: E.
+
 ## Setting
 - Present day.
 - Fictional twin border towns: **Tres Cerros** (Mexico) and **Three Hills** (US). The mirrored names signal one community split by a border.
@@ -68,6 +72,13 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 - This conversation has real choices:
   - Mateo can apologize, stay defiant, or try to bargain. This sets the starting relationship and nudges starting Loyalty slightly.
   - One line the player chooses is remembered. Don Aurelio quotes it back at the final confrontation.
+
+#### Closing Shift Details
+- Tasks: wipe 3 dirty tables; take the kitchen trash out the back door; turn off the stove.
+- Task progress is shown in an on-screen checklist.
+- The locked back-room door can be examined: "The back room. Always locked." (foreshadows the hidden cash).
+- The front door can't be used until the shift is done.
+- In the full prologue, Tomi's call interrupts before the stove is turned off, and the stove catches fire.
 
 ### Act 1: One Last Job
 - First crossings teach encounters and stealth. Missions arrive by phone.
