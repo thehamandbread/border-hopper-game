@@ -1,10 +1,11 @@
 import Phaser from 'phaser';
 import BootScene from './scenes/BootScene.js';
+import MovementTestScene from './scenes/MovementTestScene.js';
 
-new Phaser.Game({
+const game = new Phaser.Game({
   type: Phaser.AUTO,
-  width: 800,
-  height: 600,
+  width: 480,
+  height: 270,
   parent: 'game',
   backgroundColor: '#000000',
   pixelArt: true,
@@ -12,5 +13,12 @@ new Phaser.Game({
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
-  scene: [BootScene],
+  physics: {
+    default: 'arcade',
+    arcade: { debug: false },
+  },
+  scene: [BootScene, MovementTestScene],
 });
+
+// Dev-only handle for browser tests.
+if (import.meta.env.DEV) window.__game = game;

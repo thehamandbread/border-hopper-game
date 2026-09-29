@@ -1,12 +1,19 @@
 """Border Hopper sample art generator.
 Outputs:
-  mateo_walk.png    64x128 sprite sheet, 16x32 frames. Rows: down, up, right, left. 4 frames each.
-  border_tiles.png  16x16 tiles in a row (see TILE_ORDER).
-  preview_scene.png small scene at 4x scale.
-  preview_walk.gif  walk cycles at 6x scale.
+  public/assets/images/mateo_walk.png    64x128 sprite sheet, 16x32 frames. Rows: down, up, right, left. 4 frames each.
+  public/assets/images/border_tiles.png  16x16 tiles in a row (see TILE_ORDER).
+  tools/art/previews/preview_scene.png   small scene at 4x scale.
+  tools/art/previews/preview_walk.gif    walk cycles at 6x scale.
+  tools/art/previews/sheet_6x.png, tiles_6x.png  6x inspection previews.
+Paths are resolved relative to this file, so it runs from any working directory.
 """
 import random
+from pathlib import Path
 from PIL import Image, ImageDraw
+
+HERE = Path(__file__).resolve().parent
+ASSET_DIR = HERE.parent.parent / "public" / "assets" / "images"
+PREVIEW_DIR = HERE / "previews"
 
 OUT = (24, 18, 20, 255)
 PAL = {
@@ -333,13 +340,15 @@ def make_scene(tiles, frames):
 
 
 def main():
+    ASSET_DIR.mkdir(parents=True, exist_ok=True)
+    PREVIEW_DIR.mkdir(parents=True, exist_ok=True)
     sheet, frames = make_sheet()
-    sheet.save("mateo_walk.png")
+    sheet.save(ASSET_DIR / "mateo_walk.png")
     tiles_sheet, tiles = make_tiles()
-    tiles_sheet.save("border_tiles.png")
+    tiles_sheet.save(ASSET_DIR / "border_tiles.png")
 
     scene = make_scene(tiles, frames)
-    scene.resize((scene.width * 4, scene.height * 4), Image.NEAREST).save("preview_scene.png")
+    scene.resize((scene.width * 4, scene.height * 4), Image.NEAREST).save(PREVIEW_DIR / "preview_scene.png")
 
     # walk gif: 4 directions side by side on sand, 6x
     S = 6
@@ -353,12 +362,12 @@ def main():
         for i, d in enumerate(("down", "left", "up", "right")):
             canvas.alpha_composite(frames[(d, f)], (4 + i * (FW + 6), 2))
         gif_frames.append(canvas.resize((canvas.width * S, canvas.height * S), Image.NEAREST).convert("RGB"))
-    gif_frames[0].save("preview_walk.gif", save_all=True, append_images=gif_frames[1:],
+    gif_frames[0].save(PREVIEW_DIR / "preview_walk.gif", save_all=True, append_images=gif_frames[1:],
                        duration=160, loop=0)
 
     # also a 6x preview of the sprite sheet and tiles for inspection
-    sheet.resize((sheet.width * 6, sheet.height * 6), Image.NEAREST).save("sheet_6x.png")
-    tiles_sheet.resize((tiles_sheet.width * 6, tiles_sheet.height * 6), Image.NEAREST).save("tiles_6x.png")
+    sheet.resize((sheet.width * 6, sheet.height * 6), Image.NEAREST).save(PREVIEW_DIR / "sheet_6x.png")
+    tiles_sheet.resize((tiles_sheet.width * 6, tiles_sheet.height * 6), Image.NEAREST).save(PREVIEW_DIR / "tiles_6x.png")
 
 
 if __name__ == "__main__":
