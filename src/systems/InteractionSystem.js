@@ -16,6 +16,7 @@ export default class InteractionSystem {
     this.range = range;
     this.items = [];
     this.current = null;
+    this.enabled = true;
     this.key = scene.input.keyboard.addKey(key);
     this.keyLabel = key;
     this.prompt = pixelText(scene, 0, 0, key).setOrigin(0, 1).setDepth(1000).setVisible(false);
@@ -41,7 +42,21 @@ export default class InteractionSystem {
     if (this.current === item) this.current = null;
   }
 
+  /** Turn interaction off (e.g. during dialogue): hides the prompt and swallows E presses. */
+  setEnabled(enabled) {
+    this.enabled = enabled;
+    if (!enabled) {
+      this.current = null;
+      this.prompt.setVisible(false);
+    }
+    Phaser.Input.Keyboard.JustDown(this.key);
+  }
+
   update() {
+    if (!this.enabled) {
+      Phaser.Input.Keyboard.JustDown(this.key); // E does nothing while disabled
+      return;
+    }
     const feet = this.player.body.center; // centre of the feet collision box
     const ts = this.tileSize;
     let best = null;

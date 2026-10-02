@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import BootScene from './scenes/BootScene.js';
 import MovementTestScene from './scenes/MovementTestScene.js';
+import { gameState } from './systems/GameState.js';
 import RestaurantScene from './scenes/RestaurantScene.js';
 
 const game = new Phaser.Game({
@@ -22,4 +23,7 @@ const game = new Phaser.Game({
 });
 
 // Dev-only handle for browser tests.
-if (import.meta.env.DEV) window.__game = game;
+if (import.meta.env.DEV) {
+  window.__game = game;
+  window.__gameState = gameState;
+}

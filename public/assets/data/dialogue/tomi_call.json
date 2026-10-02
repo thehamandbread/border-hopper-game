@@ -1,0 +1,177 @@
+{
+  "id": "tomi_call",
+  "presenter": "box",
+  "lockMovement": true,
+  "start": "n01",
+  "nodes": {
+    "n01": {
+      "type": "line",
+      "speaker": "TOMI",
+      "text": "Hey, Teo. Are you almost done?",
+      "next": "n02"
+    },
+    "n02": {
+      "type": "line",
+      "speaker": "MATEO",
+      "text": "Almost. Why?",
+      "next": "n03"
+    },
+    "n03": {
+      "type": "line",
+      "speaker": "TOMI",
+      "text": "No reason. I just… went to the farmacia.",
+      "next": "n04"
+    },
+    "n04": {
+      "type": "line",
+      "speaker": "MATEO",
+      "text": "You sound weird. What's going on?",
+      "next": "n05"
+    },
+    "n05": {
+      "type": "line",
+      "speaker": "TOMI",
+      "text": "Don Chuy wouldn't give me Abuela's heart pills.",
+      "next": "n06"
+    },
+    "n06": {
+      "type": "line",
+      "speaker": "MATEO",
+      "text": "Did you tell him I'd pay him Friday?",
+      "next": "n07"
+    },
+    "n07": {
+      "type": "line",
+      "speaker": "TOMI",
+      "text": "I told him. He showed me his notebook. The whole page is just us.",
+      "next": "n08"
+    },
+    "n08": {
+      "type": "line",
+      "speaker": "MATEO",
+      "text": "How much do we owe?",
+      "next": "n09"
+    },
+    "n09": {
+      "type": "line",
+      "speaker": "TOMI",
+      "text": "Two thousand three hundred.",
+      "next": "n10"
+    },
+    "n10": {
+      "type": "event",
+      "name": "stove_ignite",
+      "next": "n11"
+    },
+    "n11": {
+      "type": "line",
+      "speaker": "TOMI",
+      "text": "…Teo?",
+      "next": "n12"
+    },
+    "n12": {
+      "type": "line",
+      "speaker": "MATEO",
+      "text": "I'm here.",
+      "next": "n13"
+    },
+    "n13": {
+      "type": "line",
+      "speaker": "TOMI",
+      "text": "She's acting normal. But she had to stop three times on the stairs.",
+      "next": "n14"
+    },
+    "n14": {
+      "type": "choice",
+      "options": [
+        {
+          "text": "I'll talk to him tomorrow. Don't worry about it.",
+          "next": "n15"
+        },
+        {
+          "text": "Can you check how many pills she has left?",
+          "effects": [
+            {
+              "flag": "tomi_involved",
+              "add": 1
+            }
+          ],
+          "next": "n23"
+        }
+      ]
+    },
+    "n15": {
+      "type": "line",
+      "speaker": "TOMI",
+      "text": "I'm not worried.",
+      "next": "n16"
+    },
+    "n16": {
+      "type": "line",
+      "speaker": "TOMI",
+      "text": "Is there any food left from today?",
+      "next": "n17"
+    },
+    "n17": {
+      "type": "line",
+      "speaker": "MATEO",
+      "text": "I'll bring some home.",
+      "next": "n18"
+    },
+    "n18": {
+      "type": "event",
+      "name": "smoke_alarm",
+      "next": "n19"
+    },
+    "n19": {
+      "type": "line",
+      "speaker": "TOMI",
+      "text": "What's that noise?",
+      "next": "n20"
+    },
+    "n20": {
+      "type": "line",
+      "speaker": "MATEO",
+      "text": "…I'll call you back.",
+      "next": "n21"
+    },
+    "n21": {
+      "type": "event",
+      "name": "call_ends",
+      "next": "end"
+    },
+    "end": {
+      "type": "end"
+    },
+    "n23": {
+      "type": "line",
+      "speaker": "TOMI",
+      "text": "I already did. She has two.",
+      "next": "n24"
+    },
+    "n24": {
+      "type": "line",
+      "speaker": "MATEO",
+      "text": "Two days. Okay.",
+      "next": "n25"
+    },
+    "n25": {
+      "type": "line",
+      "speaker": "TOMI",
+      "text": "I could help, you know. Beto's uncle is hiring at the tire shop. He pays cash, and I could work after school.",
+      "next": "n26"
+    },
+    "n26": {
+      "type": "line",
+      "speaker": "MATEO",
+      "text": "You have school.",
+      "next": "n27"
+    },
+    "n27": {
+      "type": "line",
+      "speaker": "TOMI",
+      "text": "School doesn't pay, Teo.",
+      "next": "n16"
+    }
+  }
+}

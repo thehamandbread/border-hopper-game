@@ -8,6 +8,9 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 ## Controls
 - Move: WASD or arrow keys.
 - Interact: E.
+- Advance dialogue: Space (completes the current line first if it's still appearing).
+- Dialogue choices: W/S or up/down arrows to highlight, Space to confirm, 1-3 as shortcuts.
+- E is never used inside dialogue; it's reserved for interacting with the world.
 
 ## Phone
 - The phone sits small in the bottom-right corner of the screen. Incoming calls and texts appear there while the game keeps running.
@@ -15,6 +18,14 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 - Texting (reading a thread, typing a reply) expands the phone to take over more of the screen. While it's expanded, Mateo stands still and the world keeps going. The game does not pause.
 - Declining or ignoring calls is possible and can have consequences (e.g., Don Aurelio doesn't like being ignored).
 - Possible later: Mateo talking on a call makes a small noise radius that guards can hear. Not yet decided.
+
+## Dialogue
+- Standard dialogue appears in a box at the bottom of the screen with the speaker's name. Phone calls appear in the corner phone instead.
+- Text appears with a typewriter effect.
+- Player movement is locked during box dialogue. During phone calls, Mateo can move slowly (see Phone).
+- Dialogue is data-driven: conversations live in public/assets/data/dialogue/, built from the approved scripts in docs/script/.
+- Choices can change meters, add to flags, and set remembered answers that later scenes quote back.
+- Character voice blips play as text appears (planned).
 
 ## Setting
 - Present day.
@@ -57,6 +68,10 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 - Does not know what Mateo does. Mateo's honesty with her is tracked and affects her choices in the Witness ending.
 - Becomes leverage once Don Aurelio learns about her.
 
+### Doña Lupe
+- Owner of the restaurant. Works with Don Aurelio, which is why his cash was hidden in the back room.
+- Stays offscreen in the prologue: she sends Don Aurelio instead of coming herself.
+
 ## Protagonist Premise
 - The kitchen fire destroys Don Aurelio's hidden cash. Mateo owes a debt he must work off through missions.
 - The restaurant is gone, so Mateo's job is gone. The family now depends on cartel money.
@@ -75,10 +90,12 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 - After the tables are wiped, Mateo's phone rings. It is charging on a ledge by the front door, in the far corner of the dining room. Walking over and answering is the first step of the phone tutorial.
 - A few seconds into the call, the stove ignites. Mateo is at the far end of the restaurant and moving slowly on the call, so he can't reach it in time. If he gets to the kitchen anyway, the stove is already burning and can't be turned off.
 - Escape the burning building: dodge spreading fire and smoke to reach the exit. No stealth yet.
-- First conversation with Don Aurelio in the ashes. He is calm and fatherly and asks for "something" in return, in deliberately vague terms. The player is led to assume one job settles it.
+- That night, Mateo waits on the curb outside the burned restaurant for the owner, Doña Lupe, as the firefighters asked. She never comes. Don Aurelio arrives in her place: "Lupe asked me to come." He sits beside Mateo, calm and fatherly, and asks for help with "something" in deliberately vague terms. The player is led to assume one job settles it.
 - This conversation has real choices:
   - Mateo can apologize, stay defiant, or try to bargain. This sets the starting relationship and nudges starting Loyalty slightly.
   - One line the player chooses is remembered. Don Aurelio quotes it back at the final confrontation.
+  - The remembered line is Mateo's answer to "What do you want, Mateo? In your life.": his family to be okay, not owing anybody anything, or not knowing.
+  - Before leaving, Don Aurelio has Abuela's prescription filled without being asked. The first form of the golden cage.
 - Approved dialogue is in docs/script/prologue.md.
 
 #### Closing Shift Details
@@ -213,7 +230,7 @@ Each mission alternates between two modes that can flow into each other:
 - Phone visual design and text/reply UI details.
 - Save system.
 - Music and sound direction.
-- Remaining key bindings (phone, pause, menu, dialogue choices).
+- Remaining key bindings (phone, pause, menu).
 - Sprint key: likely added with traversal; sprinting should be louder (noise tradeoff for stealth).
 
 ## Future Polish (deferred)

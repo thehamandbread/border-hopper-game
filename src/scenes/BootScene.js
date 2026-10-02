@@ -31,6 +31,8 @@ export default class BootScene extends Phaser.Scene {
       frameWidth: 16,
       frameHeight: 16,
     });
+    this.load.json('dialogue_tomi_call', assetUrl('assets/data/dialogue/tomi_call.json'));
+    this.load.json('dialogue_curb', assetUrl('assets/data/dialogue/curb.json'));
     this.load.json('closing_tasks', assetUrl('assets/data/closing_tasks.json'));
   }
 

@@ -1,0 +1,276 @@
+{
+  "id": "curb",
+  "presenter": "box",
+  "lockMovement": true,
+  "start": "n01",
+  "nodes": {
+    "n01": {
+      "type": "event",
+      "name": "aurelio_arrives",
+      "next": "n02"
+    },
+    "n02": {
+      "type": "line",
+      "speaker": "DON AURELIO",
+      "text": "Mateo, right?",
+      "next": "n03"
+    },
+    "n03": {
+      "type": "line",
+      "speaker": "MATEO",
+      "text": "Yeah. Who are you?",
+      "next": "n04"
+    },
+    "n04": {
+      "type": "line",
+      "speaker": "DON AURELIO",
+      "text": "Aurelio. Lupe asked me to come.",
+      "next": "n05"
+    },
+    "n05": {
+      "type": "line",
+      "speaker": "MATEO",
+      "text": "She's not coming?",
+      "next": "n06"
+    },
+    "n06": {
+      "type": "line",
+      "speaker": "DON AURELIO",
+      "text": "No.",
+      "next": "n07"
+    },
+    "n07": {
+      "type": "event",
+      "name": "aurelio_sits",
+      "next": "n08"
+    },
+    "n08": {
+      "type": "line",
+      "speaker": "DON AURELIO",
+      "text": "Are you hurt?",
+      "next": "n09"
+    },
+    "n09": {
+      "type": "line",
+      "speaker": "MATEO",
+      "text": "No.",
+      "next": "n10"
+    },
+    "n10": {
+      "type": "line",
+      "speaker": "DON AURELIO",
+      "text": "Good. Buildings can be fixed.",
+      "next": "n11"
+    },
+    "n11": {
+      "type": "choice",
+      "options": [
+        {
+          "text": "It was my fault. I left the stove on. I'll pay her back.",
+          "effects": [
+            {
+              "meter": "loyalty",
+              "add": 1
+            }
+          ],
+          "next": "n12"
+        },
+        {
+          "text": "I'm waiting for Lupe, not you.",
+          "effects": [
+            {
+              "meter": "loyalty",
+              "add": -1
+            }
+          ],
+          "next": "n36"
+        },
+        {
+          "text": "Whatever it costs, I'll work it off. Just tell me the number.",
+          "next": "n37"
+        }
+      ]
+    },
+    "n12": {
+      "type": "line",
+      "speaker": "DON AURELIO",
+      "text": "You say it straight. Most people start with excuses.",
+      "next": "n13"
+    },
+    "n13": {
+      "type": "line",
+      "speaker": "DON AURELIO",
+      "text": "There was something of mine in that back room.",
+      "next": "n14"
+    },
+    "n14": {
+      "type": "line",
+      "speaker": "MATEO",
+      "text": "The back room's always locked. I've never been in there.",
+      "next": "n15"
+    },
+    "n15": {
+      "type": "line",
+      "speaker": "DON AURELIO",
+      "text": "I know. That's why it was there.",
+      "next": "n16"
+    },
+    "n16": {
+      "type": "line",
+      "speaker": "MATEO",
+      "text": "What was it?",
+      "next": "n17"
+    },
+    "n17": {
+      "type": "line",
+      "speaker": "DON AURELIO",
+      "text": "It doesn't matter now. It's gone.",
+      "next": "n18"
+    },
+    "n18": {
+      "type": "event",
+      "name": "pause",
+      "next": "n19"
+    },
+    "n19": {
+      "type": "line",
+      "speaker": "DON AURELIO",
+      "text": "Your father would have stayed too. On this curb.",
+      "next": "n20"
+    },
+    "n20": {
+      "type": "line",
+      "speaker": "MATEO",
+      "text": "You knew my dad?",
+      "next": "n21"
+    },
+    "n21": {
+      "type": "line",
+      "speaker": "DON AURELIO",
+      "text": "Everyone knew your father.",
+      "next": "n22"
+    },
+    "n22": {
+      "type": "event",
+      "name": "aurelio_looks",
+      "next": "n23"
+    },
+    "n23": {
+      "type": "line",
+      "speaker": "DON AURELIO",
+      "text": "Let me ask you something. Not about tonight. What do you want, Mateo? In your life.",
+      "next": "n24"
+    },
+    "n24": {
+      "type": "choice",
+      "options": [
+        {
+          "text": "I want my family to be okay.",
+          "effects": [
+            {
+              "answer": "prologue_want",
+              "set": "family"
+            }
+          ],
+          "next": "n25"
+        },
+        {
+          "text": "I want to not owe anybody anything.",
+          "effects": [
+            {
+              "answer": "prologue_want",
+              "set": "no_debt"
+            }
+          ],
+          "next": "n25"
+        },
+        {
+          "text": "I don't know. I've never had time to think about it.",
+          "effects": [
+            {
+              "answer": "prologue_want",
+              "set": "unsure"
+            }
+          ],
+          "next": "n25"
+        }
+      ]
+    },
+    "n25": {
+      "type": "line",
+      "speaker": "DON AURELIO",
+      "text": "That's an honest answer. I'll remember it.",
+      "next": "n26"
+    },
+    "n26": {
+      "type": "line",
+      "speaker": "DON AURELIO",
+      "text": "Here's what we'll do. You help me with something. Then we'll talk about what's owed.",
+      "next": "n27"
+    },
+    "n27": {
+      "type": "line",
+      "speaker": "MATEO",
+      "text": "Help you with what?",
+      "next": "n28"
+    },
+    "n28": {
+      "type": "line",
+      "speaker": "DON AURELIO",
+      "text": "Something small. I'll send you the details.",
+      "next": "n29"
+    },
+    "n29": {
+      "type": "event",
+      "name": "aurelio_stands",
+      "next": "n30"
+    },
+    "n30": {
+      "type": "line",
+      "speaker": "DON AURELIO",
+      "text": "Esperanza's prescription will be ready in the morning. Tell Chuy I said hello.",
+      "next": "n31"
+    },
+    "n31": {
+      "type": "line",
+      "speaker": "MATEO",
+      "text": "I didn't ask you for that.",
+      "next": "n32"
+    },
+    "n32": {
+      "type": "line",
+      "speaker": "DON AURELIO",
+      "text": "No. You didn't.",
+      "next": "n33"
+    },
+    "n33": {
+      "type": "event",
+      "name": "aurelio_leaves",
+      "next": "n34"
+    },
+    "n34": {
+      "type": "event",
+      "name": "first_text",
+      "data": {
+        "from": "unknown",
+        "text": "Tomorrow. I'll send the address."
+      },
+      "next": "end"
+    },
+    "end": {
+      "type": "end"
+    },
+    "n36": {
+      "type": "line",
+      "speaker": "DON AURELIO",
+      "text": "I know. You'll be waiting a long time.",
+      "next": "n13"
+    },
+    "n37": {
+      "type": "line",
+      "speaker": "DON AURELIO",
+      "text": "A number. Your generation always wants a number.",
+      "next": "n13"
+    }
+  }
+}

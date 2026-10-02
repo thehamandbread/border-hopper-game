@@ -1,8 +1,11 @@
 import Phaser from 'phaser';
+import DialogueBox from '../objects/DialogueBox.js';
 import KitchenDoor from '../objects/KitchenDoor.js';
 import Player from '../objects/Player.js';
 import TaskListHud from '../objects/TaskListHud.js';
 import { pixelText } from '../systems/pixelText.js';
+import DialogueRunner from '../systems/DialogueRunner.js';
+import { gameState } from '../systems/GameState.js';
 import InteractionSystem from '../systems/InteractionSystem.js';
 import TaskList from '../systems/TaskList.js';
 import TaskMarkers from '../systems/TaskMarkers.js';
@@ -59,9 +62,47 @@ export default class RestaurantScene extends Phaser.Scene {
     this.markers = new TaskMarkers(this, this.tasks, { enabled: mapData.showTaskMarkers === true, tileSize: tileWidth });
     this.message = null;
 
+    this.dialogueBox = new DialogueBox(this);
+    this.dialogueRunner = null;
     this.createKitchenDoor(mapData);
     this.registerInteractables(mapData);
     this.tasks.on('all-complete', () => this.showCenterMessage('Shift complete.', 2000));
+
+    // Dev-only test hook: ?dialogue=tomi_call or ?dialogue=curb starts that conversation.
+    if (import.meta.env.DEV) {
+      const id = new URLSearchParams(window.location.search).get('dialogue');
+      if (id) this.startDialogue(id);
+    }
+  }
+
+  /** Starts a conversation from public/assets/data/dialogue/<id>.json (loaded by BootScene). */
+  startDialogue(id) {
+    const data = this.cache.json.get(`dialogue_${id}`);
+    if (!data) throw new Error(`Unknown dialogue "${id}"`);
+    // Only the dialogue box presenter exists so far; a phone presenter comes later.
+    const presenters = { box: this.dialogueBox };
+    const presenter = presenters[data.presenter];
+    if (!presenter) throw new Error(`Dialogue "${id}": no "${data.presenter}" presenter yet`);
+
+    const runner = new DialogueRunner(data, gameState);
+    this.dialogueRunner = runner;
+    if (runner.lockMovement) this.player.setLocked(true);
+    this.interactions.setEnabled(false);
+    runner.on('end', () => {
+      this.dialogueRunner = null;
+      this.player.setLocked(false);
+      this.interactions.setEnabled(true);
+    });
+
+    if (import.meta.env.DEV) {
+      runner.on('event', (name, payload) => console.log('[dialogue] event', name, payload ?? ''));
+      runner.on('choice-made', (option, i) => console.log('[dialogue] choice', i + 1, option.text));
+      runner.on('end', () => console.log('[dialogue] end', data.id));
+      gameState.on('change', (c) => console.log('[state]', c.kind, c.name, '=', c.value));
+    }
+
+    presenter.present(runner);
+    runner.start();
   }
 
   /** Cafe doors fill the 2-tile gap that starts just right of the left counter end cap. */
@@ -220,6 +261,7 @@ export default class RestaurantScene extends Phaser.Scene {
   }
 
   update() {
+    this.dialogueBox.update();
     this.player.update();
     this.player.setDepth(this.player.y); // depth-sort by feet y
     this.kitchenDoor?.update();

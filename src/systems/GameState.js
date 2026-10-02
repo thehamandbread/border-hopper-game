@@ -1,0 +1,80 @@
+import Phaser from 'phaser';
+
+const METERS = ['loyalty', 'heat', 'conscience'];
+
+/**
+ * In-memory game state (no saving yet).
+ *  - meters:  loyalty, heat, conscience (start at 0)
+ *  - flags:   named numbers, e.g. tomi_involved (read as 0 until set)
+ *  - answers: named remembered strings, e.g. prologue_want (read as null until set)
+ * Emits 'change' ({ kind, name, value }) whenever anything is modified.
+ */
+export default class GameState extends Phaser.Events.EventEmitter {
+  constructor() {
+    super();
+    this.reset();
+  }
+
+  reset() {
+    this.meters = Object.fromEntries(METERS.map((m) => [m, 0]));
+    this.flags = {};
+    this.answers = {};
+  }
+
+  getMeter(name) {
+    this.assertMeter(name);
+    return this.meters[name];
+  }
+
+  setMeter(name, value) {
+    this.assertMeter(name);
+    this.meters[name] = value;
+    this.emit('change', { kind: 'meter', name, value });
+  }
+
+  changeMeter(name, amount) {
+    this.setMeter(name, this.getMeter(name) + amount);
+  }
+
+  getFlag(name) {
+    return this.flags[name] ?? 0;
+  }
+
+  setFlag(name, value) {
+    this.flags[name] = value;
+    this.emit('change', { kind: 'flag', name, value });
+  }
+
+  addFlag(name, amount = 1) {
+    this.setFlag(name, this.getFlag(name) + amount);
+  }
+
+  getAnswer(name) {
+    return this.answers[name] ?? null;
+  }
+
+  setAnswer(name, value) {
+    this.answers[name] = value;
+    this.emit('change', { kind: 'answer', name, value });
+  }
+
+  /**
+   * Applies dialogue effects:
+   *   { meter: 'loyalty', add: 1 } | { flag: 'tomi_involved', add: 1 } | { answer: 'prologue_want', set: 'family' }
+   */
+  applyEffects(effects = []) {
+    for (const e of effects) {
+      if (e.meter !== undefined) this.changeMeter(e.meter, e.add);
+      else if (e.flag !== undefined) this.addFlag(e.flag, e.add);
+      else if (e.answer !== undefined) this.setAnswer(e.answer, e.set);
+      else throw new Error(`Unknown effect: ${JSON.stringify(e)}`);
+    }
+  }
+
+  assertMeter(name) {
+    if (!METERS.includes(name)) throw new Error(`Unknown meter "${name}"`);
+  }
+}
+
+/** The one shared game state. */
+export const gameState = new GameState();

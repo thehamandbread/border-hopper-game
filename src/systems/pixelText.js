@@ -9,3 +9,34 @@ export function pixelText(scene, x, y, text, { size = FONT_SIZE, color = 0xfffff
     .setTint(color)
     .setDropShadow(size / FONT_SIZE, size / FONT_SIZE, 0x000000, 1);
 }
+
+/** Width in px of a single line of bitmap text. */
+export function textWidth(scene, text, size = FONT_SIZE) {
+  const data = scene.cache.bitmapFont.get(FONT_KEY).data;
+  const scale = size / data.size;
+  let w = 0;
+  for (const ch of text) w += (data.chars[ch.codePointAt(0)]?.xAdvance ?? 0) * scale;
+  return w;
+}
+
+/** Greedy word wrap to maxWidth px (keeps existing line breaks). Returns the text with '\n' inserted. */
+export function wrapText(scene, text, maxWidth, size = FONT_SIZE) {
+  return text
+    .split('\n')
+    .map((paragraph) => {
+      const lines = [];
+      let line = '';
+      for (const word of paragraph.split(' ')) {
+        const attempt = line ? `${line} ${word}` : word;
+        if (line && textWidth(scene, attempt, size) > maxWidth) {
+          lines.push(line);
+          line = word;
+        } else {
+          line = attempt;
+        }
+      }
+      lines.push(line);
+      return lines.join('\n');
+    })
+    .join('\n');
+}

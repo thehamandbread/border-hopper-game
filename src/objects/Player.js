@@ -44,6 +44,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.facing = 'down';
     this.carrying = null;
+    this.locked = false;
     this.keys = scene.input.keyboard.addKeys({
       up: 'W',
       down: 'S',
@@ -67,7 +68,18 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.emit('carrying-changed', item);
   }
 
+  /** While locked (e.g. box dialogue) Mateo stands still and ignores movement keys. */
+  setLocked(locked) {
+    this.locked = locked;
+    if (locked) {
+      this.setVelocity(0, 0);
+      this.anims.stop();
+      this.setFrame(DIRECTIONS.indexOf(this.facing) * FRAMES_PER_DIR);
+    }
+  }
+
   update() {
+    if (this.locked) return;
     const k = this.keys;
     const dx = (k.right.isDown || k.rightArrow.isDown ? 1 : 0) - (k.left.isDown || k.leftArrow.isDown ? 1 : 0);
     const dy = (k.down.isDown || k.downArrow.isDown ? 1 : 0) - (k.up.isDown || k.upArrow.isDown ? 1 : 0);
