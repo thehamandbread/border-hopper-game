@@ -1,83 +1,76 @@
 import { pixelText, textWidth } from '../systems/pixelText.js';
 
-export const PHONE_UI_TEXTURE = 'phone_ui';
-// phone_ui.png is 112x150; its screen area (see tools/art/README.md) is x 6, y 16, w 100, h 118.
-const W = 112;
-const H = 150;
-const SCREEN = { x: 6, y: 16, w: 100, h: 118 };
-const MARGIN = 4;
+export const PHONE_ICON_TEXTURE = 'phone_icon';
+export const PHONE_UI_TEXTURE = 'phone_ui'; // the large texting phone
+const ICON_W = 16;
+const ICON_H = 24;
+const MARGIN = 6;
 export const PHONE_DEPTH = 3500; // above world text and the HUD, below the dialogue box (4000)
 
 const BUZZ_MS = 40;     // shake step
 const BUZZ_STEPS = 10;  // steps of shaking per buzz
 const REST_STEPS = 15;  // still steps between buzzes
+const CALL_DOT_MS = 400;
 
 /**
- * The corner phone, fixed to the camera in the bottom-right. States:
+ * The corner phone: a small icon fixed to the camera in the bottom-right. States:
  *   idle    - dark screen
- *   ringing - caller name, "calling...", and a vibration shake
- *   call    - caller name as a header; a presenter draws the call inside contentArea
+ *   ringing - lit screen, vibration shake, and the caller's name beside the icon
+ *   call    - lit screen with a pulsing green "on call" dot (the call itself plays in speech bubbles)
  */
 export default class PhoneUI {
   constructor(scene) {
     this.scene = scene;
-    this.x = scene.cameras.main.width - W - MARGIN;
-    this.y = scene.cameras.main.height - H - MARGIN;
+    const cam = scene.cameras.main;
+    this.x = cam.width - ICON_W - MARGIN;
+    this.y = cam.height - ICON_H - MARGIN;
     this.state = 'idle';
     this.shakeX = 0;
     this.step = 0;
 
-    this.image = scene.add.image(this.x, this.y, PHONE_UI_TEXTURE).setOrigin(0, 0);
-    this.callerBig = pixelText(scene, 0, 0, '', { size: 16 });
-    this.sub = pixelText(scene, 0, 0, '', { color: 0xa0a8b8 });
-    this.header = pixelText(scene, 0, 0, '', { color: 0xf0d080 });
-    this.rule = scene.add.graphics();
-    this.parts = [this.image, this.callerBig, this.sub, this.header, this.rule];
+    this.icon = scene.add.sprite(this.x, this.y, PHONE_ICON_TEXTURE, 0).setOrigin(0, 0);
+    this.label = pixelText(scene, 0, 0, '', { color: 0xf0d080 });
+    this.dot = scene.add.rectangle(this.x + ICON_W - 4, this.y + 1, 3, 3, 0x40e070).setOrigin(0, 0);
+    this.parts = [this.icon, this.label, this.dot];
     for (const p of this.parts) p.setScrollFactor(0).setDepth(PHONE_DEPTH);
 
     this.buzzTimer = scene.time.addEvent({ delay: BUZZ_MS, loop: true, callback: () => this.buzz() });
+    this.dotTimer = scene.time.addEvent({
+      delay: CALL_DOT_MS,
+      loop: true,
+      callback: () => this.dot.setAlpha(this.dot.alpha === 1 ? 0.3 : 1),
+    });
     this.setIdle();
   }
 
-  /** Screen area in screen pixels. */
-  get screen() {
-    return { x: this.x + SCREEN.x, y: this.y + SCREEN.y, w: SCREEN.w, h: SCREEN.h };
-  }
-
-  /** Where a presenter draws call content during a call: below the header. */
-  get contentArea() {
-    const s = this.screen;
-    return { x: s.x + 4, y: s.y + 17, w: s.w - 8, h: s.h - 21 };
+  /** Screen point a speech bubble's tail should point at (the icon's upper-left). */
+  get iconAnchor() {
+    return { x: this.x + 2 + this.shakeX, y: this.y + 4 };
   }
 
   setIdle() {
     this.state = 'idle';
-    this.callerBig.setText('');
-    this.sub.setText('');
-    this.header.setText('');
-    this.rule.clear();
+    this.icon.setFrame(0);
+    this.label.setText('');
+    this.dot.setVisible(false);
     this.setShake(0);
   }
 
   ring(caller) {
     this.state = 'ringing';
-    this.caller = caller;
-    this.header.setText('');
-    this.rule.clear();
-    this.callerBig.setText(caller);
-    this.sub.setText('calling...');
+    this.icon.setFrame(1);
+    this.label.setText(caller);
+    this.dot.setVisible(false);
     this.step = 0;
     this.layout();
   }
 
-  startCall(caller) {
+  startCall() {
     this.state = 'call';
-    this.caller = caller;
-    this.callerBig.setText('');
-    this.sub.setText('');
-    this.header.setText(caller);
+    this.icon.setFrame(1);
+    this.label.setText('');
+    this.dot.setVisible(true).setAlpha(1);
     this.setShake(0);
-    this.layout();
   }
 
   endCall() {
@@ -85,16 +78,10 @@ export default class PhoneUI {
   }
 
   layout() {
-    const s = this.screen;
-    const cx = (t, size = 8) => Math.round(s.x + (s.w - textWidth(this.scene, t.text, size)) / 2) + this.shakeX;
-    this.callerBig.setPosition(cx(this.callerBig, 16), s.y + 34);
-    this.sub.setPosition(cx(this.sub), s.y + 56);
-    this.header.setPosition(cx(this.header), s.y + 4);
-    this.rule.clear();
-    if (this.state === 'call') {
-      this.rule.fillStyle(0x2c3448).fillRect(s.x + 4, s.y + 14, s.w - 8, 1);
-    }
-    this.image.setPosition(this.x + this.shakeX, this.y);
+    const lw = textWidth(this.scene, this.label.text);
+    this.label.setPosition(Math.round(this.x - lw - 4) + this.shakeX, this.y + 8);
+    this.icon.setPosition(this.x + this.shakeX, this.y);
+    this.dot.setPosition(this.x + ICON_W - 4 + this.shakeX, this.y + 1);
   }
 
   setShake(dx) {

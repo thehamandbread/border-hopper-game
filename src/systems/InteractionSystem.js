@@ -17,6 +17,7 @@ export default class InteractionSystem {
     this.items = [];
     this.current = null;
     this.enabled = true;
+    this.promptBelowFeet = false; // e.g. while a speech bubble is above Mateo's head
     this.key = scene.input.keyboard.addKey(key);
     this.keyLabel = key;
     this.prompt = pixelText(scene, 0, 0, key).setOrigin(0, 1).setDepth(1000).setVisible(false);
@@ -40,6 +41,10 @@ export default class InteractionSystem {
   unregister(item) {
     this.items = this.items.filter((i) => i !== item);
     if (this.current === item) this.current = null;
+  }
+
+  setPromptBelowFeet(on) {
+    this.promptBelowFeet = on;
   }
 
   /** Turn interaction off (e.g. during dialogue): hides the prompt and swallows E presses. */
@@ -83,7 +88,9 @@ export default class InteractionSystem {
       cam.scrollX + 2,
       cam.scrollX + cam.width - this.prompt.width - 2,
     );
-    const y = Math.max(Math.round(this.player.y) - HEAD_GAP, cam.scrollY + this.prompt.height + 2);
+    const y = this.promptBelowFeet
+      ? Math.round(this.player.y) + 2 + this.prompt.height
+      : Math.max(Math.round(this.player.y) - HEAD_GAP, cam.scrollY + this.prompt.height + 2);
     this.prompt.setPosition(x, y);
 
     if (Phaser.Input.Keyboard.JustDown(this.key)) best.handler(best);

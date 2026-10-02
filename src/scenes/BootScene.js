@@ -40,6 +40,7 @@ export default class BootScene extends Phaser.Scene {
     });
     this.load.spritesheet('fire', assetUrl('assets/images/fire.png'), { frameWidth: 16, frameHeight: 16 });
     this.load.spritesheet('smoke', assetUrl('assets/images/smoke.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('phone_icon', assetUrl('assets/images/phone_icon.png'), { frameWidth: 16, frameHeight: 24 });
     this.load.image('phone_ui', assetUrl('assets/images/phone_ui.png'));
     this.load.audio('phone_ring', assetUrl('assets/audio/phone_ring.wav'));
     this.load.audio('smoke_alarm', assetUrl('assets/audio/smoke_alarm.wav'));

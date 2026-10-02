@@ -319,13 +319,23 @@ export default class RestaurantScene extends Phaser.Scene {
     if (this.alarmSound) return;
     this.alarmSound = this.sound.add('smoke_alarm', { loop: true });
     this.alarmSound.play();
-    // Small red light on the kitchen's back wall, flashing with the alarm.
-    const lx = 17 * 16 + 6; // clear of the checklist in the top-left
-    const ly = 3;
-    this.alarmLight = this.add.graphics().setDepth(1);
-    this.alarmLight.fillStyle(0x3a3036).fillRect(lx - 1, ly - 1, 5, 4);
-    this.alarmLed = this.add.rectangle(lx, ly, 3, 2, 0xff3020).setOrigin(0, 0).setDepth(2);
-    this.time.addEvent({ delay: 300, loop: true, callback: () => this.alarmLed.setVisible(!this.alarmLed.visible) });
+    // Red alarm light on the kitchen's back wall: an 8x8 lamp with a soft glow, flashing.
+    const cx = 17 * 16 + 8; // clear of the checklist in the top-left
+    const cy = 7;
+    this.add.graphics().setDepth(1).fillStyle(0x2a2226).fillRect(cx - 5, cy - 5, 10, 10);
+    this.alarmGlow = this.add.graphics().setDepth(2);
+    this.alarmGlow.fillStyle(0xff4030, 0.18).fillCircle(cx, cy, 13);
+    this.alarmGlow.fillStyle(0xff5038, 0.3).fillCircle(cx, cy, 9);
+    this.alarmLamp = this.add.graphics().setDepth(3);
+    const lamp = (on) => {
+      this.alarmLamp.clear();
+      this.alarmLamp.fillStyle(on ? 0xff3a28 : 0x5a1410).fillRect(cx - 4, cy - 4, 8, 8);
+      if (on) this.alarmLamp.fillStyle(0xffc0a0).fillRect(cx - 3, cy - 3, 3, 2);
+      this.alarmGlow.setVisible(on);
+    };
+    lamp(true);
+    let on = true;
+    this.time.addEvent({ delay: 300, loop: true, callback: () => lamp((on = !on)) });
   }
 
   /** The call is over: the escape begins. Restarts come back to exactly this moment. */
@@ -436,8 +446,17 @@ export default class RestaurantScene extends Phaser.Scene {
   /** Short message above the player's head, replacing any current one. */
   showNearPlayerMessage(text, ms) {
     this.clearMessage();
-    const cam = this.cameras.main;
     const msg = pixelText(this, 0, 0, text).setOrigin(0, 1).setDepth(3000);
+    msg.followsPlayer = true;
+    this.setMessage(msg, ms);
+    this.positionMessage();
+  }
+
+  /** Keeps a near-player message next to Mateo (called every frame, so it follows him). */
+  positionMessage() {
+    const msg = this.message;
+    if (!msg?.followsPlayer) return;
+    const cam = this.cameras.main;
     // Keep it fully on screen.
     const half = msg.width / 2;
     const x = Phaser.Math.Clamp(this.player.x, cam.scrollX + half + 4, cam.scrollX + cam.width - half - 4);
@@ -445,11 +464,13 @@ export default class RestaurantScene extends Phaser.Scene {
     const prompt = this.interactions.prompt;
     let y = this.player.y - 36;
     if (prompt.visible) y = Math.min(y, prompt.y - prompt.height - 2);
-    if (y - msg.height < cam.scrollY + 2) {
+    if (this.phonePresenter.mateoBubble) {
+      // Mateo's speech bubble is above his head: go below his feet, under the prompt if one shows.
+      y = this.player.y + 4 + msg.height + (prompt.visible ? prompt.height + 2 : 0);
+    } else if (y - msg.height < cam.scrollY + 2) {
       y = this.player.y + 4 + msg.height; // no room above (near the top wall): go below the feet
     }
     msg.setPosition(Math.round(x - half), Math.round(y));
-    this.setMessage(msg, ms);
   }
 
   setMessage(msg, ms) {
@@ -475,5 +496,6 @@ export default class RestaurantScene extends Phaser.Scene {
     this.checkFire();
     this.markers.update(this.player);
     this.interactions.update();
+    this.positionMessage();
   }
 }
