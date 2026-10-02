@@ -54,6 +54,14 @@ export default class DialogueRunner extends Phaser.Events.EventEmitter {
     this.goto(option.next);
   }
 
+  /** Stop the conversation now (e.g. the player died mid-call). Emits 'end'. */
+  abort() {
+    if (this.ended) return;
+    this.current = null;
+    this.ended = true;
+    this.emit('end', this.data);
+  }
+
   goto(id) {
     let nodeId = id;
     for (;;) {

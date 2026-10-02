@@ -12,6 +12,7 @@ import { gameState } from '../systems/GameState.js';
 import InteractionSystem from '../systems/InteractionSystem.js';
 import TaskList from '../systems/TaskList.js';
 import TaskMarkers from '../systems/TaskMarkers.js';
+import FireSystem from '../systems/FireSystem.js';
 
 // Indexes in restaurant_tiles.png (see tools/art/README.md).
 const TILE = {
@@ -30,6 +31,9 @@ const TRASH_BAG = 'trash bag';
 const PHONE_LEDGE_TEXTURE = 'phone_ledge';
 const HINT_MS = 3000;
 const TOO_LATE_RANGE = 22; // px from the stove, same reach as interacting
+const FADE_MS = 500;
+const EXIT_FADE_MS = 800;
+const CLOSED_FAIL_DELAY_MS = 1500; // after the path closes, if Mateo is still inside
 // Phone call flow: 'idle' -> 'ringing' (after the last table) -> 'call' -> 'done'
 // Stove: 'on' (task) -> 'locked' (phone rang; can't be reached in time) -> 'burning' (stove_ignite)
 
@@ -83,7 +87,11 @@ export default class RestaurantScene extends Phaser.Scene {
       if (task.id === 'wipe_tables') this.startRinging();
     });
     this.events.once('shutdown', () => this.sound.stopAll());
-    this.tasks.on('all-complete', () => this.showCenterMessage('Shift complete.', 2000));
+    this.fire = new FireSystem(this, mapData.fire, { tileSize: tileWidth, origin: this.stoveTile });
+    this.escaping = false;
+    this.escaped = false;
+    this.fading = false;
+    this.closedFailScheduled = false;
 
     // Dev-only test hook: ?dialogue=tomi_call or ?dialogue=curb starts that conversation.
     if (import.meta.env.DEV) {
@@ -212,6 +220,13 @@ export default class RestaurantScene extends Phaser.Scene {
                 this.tasks.complete('take_out_trash');
               },
             });
+            this.interactions.register({
+              tileX: x,
+              tileY: y,
+              prompt: 'Get out',
+              enabled: () => this.escaping && !this.fading,
+              handler: () => this.exitRestaurant(),
+            });
             break;
           case TILE.STOVE_ON: {
             this.stoveTile = { x, y };
@@ -297,6 +312,7 @@ export default class RestaurantScene extends Phaser.Scene {
     this.stoveFire = this.add.sprite(x * 16 + 8, y * 16 + 8, FIRE_TEXTURE, 0).setDepth((y + 1) * 16);
     this.stoveFire.play(FIRE_ANIM);
     this.tooLateShown = false;
+    this.fire.ignite();
   }
 
   startAlarm() {
@@ -312,9 +328,88 @@ export default class RestaurantScene extends Phaser.Scene {
     this.time.addEvent({ delay: 300, loop: true, callback: () => this.alarmLed.setVisible(!this.alarmLed.visible) });
   }
 
+  /** The call is over: the escape begins. Restarts come back to exactly this moment. */
   onCallEnded() {
+    if (this.escaping) return;
     this.phoneState = 'done';
-    // Phase 3: the escape begins here.
+    this.startAlarm(); // already sounding unless the call was cut short
+    this.escaping = true;
+    this.fire.startEscape();
+    this.escapeSnapshot = this.fire.snapshot();
+  }
+
+  /** Where Mateo stands after a restart: in front of the phone ledge. */
+  get restartSpot() {
+    const t = this.phoneTile;
+    return { x: t.x * 16 + 8, y: t.y * 16 - 4 };
+  }
+
+  /** Touched fire (or stayed until the kitchen closed): fade out and restart from the end of the call. */
+  failEscape() {
+    if (this.fading || this.escaped) return;
+    if (this.phoneState === 'call') {
+      // Died before the call ended: cut it short; the restart point is now.
+      this.dialogueRunner?.abort();
+      this.onCallEnded();
+    }
+    this.fading = true;
+    this.player.setLocked(true);
+    this.interactions.setEnabled(false);
+    this.clearMessage();
+    const cam = this.cameras.main;
+    cam.fadeOut(FADE_MS, 0, 0, 0);
+    cam.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+      this.fire.restore(this.escapeSnapshot);
+      this.closedFailTimer?.remove();
+      this.closedFailScheduled = false;
+      const spot = this.restartSpot;
+      this.player.setPosition(spot.x, spot.y);
+      this.player.facing = 'up';
+      this.player.setLocked(true); // refreshes the standing frame for the new facing
+      cam.fadeIn(FADE_MS, 0, 0, 0);
+      cam.once(Phaser.Cameras.Scene2D.Events.FADE_IN_COMPLETE, () => {
+        this.fading = false;
+        this.player.setLocked(false);
+        this.interactions.setEnabled(true);
+      });
+    });
+  }
+
+  /** "E: Get out" at the back door: fade out and show the placeholder for the next part. */
+  exitRestaurant() {
+    if (this.fading) return;
+    this.escaped = true;
+    this.fading = true;
+    this.player.setLocked(true);
+    this.interactions.setEnabled(false);
+    this.clearMessage();
+    const cam = this.cameras.main;
+    cam.fadeOut(EXIT_FADE_MS, 0, 0, 0);
+    cam.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+      this.sound.stopAll();
+      // Placeholder until the curb scene exists: black screen, centred text, any key starts over.
+      this.add.rectangle(0, 0, cam.width, cam.height, 0x000000).setOrigin(0, 0).setScrollFactor(0).setDepth(6000);
+      const t = pixelText(this, 0, 0, 'PROLOGUE CONTINUES: THE CURB').setScrollFactor(0).setDepth(6001);
+      t.setPosition(Math.round((cam.width - t.width) / 2), Math.round((cam.height - t.height) / 2));
+      cam.resetFX();
+      this.input.keyboard.once('keydown', () => {
+        gameState.reset();
+        this.scene.restart();
+      });
+    });
+  }
+
+  checkFire() {
+    if (this.fading || this.escaped) return;
+    const b = this.player.body;
+    if (this.fire.isDeadly(new Phaser.Geom.Rectangle(b.x, b.y, b.width, b.height))) {
+      this.failEscape();
+      return;
+    }
+    if (this.escaping && this.fire.closed && !this.closedFailScheduled) {
+      this.closedFailScheduled = true;
+      this.closedFailTimer = this.time.delayedCall(CLOSED_FAIL_DELAY_MS, () => this.failEscape());
+    }
   }
 
   /** Walking up to the burning stove: it's too late to turn it off. */
@@ -357,15 +452,6 @@ export default class RestaurantScene extends Phaser.Scene {
     this.setMessage(msg, ms);
   }
 
-  /** Message centred on the screen (fixed to the camera). */
-  showCenterMessage(text, ms) {
-    this.clearMessage();
-    const cam = this.cameras.main;
-    const msg = pixelText(this, 0, 0, text, { size: 16 }).setScrollFactor(0).setDepth(3000);
-    msg.setPosition(Math.round((cam.width - msg.width) / 2), Math.round((cam.height - msg.height) / 2));
-    this.setMessage(msg, ms);
-  }
-
   setMessage(msg, ms) {
     this.message = msg;
     this.time.delayedCall(ms, () => {
@@ -378,13 +464,15 @@ export default class RestaurantScene extends Phaser.Scene {
     this.message = null;
   }
 
-  update() {
+  update(time, delta) {
+    if (!this.fading) this.fire.update(delta);
     this.dialogueBox.update();
     this.phonePresenter.update();
     this.player.update();
     this.player.setDepth(this.player.y); // depth-sort by feet y
     this.kitchenDoor?.update();
     this.checkTooLate();
+    this.checkFire();
     this.markers.update(this.player);
     this.interactions.update();
   }
