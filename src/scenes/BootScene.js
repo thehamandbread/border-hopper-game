@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { assetUrl } from '../systems/assetUrl.js';
 import { FONT_KEY } from '../systems/pixelText.js';
+import { createFireAnimations } from '../objects/FireEffects.js';
 import { createKitchenDoorAnimations } from '../objects/KitchenDoor.js';
 import { PLAYER_TEXTURE, createPlayerAnimations } from '../objects/Player.js';
 
@@ -37,6 +38,8 @@ export default class BootScene extends Phaser.Scene {
       frameWidth: 16,
       frameHeight: 16,
     });
+    this.load.spritesheet('fire', assetUrl('assets/images/fire.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.spritesheet('smoke', assetUrl('assets/images/smoke.png'), { frameWidth: 16, frameHeight: 16 });
     this.load.image('phone_ui', assetUrl('assets/images/phone_ui.png'));
     this.load.audio('phone_ring', assetUrl('assets/audio/phone_ring.wav'));
     this.load.audio('smoke_alarm', assetUrl('assets/audio/smoke_alarm.wav'));
@@ -46,6 +49,7 @@ export default class BootScene extends Phaser.Scene {
   create() {
     createPlayerAnimations(this.anims);
     createKitchenDoorAnimations(this.anims);
+    createFireAnimations(this.anims);
     // Dev-only: ?scene=movement-test starts the movement test scene instead.
     const devMovementTest =
       import.meta.env.DEV && new URLSearchParams(window.location.search).get('scene') === 'movement-test';

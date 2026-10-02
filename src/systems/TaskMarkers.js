@@ -31,14 +31,14 @@ export default class TaskMarkers {
     scene.events.once('shutdown', () => this.destroy());
   }
 
-  /** Marker attached to the top of a tile. Returns a handle, or null if disabled. */
+  /** Marker on a tile. taskId null means it is not tied to a task (shown until removed). Returns a handle, or null if disabled. */
   add({ taskId, tileX, tileY }) {
     if (!this.enabled) return null;
     const sprite = this.scene.add.sprite(0, 0, MARKER_TEXTURE, this.dim ? 1 : 0).setDepth(MARKER_DEPTH);
     const marker = { taskId, sprite, tileX, tileY };
     this.markers.add(marker);
     this.place(marker);
-    sprite.setVisible(this.taskList.isCurrent(taskId));
+    this.refreshOne(marker);
     return marker;
   }
 
@@ -71,9 +71,20 @@ export default class TaskMarkers {
     }
   }
 
-  /** Only markers for the current task are visible. */
+  /** Hide or show one marker regardless of its task (e.g. while something more urgent is marked). */
+  setHidden(marker, hidden) {
+    if (!marker || !this.markers.has(marker)) return;
+    marker.hidden = hidden;
+    this.refreshOne(marker);
+  }
+
+  /** Visible if not hidden and either not tied to a task (taskId null) or tied to the current task. */
+  refreshOne(m) {
+    m.sprite.setVisible(!m.hidden && (m.taskId === null || this.taskList.isCurrent(m.taskId)));
+  }
+
   refreshVisibility() {
-    for (const m of this.markers) m.sprite.setVisible(this.taskList.isCurrent(m.taskId));
+    for (const m of this.markers) this.refreshOne(m);
   }
 
   pulse() {
