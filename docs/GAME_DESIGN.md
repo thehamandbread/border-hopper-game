@@ -79,6 +79,7 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 - This conversation has real choices:
   - Mateo can apologize, stay defiant, or try to bargain. This sets the starting relationship and nudges starting Loyalty slightly.
   - One line the player chooses is remembered. Don Aurelio quotes it back at the final confrontation.
+- Approved dialogue is in docs/script/prologue.md.
 
 #### Closing Shift Details
 - Tasks, in fixed order: take the kitchen trash out the back door; wipe 3 dirty tables; turn off the stove (beans simmering for tomorrow). Only the current task can be done.
@@ -160,6 +161,7 @@ Each mission alternates between two modes that can flow into each other:
 - Applies to Witness, The Crossing, or The Letter.
 - Triggered if Mateo let Tomi get close to his work during the game.
 - The final card shows Tomi walking into the handler's office.
+- Seeds include the prologue call: asking Tomi to check Abuela's pills (tomi_involved +1) leads to him offering to work for cash.
 
 ### Failure endings
 - **Caught** (Heat maxed). Mateo is arrested. In the interrogation room, one last choice: talk or stay silent. It decides the family's fate, offscreen.
@@ -217,3 +219,5 @@ Each mission alternates between two modes that can flow into each other:
 ## Future Polish (deferred)
 - Shaders, lighting, and ambiance effects. Decide on these once most of the game is built, based on the full look.
 - Must use Phaser 4's Filter system (not Phaser 3 pipelines), and must stay light enough for low-end Chromebooks.
+- Full voice acting is deferred until the script is locked, because rewrites and branching multiply recording work, audio adds download size, and accented or code-switched voices need careful review.
+- Character voice blips (short pitched sounds as text appears) are planned with the dialogue system.

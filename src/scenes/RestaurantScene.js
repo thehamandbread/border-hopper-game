@@ -187,7 +187,13 @@ export default class RestaurantScene extends Phaser.Scene {
     // Keep it fully on screen.
     const half = msg.width / 2;
     const x = Phaser.Math.Clamp(this.player.x, cam.scrollX + half + 4, cam.scrollX + cam.width - half - 4);
-    const y = Math.max(this.player.y - 36, cam.scrollY + msg.height + 4);
+    // Default spot is just above the head-height prompt. If the prompt is showing, stay clear of it.
+    const prompt = this.interactions.prompt;
+    let y = this.player.y - 36;
+    if (prompt.visible) y = Math.min(y, prompt.y - prompt.height - 2);
+    if (y - msg.height < cam.scrollY + 2) {
+      y = this.player.y + 4 + msg.height; // no room above (near the top wall): go below the feet
+    }
     msg.setPosition(Math.round(x - half), Math.round(y));
     this.setMessage(msg, ms);
   }
@@ -203,7 +209,6 @@ export default class RestaurantScene extends Phaser.Scene {
 
   setMessage(msg, ms) {
     this.message = msg;
-    this.interactions.promptHidden = true;
     this.time.delayedCall(ms, () => {
       if (this.message === msg) this.clearMessage();
     });
@@ -212,13 +217,13 @@ export default class RestaurantScene extends Phaser.Scene {
   clearMessage() {
     if (this.message) this.message.destroy();
     this.message = null;
-    this.interactions.promptHidden = false;
   }
 
   update() {
     this.player.update();
     this.player.setDepth(this.player.y); // depth-sort by feet y
     this.kitchenDoor?.update();
+    this.markers.update(this.player);
     this.interactions.update();
   }
 }

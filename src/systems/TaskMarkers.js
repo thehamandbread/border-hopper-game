@@ -1,7 +1,12 @@
+import Phaser from 'phaser';
+
 const MARKER_TEXTURE = 'task_marker';
 const MARKER_DEPTH = 1500; // above game objects and prompts, below the HUD (2000)
+const FADED_ALPHA = 0.35; // while the player's sprite overlaps the marker
 const PULSE_MS = 250;      // bright 250 ms, dim 250 ms: a 2 Hz pulse
-const GAP = 2;             // px between the marker and the object's tile
+// The marker is as tall as a tile, so seating its bottom 15 px into the object's tile keeps the whole
+// "!" on that object (a shallower overlap would cover a chair or wall on the tile above).
+const SEAT = 15;
 
 /**
  * Pulsing "!" markers over objects with unfinished tasks. Task logic stays in the scene:
@@ -26,7 +31,7 @@ export default class TaskMarkers {
     scene.events.once('shutdown', () => this.destroy());
   }
 
-  /** Marker above (or, near the top of the view, below) a tile. Returns a handle, or null if disabled. */
+  /** Marker attached to the top of a tile. Returns a handle, or null if disabled. */
   add({ taskId, tileX, tileY }) {
     if (!this.enabled) return null;
     const sprite = this.scene.add.sprite(0, 0, MARKER_TEXTURE, this.dim ? 1 : 0).setDepth(MARKER_DEPTH);
@@ -49,14 +54,21 @@ export default class TaskMarkers {
     marker.sprite.destroy();
   }
 
+  /** Sits on its own object: the sprite fills the object's tile (bobbing up 1 px). */
   place(marker) {
     const ts = this.tileSize;
-    const x = marker.tileX * ts + ts / 2;
-    const top = marker.tileY * ts;
-    // If a marker above the tile would be clipped by the top of the view, put it below instead.
-    const above = top - GAP - ts >= this.scene.cameras.main.scrollY;
-    marker.base = above ? top - GAP : top + ts + GAP;
-    marker.sprite.setOrigin(0.5, above ? 1 : 0).setPosition(x, marker.base - (this.dim ? 1 : 0));
+    marker.base = marker.tileY * ts + SEAT;
+    marker.sprite.setOrigin(0.5, 1).setPosition(marker.tileX * ts + ts / 2, marker.base - (this.dim ? 1 : 0));
+  }
+
+  /** Call every frame: markers fade while the given sprite (the player) stands over them. */
+  update(sprite) {
+    if (!this.enabled) return;
+    const body = sprite.getBounds();
+    for (const m of this.markers) {
+      const covered = Phaser.Geom.Intersects.RectangleToRectangle(body, m.sprite.getBounds());
+      m.sprite.setAlpha(covered ? FADED_ALPHA : 1);
+    }
   }
 
   /** Only markers for the current task are visible. */
