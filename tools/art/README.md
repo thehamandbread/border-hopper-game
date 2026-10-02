@@ -32,7 +32,7 @@ Works from any working directory.
 | 8 | crate | |
 | 9 | asphalt_line_v | vertical centered dash, for vertical roads |
 
-### `restaurant_tiles.png` (256x16, 16x16 tiles, one row)
+### `restaurant_tiles.png` (384x16, 16x16 tiles, one row)
 
 | Index | Name | Notes |
 |---|---|---|
@@ -52,8 +52,22 @@ Works from any working directory.
 | 13 | front_door | glass and metal |
 | 14 | back_door | plain metal |
 | 15 | back_room_door | heavy door with padlock |
+| 16 | wall_side_left | top edge (cap) of the left wall seen from above, room on its right; stacks seamlessly |
+| 17 | wall_side_right | same for the right wall, room on its left |
+| 18 | wall_corner_top_left | left wall cap meeting the top wall's face |
+| 19 | wall_corner_top_right | |
+| 20 | wall_corner_bottom_left | left wall cap ending on the bottom wall's face |
+| 21 | wall_corner_bottom_right | |
+| 22 | counter_end_left | rounded end of the counter segment on the LEFT of a gap (its right end faces the gap) |
+| 23 | counter_end_right | rounded end of the segment on the RIGHT of the gap (its left end faces the gap) |
 
 Tables and chairs sit on dining floor; stove, sink and trash sit on kitchen floor; doors sit in the wall.
+
+### `kitchen_door.png` (96x16)
+Swinging cafe doors for a doorway 2 tiles wide. 3 frames of 32x16 (indexes 0-2): closed, half open, fully open. Leaves are hinged at the outer sides; transparent background, draw it over the floor.
+
+### `task_marker.png` (32x16)
+Red "!" with a dark outline. 2 frames of 16x16 (indexes 0-1): bright, slightly dimmer, for a pulse. Transparent background.
 
 ### `fire.png` (48x16)
 3 frames of 16x16 (indexes 0-2), looping flame, transparent background.
@@ -63,4 +77,4 @@ Tables and chairs sit on dining floor; stove, sink and trash sit on kitchen floo
 
 ## Previews (`tools/art/previews/`, git-ignored)
 
-`preview_scene.png`, `preview_walk.gif`, `sheet_6x.png`, `tiles_6x.png`, `restaurant_tiles_6x.png`, `fire_6x.png`, `smoke_6x.png`, `restaurant_scene.png` (mock restaurant with Mateo, fire and smoke).
+`preview_scene.png`, `preview_walk.gif`, `sheet_6x.png`, `tiles_6x.png`, `restaurant_tiles_6x.png`, `fire_6x.png`, `smoke_6x.png`, `restaurant_scene.png` (mock restaurant with Mateo, fire and smoke), `kitchen_door_6x.png`, `task_marker_6x.png`, `restaurant_walls_preview.png` (mock room: walls, corners, counter ends, cafe doors, task markers).

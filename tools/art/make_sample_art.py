@@ -2,13 +2,16 @@
 Outputs:
   public/assets/images/mateo_walk.png    64x128 sprite sheet, 16x32 frames. Rows: down, up, right, left. 4 frames each.
   public/assets/images/border_tiles.png  160x16, 16x16 tiles in a row (see TILE_ORDER).
-  public/assets/images/restaurant_tiles.png  256x16, restaurant interior tiles (see RESTAURANT_ORDER).
+  public/assets/images/restaurant_tiles.png  384x16, restaurant interior tiles (see RESTAURANT_ORDER).
+  public/assets/images/kitchen_door.png  96x16, 3 frames of 32x16 swinging cafe doors (closed, half, open).
+  public/assets/images/task_marker.png   32x16, 2 frames of 16x16 red '!' marker (bright, dim).
   public/assets/images/fire.png          48x16, 3-frame looping flame.
   public/assets/images/smoke.png         32x16, 2-frame looping smoke puff.
   tools/art/previews/preview_scene.png   small scene at 4x scale.
   tools/art/previews/preview_walk.gif    walk cycles at 6x scale.
   tools/art/previews/sheet_6x.png, tiles_6x.png  6x inspection previews.
-  tools/art/previews/restaurant_tiles_6x.png, fire_6x.png, smoke_6x.png, restaurant_scene.png
+  tools/art/previews/restaurant_tiles_6x.png, fire_6x.png, smoke_6x.png, restaurant_scene.png,
+  tools/art/previews/kitchen_door_6x.png, task_marker_6x.png, restaurant_walls_preview.png
 Paths are resolved relative to this file, so it runs from any working directory.
 """
 import random
@@ -614,7 +617,11 @@ def draw_back_room_door(px):
 RESTAURANT_ORDER = ["kitchen_floor", "dining_floor", "wall", "wall_window", "counter",
                     "table_dirty", "table_clean", "chair", "stove_off", "stove_on",
                     "trash_full", "trash_empty", "sink", "front_door", "back_door",
-                    "back_room_door"]
+                    "back_room_door",
+                    "wall_side_left", "wall_side_right",
+                    "wall_corner_top_left", "wall_corner_top_right",
+                    "wall_corner_bottom_left", "wall_corner_bottom_right",
+                    "counter_end_left", "counter_end_right"]
 
 
 def make_restaurant_tiles():
@@ -634,11 +641,164 @@ def make_restaurant_tiles():
         "front_door": wall_door(draw_front_door),
         "back_door": wall_door(draw_back_door),
         "back_room_door": wall_door(draw_back_room_door),
+        # indexes 16-23 (added later; none of these use the random stream)
+        "wall_side_left": tile_wall_side_left(),
+        "wall_side_right": flip(tile_wall_side_left()),
+        "wall_corner_top_left": tile_corner_top_left(),
+        "wall_corner_top_right": flip(tile_corner_top_left()),
+        "wall_corner_bottom_left": tile_corner_bottom_left(),
+        "wall_corner_bottom_right": flip(tile_corner_bottom_left()),
+        "counter_end_left": tile_counter_end_left(),
+        "counter_end_right": flip(tile_counter_end_left()),
     }
     sheet = Image.new("RGBA", (T * len(RESTAURANT_ORDER), T))
     for i, k in enumerate(RESTAURANT_ORDER):
         sheet.paste(tiles[k], (i * T, 0))
     return sheet, tiles
+
+
+# ---------------- restaurant polish: side walls, corners, counter ends ----------------
+# These use no random numbers, so adding them never changes tiles 0-15.
+CAP = CREAM_HI                      # wall top ("cap") colour, same as the wall face's top highlight
+CAP_SHADE = [(224, 208, 174), (200, 182, 148), (186, 160, 128), (166, 140, 110), (148, 122, 96)]
+
+
+def tile_wall_side_left():
+    """Top edge of the left wall seen from above; room is on the right.
+    Every row is identical, so stacked tiles join with no banding."""
+    img = solid(CAP)
+    d = img.load()
+    fill(d, 0, 0, 0, 15, OUT)                 # outer edge
+    for i, c in enumerate(CAP_SHADE):         # shadow on the room-facing side
+        fill(d, 11 + i, 0, 11 + i, 15, c)
+    return img
+
+
+def tile_corner_top_left():
+    """Left wall cap meeting the top wall's face: face plaster continues to the right."""
+    img = tile_rest_wall_plain()
+    strip = tile_wall_side_left()
+    img.paste(strip.crop((0, 0, 12, T)), (0, 0))
+    return img
+
+
+def tile_corner_bottom_left():
+    """Left wall cap ending on the bottom wall's face: cap above, face rows (shading + baseboard) below."""
+    img = tile_rest_wall_plain()
+    strip = tile_wall_side_left()
+    img.paste(strip.crop((0, 0, T, 10)), (0, 0))
+    fill(img.load(), 0, 10, 0, 15, OUT)       # keep the outer edge continuous
+    return img
+
+
+def tile_rest_wall_plain():
+    """The plain wall face, drawn without touching the shared random stream."""
+    img = solid(CREAM)
+    d = img.load()
+    fill(d, 0, 10, 15, 11, CREAM_DK)
+    fill(d, 0, 0, 15, 0, CREAM_HI)
+    fill(d, 0, 12, 15, 12, BASE_HI)
+    fill(d, 0, 13, 15, 14, BASE)
+    fill(d, 0, 15, 15, 15, BASE_DK)
+    return img
+
+
+def tile_counter_end_left():
+    """Rounded end for the counter segment on the LEFT of the gap (its right end faces the gap)."""
+    img = tile_kitchen_floor_plain()
+    d = img.load()
+    body = tile_counter().load()
+    for y in range(T):
+        for x in range(15):
+            d[x, y] = body[x, y]
+    for y in range(T):                          # end outline
+        d[14, y] = OUT
+    fill(d, 12, 1, 13, 7, (218, 174, 120))      # worktop end, lighter where it overhangs
+    fill(d, 13, 8, 13, 8, WOOD_DK)
+    fill(d, 12, 9, 13, 14, WOOD_DK)             # end panel
+    fill(d, 13, 9, 13, 14, (128, 88, 50))
+    for x, y in ((14, 0), (14, 15)):            # round the corners
+        d[x, y] = d[15, y]
+    d[13, 0] = OUT
+    d[13, 15] = OUT
+    return img
+
+
+def tile_kitchen_floor_plain():
+    """Kitchen checker without random speckles (corner pixels behind counter ends)."""
+    img = solid((140, 158, 162))
+    d = img.load()
+    for y in range(T):
+        for x in range(T):
+            if ((x // 4) + (y // 4)) % 2:
+                d[x, y] = (116, 136, 144, 255)
+    return img
+
+
+def flip(img):
+    return img.transpose(Image.FLIP_LEFT_RIGHT)
+
+
+# ---------------- cafe doors and task marker ----------------
+STEEL_PIN = (176, 182, 190)
+
+
+def draw_leaf(px, hinge_x, inner_x, dy_inner, tone=0):
+    """One swing-door leaf from hinge_x to inner_x. dy_inner lowers the free edge (swing toward viewer).
+    tone > 0 darkens it (leaf turned nearly edge-on)."""
+    step = 1 if inner_x > hinge_x else -1
+    span = max(1, abs(inner_x - hinge_x))
+    for i, x in enumerate(range(hinge_x, inner_x + step, step)):
+        off = round(dy_inner * i / span)
+        top, bot = 3 + off, 11 + off + off // 2   # free edge is nearer the viewer: lower and taller
+        slat = WOOD_HI if (i % 2 == 0) else WOOD
+        if tone:
+            slat = WOOD_DK if i % 2 == 0 else (128, 88, 50)
+        for y in range(top, bot + 1):
+            px[x, y] = slat + (255,)
+        px[x, top] = (WOOD_HI if not tone else WOOD) + (255,)      # top rail
+        px[x, top + 1] = WOOD_DK + (255,)
+        px[x, bot] = WOOD_DK + (255,)                              # bottom rail
+        px[x, bot - 1] = (WOOD_DK if i % 2 else (128, 88, 50)) + (255,)
+    # darker free edge so the two leaves read as separate doors
+    for y in range(3 + dy_inner, 12 + dy_inner + dy_inner // 2):
+        px[inner_x, y] = WOOD_DK + (255,)
+    # hinge pins on the outer edge
+    for y in (5, 10):
+        px[hinge_x, y] = STEEL_PIN + (255,)
+
+
+def make_kitchen_door():
+    """3 frames of 32x16: closed, half open, fully open. Leaves hinged at the outer sides."""
+    sheet = Image.new("RGBA", (32 * 3, T), (0, 0, 0, 0))
+    # (leaf width, free-edge drop, edge-on tone)
+    for f, (w, dy, tone) in enumerate(((15, 0, 0), (10, 2, 0), (5, 3, 1))):
+        frame = Image.new("RGBA", (32, T), (0, 0, 0, 0))
+        px = frame.load()
+        fill(px, 0, 2, 0, 13, WOOD_DK)                       # jambs the hinges are fixed to
+        fill(px, 31, 2, 31, 13, WOOD_DK)
+        draw_leaf(px, 1, 1 + w - 1, dy, tone)
+        draw_leaf(px, 30, 30 - (w - 1), dy, tone)
+        outline(frame)
+        sheet.paste(frame, (f * 32, 0))
+    return sheet
+
+
+MARKER_BAR = [(5, 1, 9, 4), (6, 5, 8, 8), (7, 9, 7, 9)]   # x0, y0, x1, y1: tapering bar
+MARKER_DOT = (6, 11, 8, 13)
+
+
+def make_task_marker():
+    sheet = Image.new("RGBA", (T * 2, T), (0, 0, 0, 0))
+    for f, (fill_c, hi_c) in enumerate((((230, 44, 38), (255, 130, 108)), ((176, 36, 34), (214, 86, 72)))):
+        frame = Image.new("RGBA", (T, T), (0, 0, 0, 0))
+        px = frame.load()
+        for x0, y0, x1, y1 in MARKER_BAR + [MARKER_DOT]:
+            fill(px, x0, y0, x1, y1, fill_c)
+            fill(px, x0, y0, x0, y1, hi_c)       # left highlight
+        outline(frame)
+        sheet.paste(frame, (f * T, 0))
+    return sheet
 
 
 # ---------------- fire and smoke ----------------
@@ -779,6 +939,42 @@ def make_restaurant_scene(tiles, frames, fire, smoke):
     return img
 
 
+def make_walls_preview(tiles, door, marker):
+    """Mock room: top/side/bottom walls with corners, counter with end caps around a 2-tile gap,
+    cafe doors (closed) in the gap, and task markers over the stove and a table."""
+    # < > top corners, [ ] bottom corners, l r side walls, w wall, n window, F front door,
+    # k kitchen floor, d dining floor, c counter, ( ) counter ends, s stove, K sink, t table, h chair
+    layout = [
+        "<wwnwwwwwwnww>",
+        "lkkkkkkkkkkkkr",
+        "lkksKkkkkkkkkr",
+        "lkkkkkkkkkkkkr",
+        "lkkkkkkkkkkkkr",
+        "lcccc(kk)ccccr",
+        "lddddddddddddr",
+        "ldddhtdhdddddr",
+        "lddddddddddddr",
+        "lddddddddddddr",
+        "[wwwwwwFwnwww]",
+    ]
+    key = {"w": "wall", "n": "wall_window", "<": "wall_corner_top_left", ">": "wall_corner_top_right",
+           "[": "wall_corner_bottom_left", "]": "wall_corner_bottom_right",
+           "l": "wall_side_left", "r": "wall_side_right", "k": "kitchen_floor", "d": "dining_floor",
+           "c": "counter", "(": "counter_end_left", ")": "counter_end_right",
+           "s": "stove_on", "K": "sink", "t": "table_dirty", "h": "chair", "F": "front_door"}
+    # the top-right and bottom-right corner characters share a row with '>' and ']'
+    layout[0] = layout[0][:-1] + ">"
+    img = Image.new("RGBA", (len(layout[0]) * T, len(layout) * T))
+    for y, row in enumerate(layout):
+        assert len(row) == len(layout[0]), (y, row)
+        for x, ch in enumerate(row):
+            img.paste(tiles[key[ch]], (x * T, y * T))
+    img.alpha_composite(door.crop((0, 0, 32, T)), (6 * T, 5 * T))          # closed doors in the gap
+    img.alpha_composite(marker.crop((0, 0, T, T)), (3 * T, 2 * T - 14))    # above the stove
+    img.alpha_composite(marker.crop((T, 0, 2 * T, T)), (5 * T, 7 * T - 14))  # above the table
+    return img
+
+
 def main():
     ASSET_DIR.mkdir(parents=True, exist_ok=True)
     PREVIEW_DIR.mkdir(parents=True, exist_ok=True)
@@ -815,6 +1011,16 @@ def main():
         bg = Image.new("RGBA", im.size, (150, 118, 84, 255)) if name != "restaurant_tiles" else Image.new("RGBA", im.size)
         bg.alpha_composite(im)
         bg.resize((im.width * 6, im.height * 6), Image.NEAREST).save(PREVIEW_DIR / f"{name}_6x.png")
+    kdoor = make_kitchen_door()
+    kdoor.save(ASSET_DIR / "kitchen_door.png")
+    marker = make_task_marker()
+    marker.save(ASSET_DIR / "task_marker.png")
+    for name, im in (("kitchen_door", kdoor), ("task_marker", marker)):
+        bg = Image.new("RGBA", im.size, (150, 118, 84, 255))
+        bg.alpha_composite(im)
+        bg.resize((im.width * 6, im.height * 6), Image.NEAREST).save(PREVIEW_DIR / f"{name}_6x.png")
+    walls = make_walls_preview(rest_tiles, kdoor, marker)
+    walls.resize((walls.width * 4, walls.height * 4), Image.NEAREST).save(PREVIEW_DIR / "restaurant_walls_preview.png")
     rscene = make_restaurant_scene(rest_tiles, frames, fire, smoke)
     rscene.resize((rscene.width * 4, rscene.height * 4), Image.NEAREST).save(PREVIEW_DIR / "restaurant_scene.png")
 
