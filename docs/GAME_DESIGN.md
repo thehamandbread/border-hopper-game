@@ -89,13 +89,13 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 - Playable closing shift at the restaurant, doubling as the tutorial: wipe tables, take out trash, turn off the stove (movement and object interaction).
 - After the tables are wiped, Mateo's phone rings. It is charging on a ledge by the front door, in the far corner of the dining room. Walking over and answering is the first step of the phone tutorial.
 - A few seconds into the call, the stove ignites. Mateo is at the far end of the restaurant and moving slowly on the call, so he can't reach it in time. If he gets to the kitchen anyway, the stove is already burning and can't be turned off.
-- Escape the burning building: dodge spreading fire and smoke to reach the exit. No stealth yet.
+- Escape the burning building. The front door is locked (Doña Lupe locks it at closing; staff use the back), so Mateo must cross the dining room, go through the café doors into the burning kitchen, and get out the back door. Fire spreads deterministically; some tiles on the path flare on a timer. Touching fire fades to black and restarts the escape from the end of the call. No health bar. No stealth yet.
 - That night, Mateo waits on the curb outside the burned restaurant for the owner, Doña Lupe, as the firefighters asked. She never comes. Don Aurelio arrives in her place: "Lupe asked me to come." He sits beside Mateo, calm and fatherly, and asks for help with "something" in deliberately vague terms. The player is led to assume one job settles it.
 - This conversation has real choices:
   - Mateo can apologize, stay defiant, or try to bargain. This sets the starting relationship and nudges starting Loyalty slightly.
   - One line the player chooses is remembered. Don Aurelio quotes it back at the final confrontation.
   - The remembered line is Mateo's answer to "What do you want, Mateo? In your life.": his family to be okay, not owing anybody anything, or not knowing.
-  - Before leaving, Don Aurelio has Abuela's prescription filled without being asked. The first form of the golden cage.
+- Before leaving, Don Aurelio has Abuela's prescription filled without being asked. The first form of the golden cage.
 - Approved dialogue is in docs/script/prologue.md.
 
 #### Closing Shift Details
@@ -104,7 +104,7 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 - The checklist shows all tasks; upcoming tasks are dimmed.
 - Task progress is shown in an on-screen checklist.
 - The locked back-room door can be examined: "The back room. Always locked." (foreshadows the hidden cash).
-- The front door can't be used until the shift is done.
+- The front door is always locked: "Lupe locks the front at closing. Staff use the back."
 - In the full prologue, Tomi's call comes after the tables, before the stove is turned off, and the stove catches fire during the call.
 - The current task shows a pulsing red "!" marker over its object. While carrying the trash bag, the marker moves to the back door.
 - The kitchen doorway has swinging café doors that open as Mateo passes.
@@ -205,7 +205,7 @@ Each mission alternates between two modes that can flow into each other:
   - Restaurant tiles: kitchen floor, dining floor, wall, wall with window, counter, dirty table, clean table, chair, stove off, stove on, trash full, trash empty, sink, front door, back door, locked back-room door, left and right side walls, four wall corners, left and right counter end caps.
   - Effects: 3-frame fire animation, 2-frame smoke animation, 3-frame café door animation, 2-frame pulsing task marker.
   - Tile and frame indexes are listed in tools/art/README.md.
-- Known art gaps: dirt path transition tiles, arm swing in walk cycle, side-profile polish, slightly speckled smoke at 1x, hand-to-ear walk cycle for calls (all 4 directions).
+- Known art gaps: dirt path transition tiles, arm swing in walk cycle, side-profile polish, slightly speckled smoke at 1x, hand-to-ear walk cycle for calls (all 4 directions; normal walk at 60% speed is used until then).
 - Dialogue portraits and concept art may be generated with Canva. Canva is not used for in-game sprites.
 - Final art may be replaced with custom or commissioned art once the loop is proven.
 - Font: Pixel Operator 8 (Jayvee Enaguas, CC0 1.0), converted to a bitmap font by tools/fonts/. All in-game text uses it.
@@ -238,3 +238,4 @@ Each mission alternates between two modes that can flow into each other:
 - Must use Phaser 4's Filter system (not Phaser 3 pipelines), and must stay light enough for low-end Chromebooks.
 - Full voice acting is deferred until the script is locked, because rewrites and branching multiply recording work, audio adds download size, and accented or code-switched voices need careful review.
 - Character voice blips (short pitched sounds as text appears) are planned with the dialogue system.
+- Placeholder sound effects (phone ring, smoke alarm) are code-generated in tools/audio/. Replace them as part of the sound direction.

@@ -29,6 +29,7 @@ docs/                Design docs; GAME_DESIGN.md is the source of truth
 docs/script/         Approved dialogue scripts (source for dialogue data files)
 tools/art/           Prototype art generators (make_sample_art.py, needs Pillow)
 tools/fonts/         Font conversion script and source fonts
+tools/audio/         Python scripts that generate placeholder sound effects into public/assets/audio/
 .claude/skills/      Official Phaser 4 agent skills
 .github/workflows/   GitHub Pages deploy workflow
 ```
