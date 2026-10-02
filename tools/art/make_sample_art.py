@@ -7,6 +7,11 @@ Outputs:
   public/assets/images/task_marker.png   32x16, 2 frames of 16x16 red '!' marker (bright, dim).
   public/assets/images/phone_ledge.png   32x16, 2 frames of 16x16 phone lying on a wall ledge, cable to the wall (dim, ringing).
   public/assets/images/phone_icon.png    32x24, 2 frames of 16x24 corner phone icon (idle, ringing).
+  public/assets/images/curb_tiles.png    144x16, curb scene tiles (see CURB_ORDER).
+  public/assets/images/streetlight.png   16x48 streetlight pole and lamp; light_pool.png 56x22 soft ground light.
+  public/assets/images/sedan.png         96x24, 2 frames of 48x24 dark maroon sedan (headlights off, on).
+  public/assets/images/aurelio_walk.png  64x128, Don Aurelio, same layout as mateo_walk.png.
+  public/assets/images/sitting.png       48x32, 3 frames of 16x32 (Mateo sitting, Aurelio sitting, Aurelio mid sit-down).
   public/assets/images/phone_ui.png      112x150 corner phone frame; screen area x6 y16 w100 h118.
   public/assets/images/fire.png          48x16, 3-frame looping flame.
   public/assets/images/smoke.png         32x16, 2-frame looping smoke puff.
@@ -15,7 +20,8 @@ Outputs:
   tools/art/previews/sheet_6x.png, tiles_6x.png  6x inspection previews.
   tools/art/previews/restaurant_tiles_6x.png, fire_6x.png, smoke_6x.png, restaurant_scene.png,
   tools/art/previews/kitchen_door_6x.png, task_marker_6x.png, restaurant_walls_preview.png,
-  tools/art/previews/phone_ledge_6x.png, phone_ui_4x.png, phone_icon_6x.png
+  tools/art/previews/phone_ledge_6x.png, phone_ui_4x.png, phone_icon_6x.png,
+  tools/art/previews/curb_scene.png and 6x previews of each curb image
 Paths are resolved relative to this file, so it runs from any working directory.
 """
 import random
@@ -100,18 +106,105 @@ TORSO_SIDE = [
 FW, FH = 16, 32
 TOP = 6  # first row of the head inside the frame
 
+MATEO = {
+    "pal": PAL, "head_down": HEAD_DOWN, "head_up": HEAD_UP, "head_side": HEAD_SIDE,
+    "torso_front": TORSO_FRONT, "torso_back": TORSO_BACK, "torso_side": TORSO_SIDE,
+    "head_dy": 0, "head_dx_side": 0, "bob": 1,
+}
 
-def blit_rows(px, rows, y0):
+# Don Aurelio: late 60s, gray hair and mustache, cream guayabera (pleats p), dark slacks and shoes.
+# A slight stoop: head carried 1 px low, and pushed 1 px forward in profile. His walk has less bob
+# (and is played slower in game), so it reads steadier than Mateo's.
+AURELIO_PAL = {
+    "H": (150, 148, 146), "h": (190, 188, 184),
+    "S": (170, 116, 84), "s": (132, 88, 62),
+    "E": (28, 20, 18), "M": (206, 204, 198),
+    "T": (228, 216, 188), "t": (192, 180, 152), "p": (176, 164, 138),
+    "J": (52, 48, 56), "j": (36, 32, 40),
+    "B": (52, 40, 34), "b": (36, 28, 24),
+}
+AURELIO = {
+    "pal": AURELIO_PAL,
+    "head_down": [
+        ".....HHHHHH.....",
+        "....HhHHHHhH....",
+        "...HHHHHHHHHH...",
+        "...HHSSSSSSHH...",
+        "...HSSSSSSSSH...",
+        "...HSSESSESSH...",
+        "....SMMMMMMS....",
+        ".....sSSSSs.....",
+        "......ssss......",
+    ],
+    "head_up": [
+        ".....HHHHHH.....",
+        "....HHHHhhHH....",
+        "...HHHHHHHHHH...",
+        "...HHHHHHHHHH...",
+        "...HHHHHhHHHH...",
+        "...HHHHHHHHHH...",
+        "....HHHHHHHH....",
+        ".....sSSSSs.....",
+        "......ssss......",
+    ],
+    "head_side": [
+        ".....HHHHH......",
+        "....HHhhHHH.....",
+        "....HHHHHHHH....",
+        "....HHHHSSSS....",
+        "....HHHSSSSSS...",
+        "....HHHSSSESS...",
+        ".....HSSSMMMM...",
+        "......sSSSs.....",
+        ".......sss......",
+    ],
+    "torso_front": [
+        "....TTTTTTTT....",
+        "..TTTTTTTTTTTT..",
+        "..TtTpTTTTpTtT..",
+        "..TtTpTTTTpTtT..",
+        "..TtTpTTTTpTtT..",
+        "..SttttttttttS..",
+        "....JJJJJJJJ....",
+    ],
+    "torso_back": [
+        "....tTTTTTTt....",
+        "..TTtttttttTTT..",
+        "..TtTpTTTTpTtT..",
+        "..TtTpTTTTpTtT..",
+        "..TtTTTTTTTTtT..",
+        "..SttttttttttS..",
+        "....JJJJJJJJ....",
+    ],
+    "torso_side": [
+        ".....TTTTTT.....",
+        ".....TTTTTTT....",
+        ".....TtTpTTT....",
+        ".....TtTpTTT....",
+        ".....TtTTTTT....",
+        ".....tStttttt...",
+        "......JJJJJ.....",
+    ],
+    "head_dy": 1, "head_dx_side": 1, "bob": 0,
+}
+
+
+CUR = {"pal": PAL}  # palette used by blit_rows/rect; switched per character in make_frame
+
+
+def blit_rows(px, rows, y0, dx=0):
+    pal = CUR["pal"]
     for dy, row in enumerate(rows):
         for x, c in enumerate(row):
-            if c != ".":
-                px[x, y0 + dy] = PAL[c] + (255,)
+            if c != "." and 0 <= x + dx < FW:
+                px[x + dx, y0 + dy] = pal[c] + (255,)
 
 
 def rect(px, x0, y0, w, h, c):
+    pal = CUR["pal"]
     for y in range(y0, y0 + h):
         for x in range(x0, x0 + w):
-            px[x, y] = PAL[c] + (255,)
+            px[x, y] = pal[c] + (255,)
 
 
 def outline(img):
@@ -138,20 +231,25 @@ def front_legs(px, y0, lift_left, lift_right, back=False):
         rect(px, x0, y0 + leg_h, 3, 2, "b" if back else "B")
 
 
-def make_frame(direction, step):
+def make_frame(direction, step, ch=None):
+    ch = ch or MATEO
+    CUR["pal"] = ch["pal"]
     img = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
     px = img.load()
-    bob = 1 if step in (1, 3) else 0
+    bob = ch["bob"] if step in (1, 3) else 0
     y = TOP + bob
+    hy = y + ch["head_dy"]  # a stooped character carries his head a little low
     if direction in ("down", "up"):
-        blit_rows(px, HEAD_DOWN if direction == "down" else HEAD_UP, y)
-        blit_rows(px, TORSO_FRONT if direction == "down" else TORSO_BACK, y + 9)
+        blit_rows(px, ch["torso_front"] if direction == "down" else ch["torso_back"], y + 9)
+        blit_rows(px, ch["head_down"] if direction == "down" else ch["head_up"], hy)
+        if ch["head_dy"]:  # torso shoulders over the lowered neck
+            blit_rows(px, (ch["torso_front"] if direction == "down" else ch["torso_back"])[1:2], y + 10)
         ll = 1 if step == 1 else 0
         lr = 1 if step == 3 else 0
         front_legs(px, y + 16, ll, lr, back=(direction == "up"))
     else:  # right
-        blit_rows(px, HEAD_SIDE, y)
-        blit_rows(px, TORSO_SIDE, y + 9)
+        blit_rows(px, ch["torso_side"], y + 9)
+        blit_rows(px, ch["head_side"], hy, dx=ch["head_dx_side"])
         ly = y + 16
         if step in (0, 2):
             rect(px, 7, ly, 3, 5, "J")
@@ -166,15 +264,16 @@ def make_frame(direction, step):
             rect(px, 9, ly, 3, 4, near)
             rect(px, 9, ly + 4, 4, 2, "B")
     outline(img)
+    CUR["pal"] = PAL
     return img
 
 
-def make_sheet():
+def make_sheet(ch=None):
     sheet = Image.new("RGBA", (FW * 4, FH * 4), (0, 0, 0, 0))
     frames = {}
     for r, d in enumerate(("down", "up", "right")):
         for f in range(4):
-            fr = make_frame(d, f)
+            fr = make_frame(d, f, ch)
             frames[(d, f)] = fr
             sheet.paste(fr, (f * FW, r * FH))
     for f in range(4):
@@ -1041,6 +1140,271 @@ def make_phone_ui():
     return img
 
 
+# ---------------- curb scene ----------------
+crng = random.Random(33)  # own stream: curb art never changes earlier outputs
+CONCRETE, CONCRETE_DK, CONCRETE_HI = (148, 146, 140), (122, 120, 116), (166, 164, 158)
+SOOT, SOOT_DK = (58, 50, 48), (30, 26, 26)
+SCORCH = [(168, 150, 124), (128, 112, 96), (92, 82, 74)]  # plaster getting more burned toward the top
+
+
+def tile_sidewalk():
+    img = solid(CONCRETE)
+    d = img.load()
+    for _ in range(18):
+        d[crng.randrange(T), crng.randrange(T)] = crng.choice([CONCRETE_DK, CONCRETE_HI]) + (255,)
+    fill(d, 0, 0, 15, 0, CONCRETE_DK)   # slab joints along the top and left edges
+    fill(d, 0, 0, 0, 15, CONCRETE_DK)
+    return img
+
+
+def tile_curb_edge(drain=False):
+    """Sidewalk (top) meeting the street: curb top, curb face, then the gutter."""
+    img = tile_sidewalk()
+    d = img.load()
+    fill(d, 0, 9, 15, 9, (190, 186, 178))     # curb top edge, catching light
+    fill(d, 0, 10, 15, 12, (112, 110, 106))   # curb face
+    fill(d, 0, 13, 15, 15, (58, 58, 62))      # gutter
+    if drain:  # storm drain opening in the curb face, grate in the gutter
+        fill(d, 3, 10, 12, 12, (22, 20, 22))
+        for x in range(4, 12, 2):
+            fill(d, x, 13, x, 15, (34, 34, 38))
+        fill(d, 3, 13, 12, 13, (92, 92, 96))
+    return img
+
+
+def tile_street():
+    img = solid((62, 62, 66))
+    d = img.load()
+    for y in range(T):
+        for x in range(T):
+            if crng.random() < 0.2:
+                d[x, y] = crng.choice([(52, 52, 56), (74, 74, 78)]) + (255,)
+    return img
+
+
+def tile_burned_wall():
+    """Scorched plaster: soot thickest at the top, a charred baseboard."""
+    img = solid(SCORCH[0])
+    d = img.load()
+    for y in range(12):
+        for x in range(T):
+            heat = (11 - y) / 11 + crng.uniform(-0.08, 0.08)  # mostly smooth: the tile repeats along the wall
+            if heat > 0.66:
+                d[x, y] = SCORCH[2] + (255,)
+            elif heat > 0.33:
+                d[x, y] = SCORCH[1] + (255,)
+    for _ in range(1):  # one irregular soot streak running down from the top
+        x = crng.randrange(1, 15)
+        for y in range(0, 4 + crng.randrange(6)):
+            if crng.random() < 0.8:
+                d[x, y] = SOOT + (255,)
+            if crng.random() < 0.3:
+                x = max(0, min(15, x + crng.choice((-1, 1))))
+    fill(d, 0, 12, 15, 12, (70, 52, 42))
+    fill(d, 0, 13, 15, 15, SOOT_DK)
+    return img
+
+
+def tile_broken_window():
+    img = tile_burned_wall()
+    d = img.load()
+    fill(d, 2, 1, 13, 10, OUT)                # blackened frame
+    fill(d, 3, 2, 12, 9, (18, 16, 20))        # dark, empty inside
+    for x, y in ((4, 2), (5, 3), (4, 4), (11, 2), (10, 3), (12, 8), (11, 9), (3, 9)):
+        d[x, y] = (150, 170, 178, 255)         # glass shards left in the frame
+    dots(d, [(6, 6), (9, 5)], (90, 60, 40))   # embers inside
+    return img
+
+
+def tile_charred_door():
+    img = tile_burned_wall()
+    d = img.load()
+    fill(d, 2, 1, 13, 15, (64, 66, 70))       # metal frame
+    fill(d, 3, 2, 12, 15, (40, 30, 26))       # charred
+    fill(d, 7, 2, 8, 15, (28, 22, 20))
+    for _ in range(14):
+        d[3 + crng.randrange(10), 2 + crng.randrange(13)] = crng.choice([(58, 44, 36), (22, 18, 16)]) + (255,)
+    fill(d, 9, 8, 10, 8, (120, 118, 110))     # handle
+    return img
+
+
+def tile_wall_top_soot():
+    """Top edge of the storefront (the roofline seen from above), streaked with soot."""
+    img = solid((150, 136, 116))
+    d = img.load()
+    fill(d, 0, 0, 15, 0, OUT)
+    fill(d, 0, 12, 15, 15, SCORCH[2])
+    for _ in range(10):  # low-contrast soot specks (the tile repeats along the roofline)
+        x, y = crng.randrange(T), crng.randrange(1, 12)
+        d[x, y] = crng.choice([(132, 118, 100), SCORCH[1]]) + (255,)
+    return img
+
+
+def tile_streetlight_base():
+    img = tile_sidewalk()
+    d = img.load()
+    fill(d, 5, 9, 10, 12, (50, 56, 58))       # cast base plate under the pole
+    fill(d, 5, 9, 10, 9, (84, 92, 96))
+    fill(d, 6, 13, 9, 13, (100, 98, 94))      # its shadow edge
+    return img
+
+
+CURB_ORDER = ["sidewalk", "curb_edge", "street", "burned_wall", "broken_window", "charred_door",
+              "wall_top_soot", "storm_drain", "streetlight_base"]
+
+
+def make_curb_tiles():
+    tiles = {
+        "sidewalk": tile_sidewalk(), "curb_edge": tile_curb_edge(), "street": tile_street(),
+        "burned_wall": tile_burned_wall(), "broken_window": tile_broken_window(),
+        "charred_door": tile_charred_door(), "wall_top_soot": tile_wall_top_soot(),
+        "storm_drain": tile_curb_edge(drain=True), "streetlight_base": tile_streetlight_base(),
+    }
+    sheet = Image.new("RGBA", (T * len(CURB_ORDER), T))
+    for i, k in enumerate(CURB_ORDER):
+        sheet.paste(tiles[k], (i * T, 0))
+    return sheet, tiles
+
+
+def make_streetlight():
+    """16x48 pole and lamp. The pole's foot is at the bottom centre."""
+    img = Image.new("RGBA", (16, 48), (0, 0, 0, 0))
+    px = img.load()
+    pole, pole_hi, pole_dk = (66, 74, 78), (98, 108, 112), (44, 50, 54)
+    fill(px, 7, 8, 8, 45, pole)
+    fill(px, 7, 8, 7, 45, pole_hi)
+    fill(px, 5, 44, 10, 47, pole_dk)          # base flare
+    fill(px, 5, 44, 10, 44, pole)
+    fill(px, 2, 2, 13, 5, pole_dk)            # lamp head
+    fill(px, 3, 2, 12, 2, pole_hi)
+    fill(px, 3, 6, 12, 7, (252, 232, 160))    # lit glass underneath
+    fill(px, 5, 6, 10, 6, (255, 248, 210))
+    outline(img)
+    return img
+
+
+def make_light_pool(w=56, h=22):
+    """Soft pale-yellow ellipse for the ground under the streetlight (3 alpha steps, pixel style)."""
+    img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    px = img.load()
+    cx, cy = (w - 1) / 2, (h - 1) / 2
+    for y in range(h):
+        for x in range(w):
+            r = ((x - cx) / (w / 2)) ** 2 + ((y - cy) / (h / 2)) ** 2
+            if r < 0.3:
+                a = 110
+            elif r < 0.65:
+                a = 70
+            elif r < 1.0:
+                a = 34
+            else:
+                continue
+            px[x, y] = (255, 236, 164, a)
+    return img
+
+
+SEDAN_W, SEDAN_H = 48, 24
+
+
+def make_sedan():
+    """Old, spotless, dark maroon sedan from the side (3/4 top-down), facing right, chrome trim.
+    2 frames: 0 headlights off, 1 on."""
+    sheet = Image.new("RGBA", (SEDAN_W * 2, SEDAN_H), (0, 0, 0, 0))
+    body, body_dk, body_hi = (80, 18, 30), (56, 12, 22), (112, 38, 50)  # dark maroon
+    chrome, chrome_dk = (214, 218, 224), (150, 156, 164)
+    glass, glass_hi = (54, 66, 84), (110, 128, 150)
+    for f in range(2):
+        layer = Image.new("RGBA", (SEDAN_W, SEDAN_H), (0, 0, 0, 0))
+        px = layer.load()
+        fill(px, 14, 2, 34, 4, body_hi)            # roof (seen a little from above)
+        fill(px, 12, 5, 36, 9, glass)              # side windows
+        fill(px, 22, 5, 23, 9, body_dk)            # door pillar
+        fill(px, 13, 5, 15, 6, glass_hi)
+        fill(px, 25, 5, 27, 6, glass_hi)
+        fill(px, 12, 4, 36, 4, chrome)             # window trim
+        fill(px, 1, 10, 46, 17, body)              # body side
+        fill(px, 1, 10, 46, 10, body_hi)           # beltline highlight
+        fill(px, 1, 17, 46, 17, body_dk)
+        fill(px, 2, 13, 45, 13, chrome)            # chrome side strip
+        fill(px, 22, 11, 22, 16, body_dk)          # door seam
+        fill(px, 0, 14, 2, 16, chrome)             # rear bumper
+        fill(px, 45, 14, 47, 16, chrome)           # front bumper
+        fill(px, 0, 11, 1, 12, (190, 30, 30))      # tail light
+        fill(px, 45, 11, 47, 12, (255, 250, 214) if f else (196, 192, 170))  # headlight
+        for wx in (8, 34):                         # wheels with chrome hubcaps
+            fill(px, wx, 16, wx + 7, 22, (24, 22, 24))
+            fill(px, wx + 2, 18, wx + 5, 20, chrome_dk)
+            fill(px, wx + 3, 18, wx + 4, 19, chrome)
+        outline(layer)
+        if f:  # glow off the lit headlight, after outlining so it stays soft
+            for x, y in ((47, 10), (47, 13)):
+                layer.load()[x, y] = (255, 246, 200, 160)
+        sheet.paste(layer, (f * SEDAN_W, 0))
+    return sheet
+
+
+def make_sitting():
+    """16x32 frames: 0 Mateo sitting on a curb, facing down; 1 Don Aurelio sitting;
+    2 Don Aurelio mid sit-down (easing down / standing up)."""
+    sheet = Image.new("RGBA", (FW * 3, FH), (0, 0, 0, 0))
+    for i, (ch, drop) in enumerate(((MATEO, 6), (AURELIO, 6), (AURELIO, 3))):
+        CUR["pal"] = ch["pal"]
+        img = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+        px = img.load()
+        y = TOP + drop
+        blit_rows(px, ch["torso_front"], y + 9)
+        blit_rows(px, ch["head_down"], y + ch["head_dy"])
+        ly = y + 16
+        if drop >= 6:   # seated: thighs come toward us (short, a bit apart), feet on the street
+            rect(px, 3, ly, 4, 2, "J")
+            rect(px, 9, ly, 4, 2, "J")
+            rect(px, 6, ly, 1, 2, "j")
+            rect(px, 9, ly, 1, 2, "j")
+            rect(px, 3, ly + 2, 4, 2, "B")
+            rect(px, 9, ly + 2, 4, 2, "B")
+        else:           # halfway: knees bent, still mostly on his feet
+            rect(px, 4, ly, 3, 4, "J")
+            rect(px, 9, ly, 3, 4, "J")
+            rect(px, 6, ly, 1, 4, "j")
+            rect(px, 9, ly, 1, 4, "j")
+            rect(px, 3, ly + 4, 4, 2, "B")
+            rect(px, 9, ly + 4, 4, 2, "B")
+        outline(img)
+        CUR["pal"] = PAL
+        sheet.paste(img, (i * FW, 0))
+    return sheet
+
+
+def make_curb_preview(tiles, mateo_frames, aurelio_frames, sitting, sedan, light, pool, smoke):
+    """Mock curb scene: burned storefront, sidewalk, curb, street, streetlight with its pool,
+    the sedan, Mateo sitting, Don Aurelio standing and sitting, smoke wisps."""
+    layout = [
+        "tttttttttttttt",
+        "wwnwwdwwnwwwww",
+        "ssssssssssssss",
+        "sssLssssssssss",
+        "ccccccgccccccc",
+        "rrrrrrrrrrrrrr",
+        "rrrrrrrrrrrrrr",
+    ]
+    key = {"t": "wall_top_soot", "w": "burned_wall", "n": "broken_window", "d": "charred_door",
+           "s": "sidewalk", "L": "streetlight_base", "c": "curb_edge", "g": "storm_drain", "r": "street"}
+    img = Image.new("RGBA", (len(layout[0]) * T, len(layout) * T))
+    for y, row in enumerate(layout):
+        for x, ch in enumerate(row):
+            img.paste(tiles[key[ch]], (x * T, y * T))
+    img.alpha_composite(pool, (3 * T + 8 - pool.width // 2, 4 * T + 2))
+    img.alpha_composite(light, (3 * T, 4 * T - 48))
+    img.alpha_composite(sedan.crop((SEDAN_W, 0, SEDAN_W * 2, SEDAN_H)), (8 * T, 5 * T + 2))
+    img.alpha_composite(sitting.crop((0, 0, FW, FH)), (5 * T, 5 * T - 30))           # Mateo on the curb
+    img.alpha_composite(sitting.crop((FW, 0, FW * 2, FH)), (6 * T + 2, 5 * T - 30))  # Aurelio sitting
+    img.alpha_composite(aurelio_frames[("right", 0)], (11 * T, 3 * T - 14))         # Aurelio standing
+    img.alpha_composite(mateo_frames[("down", 0)], (12 * T + 4, 3 * T - 14))        # for comparison
+    for sx, f in ((2, 0), (6, 1), (9, 0)):
+        img.alpha_composite(smoke.crop((f * T, 0, f * T + T, T)), (sx * T, 0))
+    return img
+
+
 def make_walls_preview(tiles, door, marker):
     """Mock room: top/side/bottom walls with corners, counter with end caps around a 2-tile gap,
     cafe doors (closed) in the gap, and task markers over the stove and a table."""
@@ -1138,6 +1502,25 @@ def main():
     bg = Image.new("RGBA", phone_ui.size, (150, 118, 84, 255))
     bg.alpha_composite(phone_ui)
     bg.resize((bg.width * 4, bg.height * 4), Image.NEAREST).save(PREVIEW_DIR / "phone_ui_4x.png")
+    curb_sheet, curb_tiles = make_curb_tiles()
+    curb_sheet.save(ASSET_DIR / "curb_tiles.png")
+    light = make_streetlight()
+    light.save(ASSET_DIR / "streetlight.png")
+    pool = make_light_pool()
+    pool.save(ASSET_DIR / "light_pool.png")
+    sedan = make_sedan()
+    sedan.save(ASSET_DIR / "sedan.png")
+    aurelio_sheet, aurelio_frames = make_sheet(AURELIO)
+    aurelio_sheet.save(ASSET_DIR / "aurelio_walk.png")
+    sitting = make_sitting()
+    sitting.save(ASSET_DIR / "sitting.png")
+    for name, im, k in (("curb_tiles", curb_sheet, 6), ("sedan", sedan, 6), ("aurelio_walk", aurelio_sheet, 6),
+                        ("sitting", sitting, 6), ("streetlight", light, 6)):
+        bg = Image.new("RGBA", im.size, (90, 96, 104, 255))
+        bg.alpha_composite(im)
+        bg.resize((im.width * k, im.height * k), Image.NEAREST).save(PREVIEW_DIR / f"{name}_{k}x.png")
+    curb = make_curb_preview(curb_tiles, frames, aurelio_frames, sitting, sedan, light, pool, smoke)
+    curb.resize((curb.width * 4, curb.height * 4), Image.NEAREST).save(PREVIEW_DIR / "curb_scene.png")
     walls = make_walls_preview(rest_tiles, kdoor, marker)
     walls.resize((walls.width * 4, walls.height * 4), Image.NEAREST).save(PREVIEW_DIR / "restaurant_walls_preview.png")
     rscene = make_restaurant_scene(rest_tiles, frames, fire, smoke)

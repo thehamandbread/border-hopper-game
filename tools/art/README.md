@@ -78,6 +78,32 @@ Small corner phone icon. 2 frames of 16x24: 0 idle (dark screen), 1 ringing (lit
 ### `phone_ui.png` (112x150)
 The large texting phone: a dark smartphone. Screen area (where text goes): x 6, y 16, w 100, h 118 inside the image.
 
+### `aurelio_walk.png` (64x128)
+Don Aurelio, same layout as `mateo_walk.png`: 16x32 frames, rows down, up, right, left (left is mirrored right), 4-frame walk. Gray hair and mustache, cream guayabera, dark slacks and shoes, a slight stoop. Less bob than Mateo; play it slower for his steady walk.
+
+### `sitting.png` (48x32)
+16x32 frames: 0 Mateo sitting on a curb (facing down), 1 Don Aurelio sitting, 2 Don Aurelio mid sit-down (for easing down and standing up).
+
+### `curb_tiles.png` (144x16, 16x16 tiles, one row)
+
+| Index | Name | Notes |
+|---|---|---|
+| 0 | sidewalk | concrete slab |
+| 1 | curb_edge | sidewalk meeting the street: curb top, curb face, gutter |
+| 2 | street | night asphalt |
+| 3 | burned_wall | scorched plaster storefront, charred baseboard |
+| 4 | broken_window | blackened, broken front window |
+| 5 | charred_door | charred front door in a metal frame |
+| 6 | wall_top_soot | the storefront's soot-streaked top edge |
+| 7 | storm_drain | curb edge with a drain opening and grate |
+| 8 | streetlight_base | sidewalk with the streetlight's base plate |
+
+### `streetlight.png` (16x48) and `light_pool.png` (56x22)
+The streetlight pole and lamp (foot at the bottom centre). `light_pool.png` is a soft pale-yellow ellipse with partial transparency, placed on the ground under the lamp (draw it above a night overlay so it glows).
+
+### `sedan.png` (96x24)
+Don Aurelio's old, spotless, dark maroon sedan from the side, facing right, with chrome trim. 2 frames of 48x24: 0 headlights off, 1 on.
+
 ### `fire.png` (48x16)
 3 frames of 16x16 (indexes 0-2), looping flame, transparent background.
 
@@ -86,4 +112,4 @@ The large texting phone: a dark smartphone. Screen area (where text goes): x 6, 
 
 ## Previews (`tools/art/previews/`, git-ignored)
 
-`preview_scene.png`, `preview_walk.gif`, `sheet_6x.png`, `tiles_6x.png`, `restaurant_tiles_6x.png`, `fire_6x.png`, `smoke_6x.png`, `restaurant_scene.png` (mock restaurant with Mateo, fire and smoke), `kitchen_door_6x.png`, `task_marker_6x.png`, `restaurant_walls_preview.png` (mock room: walls, corners, counter ends, cafe doors, task markers), `phone_ledge_6x.png` (over the wall tile), `phone_ui_4x.png`, `phone_icon_6x.png`.
+`preview_scene.png`, `preview_walk.gif`, `sheet_6x.png`, `tiles_6x.png`, `restaurant_tiles_6x.png`, `fire_6x.png`, `smoke_6x.png`, `restaurant_scene.png` (mock restaurant with Mateo, fire and smoke), `kitchen_door_6x.png`, `task_marker_6x.png`, `restaurant_walls_preview.png` (mock room: walls, corners, counter ends, cafe doors, task markers), `phone_ledge_6x.png` (over the wall tile), `phone_ui_4x.png`, `phone_icon_6x.png`, `curb_scene.png` (mock curb scene at 4x), and 6x previews of each curb image.
