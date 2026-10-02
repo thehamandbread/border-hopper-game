@@ -20,7 +20,9 @@ const tileToFeet = ([tx, ty]) => ({ x: tx * TILE + TILE / 2, y: (ty + 1) * TILE 
  *                            "facing"?, "visible"? } },
  *     "objects": { "<id>": { "texture", "frame"?, "pos": [x, y], "origin"?: [ox, oy], "depth"?, "visible"? } },
  *     "steps":   [ step, ... ],
- *     "events":  { "<story event name>": [ step, ... ] }   // run when a dialogue step emits that event
+ *     "events":  { "<story event name>": [ step, ... ] },  // run when a dialogue step emits that event
+ *     "startBlack": true,                                   // optional: begin faded out (e.g. after a title card)
+ *     "actorDepthBase": 1000, "actorTint": "0xc8ccdc"       // optional: actors' depth offset and tint
  *   }
  * Actors stand on their feet (origin bottom-centre) and are depth-sorted by feet y.
  *
@@ -33,6 +35,7 @@ const tileToFeet = ([tx, ty]) => ({ x: tx * TILE + TILE / 2, y: (ty + 1) * TILE 
  *   playAnim    { actor | object, anim }
  *   show        { actor | object, visible }
  *   moveObject  { object, toPx: [x, y], ms, ease? }
+ *   tween       { actor | object, to: { alpha: 0, ... }, ms, ease?, yoyo?, repeat? }   any other property
  *   cameraPan   { toPx: [x, y], ms, ease? }
  *   playSound   { key, loop?, volume? }   stopSound { key }
  *   setFlag     { flag, value } | { flag, add }
@@ -42,7 +45,8 @@ const tileToFeet = ([tx, ty]) => ({ x: tx * TILE + TILE / 2, y: (ty + 1) * TILE 
  * Options: lockInput(bool), startDialogue(id) -> DialogueRunner, onEnd().
  */
 export default class CutsceneRunner {
-  constructor(scene, data, { lockInput = () => {}, startDialogue, onEnd = () => {} } = {}) {
+  constructor(scene, data, { lockInput = () => {}, startDialogue, onEnd = () => {}, onStoryEvent } = {}) {
+    this.onStoryEvent = onStoryEvent; // also told about every story event (e.g. ones the scene handles itself)
     this.scene = scene;
     this.data = data;
     this.lockInput = lockInput;
@@ -58,7 +62,7 @@ export default class CutsceneRunner {
       .setOrigin(0, 0)
       .setScrollFactor(0)
       .setDepth(OVERLAY_DEPTH)
-      .setAlpha(0);
+      .setAlpha(data.startBlack ? 1 : 0);
     this.createThings();
   }
 
@@ -90,7 +94,8 @@ export default class CutsceneRunner {
     for (const [id, a] of Object.entries(this.data.actors ?? {})) {
       const p = a.tile ? tileToFeet(a.tile) : { x: a.pos[0], y: a.pos[1] };
       const s = this.scene.add.sprite(p.x, p.y, a.texture, a.frame ?? standingFrame(a.facing ?? 'down'));
-      s.setOrigin(0.5, 1).setDepth(p.y).setVisible(a.visible ?? true);
+      s.setOrigin(0.5, 1).setDepth(this.actorDepth(p.y)).setVisible(a.visible ?? true);
+      if (this.data.actorTint) s.setTint(parseInt(this.data.actorTint, 16));
       s.walk = a.walk ?? null;
       s.facing = a.facing ?? 'down';
       s.isActor = true;
@@ -104,6 +109,11 @@ export default class CutsceneRunner {
       s.setDepth(o.depth ?? o.pos[1]);
       this.things.set(id, s);
     }
+  }
+
+  /** Actors sort by feet y, offset by "actorDepthBase" (e.g. to draw them above a night overlay). */
+  actorDepth(y) {
+    return (this.data.actorDepthBase ?? 0) + y;
   }
 
   get(id) {
@@ -192,6 +202,17 @@ export default class CutsceneRunner {
           },
         });
       }
+      case 'tween': {
+        const t = this.get(step.actor ?? step.object);
+        return this.tween({
+          targets: t,
+          ...step.to,
+          duration: step.ms,
+          ease: step.ease ?? 'Sine.easeInOut',
+          yoyo: !!step.yoyo,
+          repeat: step.repeat ?? 0,
+        });
+      }
       case 'cameraPan':
         return new Promise((resolve) => {
           scene.cameras.main.pan(step.toPx[0], step.toPx[1], step.ms, step.ease ?? 'Sine.easeInOut', true, (cam, progress) => {
@@ -244,7 +265,7 @@ export default class CutsceneRunner {
         x: p.x,
         y: p.y,
         duration: (dist / speed) * 1000,
-        onUpdate: () => a.setDepth(a.y),
+        onUpdate: () => a.setDepth(this.actorDepth(a.y)),
       });
     }
     a.x = Math.round(a.x);
@@ -255,14 +276,18 @@ export default class CutsceneRunner {
     }
   }
 
+  /** Runs a conversation. Its story events start their step lists; the step finishes when the
+   *  conversation has ended and every event step list it started has finished. */
   dialogue(id) {
     return new Promise((resolve) => {
       const runner = this.startDialogue(id);
       const events = this.data.events ?? {};
-      runner.on('event', (name) => {
-        if (events[name]) this.runSteps(events[name]);
+      const running = [];
+      runner.on('event', (name, payload) => {
+        if (events[name]) running.push(this.runSteps(events[name]));
+        this.onStoryEvent?.(name, payload);
       });
-      runner.on('end', resolve);
+      runner.on('end', () => Promise.all(running).then(resolve));
     });
   }
 

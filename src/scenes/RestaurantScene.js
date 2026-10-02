@@ -464,15 +464,8 @@ export default class RestaurantScene extends Phaser.Scene {
     cam.fadeOut(EXIT_FADE_MS, 0, 0, 0);
     cam.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
       this.sound.stopAll();
-      // Placeholder until the curb scene exists: black screen, centred text, any key starts over.
-      this.add.rectangle(0, 0, cam.width, cam.height, 0x000000).setOrigin(0, 0).setScrollFactor(0).setDepth(6000);
-      const t = pixelText(this, 0, 0, 'PROLOGUE CONTINUES: THE CURB').setScrollFactor(0).setDepth(6001);
-      t.setPosition(Math.round((cam.width - t.width) / 2), Math.round((cam.height - t.height) / 2));
-      cam.resetFX();
-      this.input.keyboard.once('keydown', () => {
-        gameState.reset();
-        this.scene.restart();
-      });
+      // On to the curb: it opens on black with "Later that night."
+      this.scene.start('CurbScene');
     });
   }
 

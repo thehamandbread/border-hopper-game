@@ -46,6 +46,13 @@ export default class BootScene extends Phaser.Scene {
     this.load.image('phone_ui', assetUrl('assets/images/phone_ui.png'));
     this.load.audio('phone_ring', assetUrl('assets/audio/phone_ring.wav'));
     this.load.audio('smoke_alarm', assetUrl('assets/audio/smoke_alarm.wav'));
+    this.load.image('curb_tiles', assetUrl('assets/images/curb_tiles.png'));
+    this.load.image('streetlight', assetUrl('assets/images/streetlight.png'));
+    this.load.image('light_pool', assetUrl('assets/images/light_pool.png'));
+    this.load.spritesheet('sedan', assetUrl('assets/images/sedan.png'), { frameWidth: 48, frameHeight: 24 });
+    this.load.spritesheet('sitting', assetUrl('assets/images/sitting.png'), { frameWidth: 16, frameHeight: 32 });
+    this.load.json('curb_map', assetUrl('assets/data/curb_map.json'));
+    this.load.json('cutscene_curb', assetUrl('assets/data/cutscenes/curb.json'));
     this.load.json('closing_tasks', assetUrl('assets/data/closing_tasks.json'));
   }
 
@@ -57,6 +64,12 @@ export default class BootScene extends Phaser.Scene {
     // Dev-only: ?scene=movement-test starts the movement test scene instead.
     const devMovementTest =
       import.meta.env.DEV && new URLSearchParams(window.location.search).get('scene') === 'movement-test';
-    this.scene.start(devMovementTest ? 'MovementTestScene' : 'RestaurantScene');
+    // Dev-only: ?scene=curb (or ?cutscene=curb) starts the curb scene directly.
+    const params = new URLSearchParams(window.location.search);
+    const devCurb = import.meta.env.DEV && (params.get('scene') === 'curb' || params.get('cutscene') === 'curb');
+    let start = 'RestaurantScene';
+    if (devMovementTest) start = 'MovementTestScene';
+    else if (devCurb) start = 'CurbScene';
+    this.scene.start(start);
   }
 }

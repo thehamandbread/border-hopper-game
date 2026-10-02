@@ -1,0 +1,53 @@
+{
+  "startBlack": true,
+  "actorDepthBase": 1000,
+  "actorTint": "0xc8ccdc",
+  "actors": {
+    "mateo": { "texture": "sitting", "frame": 0, "pos": [200, 146] },
+    "aurelio": { "texture": "aurelio_walk", "walk": "aurelio-walk", "pos": [226, 170], "facing": "up", "visible": false }
+  },
+  "objects": {
+    "car": { "texture": "sedan", "frame": 1, "pos": [-40, 184] },
+    "truckGlow": { "texture": "truck_glow", "pos": [480, 0], "origin": [1, 0], "depth": 960 }
+  },
+  "steps": [
+    { "type": "showText", "text": "Later that night.", "ms": 2000 },
+    { "type": "fade", "dir": "in", "ms": 1200 },
+    { "type": "tween", "object": "truckGlow", "to": { "alpha": 0.35 }, "ms": 450, "yoyo": true, "repeat": 3 },
+    { "type": "tween", "object": "truckGlow", "to": { "alpha": 0 }, "ms": 2200 },
+    { "type": "wait", "ms": 1500 },
+    { "type": "moveObject", "object": "car", "toPx": [232, 184], "ms": 3200, "ease": "Cubic.easeOut" },
+    { "type": "wait", "ms": 500 },
+    { "type": "setFrame", "object": "car", "frame": 0 },
+    { "type": "wait", "ms": 700 },
+    { "type": "show", "actor": "aurelio", "visible": true },
+    { "type": "wait", "ms": 400 },
+    { "type": "moveActor", "actor": "aurelio", "toPx": [218, 147], "speed": 16 },
+    { "type": "setFrame", "actor": "aurelio", "frame": 0 },
+    { "type": "wait", "ms": 300 },
+    { "type": "dialogue", "id": "curb" }
+  ],
+  "events": {
+    "aurelio_arrives": [],
+    "aurelio_sits": [
+      { "type": "setFrame", "actor": "aurelio", "texture": "sitting", "frame": 2 },
+      { "type": "wait", "ms": 350 },
+      { "type": "setFrame", "actor": "aurelio", "frame": 1 }
+    ],
+    "pause": [],
+    "aurelio_looks": [],
+    "aurelio_stands": [
+      { "type": "setFrame", "actor": "aurelio", "texture": "sitting", "frame": 2 },
+      { "type": "wait", "ms": 350 },
+      { "type": "setFrame", "actor": "aurelio", "texture": "aurelio_walk", "frame": 0 }
+    ],
+    "aurelio_leaves": [
+      { "type": "moveActor", "actor": "aurelio", "toPx": [226, 170], "speed": 16 },
+      { "type": "show", "actor": "aurelio", "visible": false },
+      { "type": "wait", "ms": 500 },
+      { "type": "setFrame", "object": "car", "frame": 1 },
+      { "type": "wait", "ms": 500 },
+      { "type": "moveObject", "object": "car", "toPx": [540, 184], "ms": 2800, "ease": "Cubic.easeIn" }
+    ]
+  }
+}
