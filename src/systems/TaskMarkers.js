@@ -27,6 +27,11 @@ export default class TaskMarkers {
       for (const m of [...this.markers]) if (m.taskId === task.id) this.remove(m);
       this.refreshVisibility();
     });
+    taskList.on('task-failed', (task) => {
+      for (const m of [...this.markers]) if (m.taskId === task.id) this.remove(m);
+      this.refreshVisibility();
+    });
+    taskList.on('task-added', () => this.refreshVisibility());
     this.timer = scene.time.addEvent({ delay: PULSE_MS, loop: true, callback: () => this.pulse() });
     scene.events.once('shutdown', () => this.destroy());
   }

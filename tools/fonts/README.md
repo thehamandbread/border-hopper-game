@@ -17,7 +17,7 @@ Works from any working directory. It prints any requested characters the font do
 - `pixel_operator_8.png`: glyph atlas, white on transparent so text can be tinted in game. Rendered at the native 8 px with antialiasing off.
 - `pixel_operator_8.xml`: AngelCode BMFont XML descriptor, loaded with `this.load.bitmapFont`.
 
-Characters: printable ASCII plus `á é í ó ú Á É Í Ó Ú ñ Ñ ü Ü ¿ ¡ …`.
+Characters: printable ASCII plus `á é í ó ú Á É Í Ó Ú ñ Ñ ü Ü ¿ ¡ … ·`.
 
 In game, create text with `pixelText()` from `src/systems/pixelText.js`. Use 8 px or integer multiples (16, 24...) to keep edges crisp.
 

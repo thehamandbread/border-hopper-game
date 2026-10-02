@@ -40,6 +40,7 @@ export default class SpeechBubble {
   /** Text bubble sized for the full line; reveal(n) shows the first n characters. */
   showText(text, anchorFn) {
     this.clearOptions();
+    this.hintText.setText('');
     this.anchorFn = anchorFn;
     this.full = wrapText(this.scene, text, MAX_W);
     const lines = this.full.split('\n');
@@ -57,6 +58,7 @@ export default class SpeechBubble {
 
   showChoices(options, anchorFn) {
     this.clearOptions();
+    this.hintText.setText('');
     this.anchorFn = anchorFn;
     this.body.setText('');
     this.setIndicator(false);
@@ -83,9 +85,19 @@ export default class SpeechBubble {
     this.layout();
   }
 
-  /** Small grey hint text under the content (e.g. control hints); '' for none. */
-  setHint(text) {
+  /**
+   * Small grey hint row under the content (control hints); '' for none. The row is reserved as soon
+   * as text is set, so the bubble doesn't change size when the hint appears later (setHintVisible).
+   */
+  setHint(text, { align = 'left', visible = true } = {}) {
     this.hintText.setText(text);
+    this.hintAlign = align;
+    this.hintShown = visible;
+    this.layout();
+  }
+
+  setHintVisible(visible) {
+    this.hintShown = visible;
     this.layout();
   }
 
@@ -103,7 +115,6 @@ export default class SpeechBubble {
     this.visible = true;
     this.gfx.setVisible(true);
     this.body.setVisible(true);
-    this.hintText.setVisible(true);
     this.layout();
   }
 
@@ -147,8 +158,11 @@ export default class SpeechBubble {
     this.body.setPosition(cx, cy);
     for (const { text, dy } of this.options) text.setPosition(cx + 8, cy + dy);
     if (this.options.length) this.marker.setPosition(cx, cy + this.options[this.selected].dy);
-    this.hintText.setPosition(cx, cy + this.contentH + 1);
-    this.indicator.setPosition(bx + w - PAD_X - 5, by + h - PAD_Y - 3);
+    const hintY = cy + this.contentH + 1;
+    const right = this.hintAlign === 'right';
+    this.hintText.setPosition(right ? bx + w - PAD_X - 8 - hintW : cx, hintY);
+    this.hintText.setVisible(!!this.hintText.text && this.hintShown);
+    this.indicator.setPosition(bx + w - PAD_X - 5, hintH && right ? hintY + 3 : by + h - PAD_Y - 3);
     this.indicator.setVisible(this.indicatorOn && this.visible);
     this.bounds = { x: bx, y: by, w, h };
   }

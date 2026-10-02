@@ -5,7 +5,9 @@ import { FIRE_ANIM, FIRE_TEXTURE, SMOKE_ANIM, SMOKE_TEXTURE } from '../objects/F
 // 90 area tiles + 19 safe-path tiles + 2 spill tiles + 3 flare sprites = 114 fire sprites, under FIRE_CAP.
 const FIRE_CAP = 120;
 const SMOKE_CAP = 24;
-const DEADLY_INSET = 2; // px: fire tiles are 2 px smaller than a tile for the touch test (a little forgiving)
+const DEADLY_INSET = 3; // px: the deadly area is 3 px inside the tile, 1 px inside the blocker, so standing
+// against fire that blocked Mateo during the call does not kill him the moment the call ends
+const BLOCKER_INSET = 2;
 const SMOKE_DEPTH = 1400; // above the world, below markers (1500) and the HUD
 const FLARE_EMBER_ALPHA = 0.25; // a flare tile between bursts: faint embers as a warning, not deadly
 
@@ -35,7 +37,8 @@ const key = (x, y) => `${x},${y}`;
  * snapshot()/restore() put the fire back exactly as it was when the escape started.
  */
 export default class FireSystem {
-  constructor(scene, config, { tileSize = 16, origin }) {
+  constructor(scene, config, { tileSize = 16, origin, isOccupied }) {
+    this.isOccupied = isOccupied; // (tileX, tileY) => true if the player is standing on that tile
     this.scene = scene;
     this.config = config;
     this.ts = tileSize;
@@ -45,6 +48,9 @@ export default class FireSystem {
     this.burning = new Map(); // "x,y" -> fire sprite
     this.smoke = [];
     this.flares = config.flares.map((f) => ({ ...f, x: f.tile[0], y: f.tile[1], sprite: null, on: false }));
+    // Invisible static bodies over burning tiles. The scene collides with these during the call,
+    // when fire blocks Mateo instead of hurting him.
+    this.blockers = scene.physics.add.staticGroup();
     this.reset();
   }
 
@@ -98,7 +104,11 @@ export default class FireSystem {
       this.spreadIndex < this.order.length &&
       this.fireTime >= c.startDelayMs + this.spreadIndex * c.spreadMs
     ) {
-      const t = this.order[this.spreadIndex++];
+      const t = this.order[this.spreadIndex];
+      // During the call, a tile doesn't catch while Mateo stands on it (it waits until he steps off),
+      // so he can't get trapped inside the fire before it becomes deadly.
+      if (!this.escaping && this.isOccupied?.(t.x, t.y)) break;
+      this.spreadIndex++;
       this.burn(t.x, t.y);
     }
     if (!this.escaping) return;
@@ -146,6 +156,10 @@ export default class FireSystem {
     if (this.burning.has(k)) return;
     const sprite = this.makeFire(x, y);
     this.burning.set(k, sprite);
+    const ts = this.ts;
+    const zone = this.scene.add.zone(x * ts + ts / 2, y * ts + ts / 2, ts - BLOCKER_INSET * 2, ts - BLOCKER_INSET * 2);
+    this.scene.physics.add.existing(zone, true);
+    this.blockers.add(zone);
     this.addSmoke(x, y - 1);
   }
 
@@ -202,6 +216,7 @@ export default class FireSystem {
   restore(snap) {
     for (const s of this.burning.values()) s?.destroy();
     this.burning.clear();
+    this.blockers.clear(true, true);
     for (const s of this.smoke) {
       this.scene.tweens.killTweensOf(s);
       s.destroy();

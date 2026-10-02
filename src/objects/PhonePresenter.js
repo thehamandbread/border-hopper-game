@@ -1,4 +1,5 @@
 import DialogueInput from '../systems/DialogueInput.js';
+import { ADVANCE_HINT, CHOICE_HINT, countAdvance, countChoice, showAdvanceHint, showChoiceHint } from '../systems/controlHints.js';
 import SpeechBubble from './SpeechBubble.js';
 
 const CHARS_PER_SECOND = 40;
@@ -90,6 +91,7 @@ export default class PhonePresenter {
     this.setMateoBubble(!fromCaller);
     this.fullText = node.text;
     this.bubble.showText(node.text, fromCaller ? this.callerAnchor : this.mateoAnchor);
+    if (showAdvanceHint()) this.bubble.setHint(ADVANCE_HINT, { align: 'right', visible: false });
     this.fullText = this.bubble.full; // wrapped
     this.shown = 0;
     this.waiting = false;
@@ -112,6 +114,7 @@ export default class PhonePresenter {
     this.waiting = true;
     this.blinkOn = true;
     this.bubble.setIndicator(true);
+    if (showAdvanceHint()) this.bubble.setHintVisible(true);
   }
 
   // ---- choices ----
@@ -125,10 +128,12 @@ export default class PhonePresenter {
     this.options = node.options;
     this.selected = 0;
     this.bubble.showChoices(node.options, this.mateoAnchor);
+    if (showChoiceHint()) this.bubble.setHint(CHOICE_HINT);
   }
 
   pick(index) {
     if (index < 0 || index >= this.options.length) return;
+    countChoice();
     this.options = [];
     this.player.setLocked(false);
     this.runner.choose(index);
@@ -149,7 +154,10 @@ export default class PhonePresenter {
       else if (space) this.pick(this.selected);
     } else if (space) {
       if (this.typing) this.finishTyping();
-      else this.runner.advance();
+      else {
+        countAdvance();
+        this.runner.advance();
+      }
     }
   }
 }

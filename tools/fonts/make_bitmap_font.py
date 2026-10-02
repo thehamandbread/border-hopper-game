@@ -22,7 +22,7 @@ PAD = 1          # transparent gap between glyphs in the atlas
 ATLAS_W = 128
 PROBE = 4        # margin around each glyph while rendering
 
-CHARS = [chr(c) for c in range(32, 127)] + list("áéíóúÁÉÍÓÚñÑüÜ¿¡…")
+CHARS = [chr(c) for c in range(32, 127)] + list("áéíóúÁÉÍÓÚñÑüÜ¿¡…·")
 
 
 def render(font, ch):

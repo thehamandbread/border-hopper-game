@@ -7,6 +7,7 @@ const METERS = ['loyalty', 'heat', 'conscience'];
  *  - meters:  loyalty, heat, conscience (start at 0)
  *  - flags:   named numbers, e.g. tomi_involved (read as 0 until set)
  *  - answers: named remembered strings, e.g. prologue_want (read as null until set)
+ *  - uses:    control-use counts for control hints (reset with everything else)
  * Emits 'change' ({ kind, name, value }) whenever anything is modified.
  */
 export default class GameState extends Phaser.Events.EventEmitter {
@@ -19,6 +20,16 @@ export default class GameState extends Phaser.Events.EventEmitter {
     this.meters = Object.fromEntries(METERS.map((m) => [m, 0]));
     this.flags = {};
     this.answers = {};
+    this.uses = {}; // how often the player has used a control (for control hints), e.g. advance, choose
+  }
+
+  /** Counts one use of a control (e.g. 'advance', 'choose'). */
+  countUse(name) {
+    this.uses[name] = (this.uses[name] ?? 0) + 1;
+  }
+
+  getUses(name) {
+    return this.uses[name] ?? 0;
   }
 
   getMeter(name) {

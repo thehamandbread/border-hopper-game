@@ -34,6 +34,7 @@ const TOO_LATE_RANGE = 22; // px from the stove, same reach as interacting
 const FADE_MS = 500;
 const EXIT_FADE_MS = 800;
 const CLOSED_FAIL_DELAY_MS = 1500; // after the path closes, if Mateo is still inside
+const BURNED_CARD_MS = 1500;
 // Phone call flow: 'idle' -> 'ringing' (after the last table) -> 'call' -> 'done'
 // Stove: 'on' (task) -> 'locked' (phone rang; can't be reached in time) -> 'burning' (stove_ignite)
 
@@ -87,7 +88,18 @@ export default class RestaurantScene extends Phaser.Scene {
       if (task.id === 'wipe_tables') this.startRinging();
     });
     this.events.once('shutdown', () => this.sound.stopAll());
-    this.fire = new FireSystem(this, mapData.fire, { tileSize: tileWidth, origin: this.stoveTile });
+    this.fire = new FireSystem(this, mapData.fire, {
+      tileSize: tileWidth,
+      origin: this.stoveTile,
+      isOccupied: (tx, ty) => {
+        const b = this.player.body;
+        const r = new Phaser.Geom.Rectangle(tx * tileWidth, ty * tileHeight, tileWidth, tileHeight);
+        return Phaser.Geom.Intersects.RectangleToRectangle(r, new Phaser.Geom.Rectangle(b.x, b.y, b.width, b.height));
+      },
+    });
+    // During the call, fire blocks Mateo like a wall ("It's too hot."). It only becomes deadly when the call ends.
+    this.physics.add.collider(this.player, this.fire.blockers, () => this.tooHot(), () => !this.escaping);
+    this.restarts = 0;
     this.escaping = false;
     this.escaped = false;
     this.fading = false;
@@ -342,10 +354,20 @@ export default class RestaurantScene extends Phaser.Scene {
   onCallEnded() {
     if (this.escaping) return;
     this.phoneState = 'done';
-    this.startAlarm(); // already sounding unless the call was cut short
+    this.startAlarm();
     this.escaping = true;
     this.fire.startEscape();
     this.escapeSnapshot = this.fire.snapshot();
+    // Guidance: the stove task has failed, a new task points at the back door.
+    this.tasks.fail('turn_off_stove');
+    this.tasks.addTask({ id: 'get_out', label: 'Get out the back door' });
+    if (this.backDoorTile) this.markers.add({ taskId: 'get_out', tileX: this.backDoorTile.x, tileY: this.backDoorTile.y });
+    this.showNearPlayerMessage("The front's locked. Use the back.", HINT_MS);
+  }
+
+  /** Before the call ends, fire just blocks. */
+  tooHot() {
+    if (this.message?.text !== "It's too hot.") this.showNearPlayerMessage("It's too hot.", 1500);
   }
 
   /** Where Mateo stands after a restart: in front of the phone ledge. */
@@ -354,21 +376,39 @@ export default class RestaurantScene extends Phaser.Scene {
     return { x: t.x * 16 + 8, y: t.y * 16 - 4 };
   }
 
-  /** Touched fire (or stayed until the kitchen closed): fade out and restart from the end of the call. */
+  /**
+   * Touched fire during the escape (or stayed until the kitchen closed): red flash, shake, Mateo
+   * flashes red, fade to black, "You got burned.", then back to the end of the call.
+   */
   failEscape() {
-    if (this.fading || this.escaped) return;
-    if (this.phoneState === 'call') {
-      // Died before the call ended: cut it short; the restart point is now.
-      this.dialogueRunner?.abort();
-      this.onCallEnded();
-    }
+    if (this.fading || this.escaped || !this.escaping) return;
     this.fading = true;
     this.player.setLocked(true);
     this.interactions.setEnabled(false);
     this.clearMessage();
     const cam = this.cameras.main;
-    cam.fadeOut(FADE_MS, 0, 0, 0);
-    cam.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+    cam.flash(250, 255, 60, 40);
+    cam.shake(250, 0.006);
+    let flashes = 0;
+    this.time.addEvent({
+      delay: 90,
+      repeat: 5,
+      callback: () => (flashes++ % 2 ? this.player.clearTint() : this.player.setTint(0xff4030)),
+    });
+    this.time.delayedCall(600, () => {
+      this.player.clearTint();
+      cam.fadeOut(FADE_MS, 0, 0, 0);
+      cam.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => this.showBurnedCard());
+    });
+  }
+
+  showBurnedCard() {
+    const cam = this.cameras.main;
+    const black = this.add.rectangle(0, 0, cam.width, cam.height, 0x000000).setOrigin(0, 0).setScrollFactor(0).setDepth(6000);
+    const card = pixelText(this, 0, 0, 'You got burned.', { size: 16 }).setScrollFactor(0).setDepth(6001);
+    card.setPosition(Math.round((cam.width - card.width) / 2), Math.round((cam.height - card.height) / 2));
+    cam.resetFX();
+    this.time.delayedCall(BURNED_CARD_MS, () => {
       this.fire.restore(this.escapeSnapshot);
       this.closedFailTimer?.remove();
       this.closedFailScheduled = false;
@@ -376,11 +416,15 @@ export default class RestaurantScene extends Phaser.Scene {
       this.player.setPosition(spot.x, spot.y);
       this.player.facing = 'up';
       this.player.setLocked(true); // refreshes the standing frame for the new facing
+      black.destroy();
+      card.destroy();
+      this.restarts += 1;
       cam.fadeIn(FADE_MS, 0, 0, 0);
       cam.once(Phaser.Cameras.Scene2D.Events.FADE_IN_COMPLETE, () => {
         this.fading = false;
         this.player.setLocked(false);
         this.interactions.setEnabled(true);
+        if (this.restarts === 1) this.showNearPlayerMessage('Move when the flames die down.', HINT_MS);
       });
     });
   }
@@ -390,6 +434,7 @@ export default class RestaurantScene extends Phaser.Scene {
     if (this.fading) return;
     this.escaped = true;
     this.fading = true;
+    this.tasks.complete('get_out');
     this.player.setLocked(true);
     this.interactions.setEnabled(false);
     this.clearMessage();
@@ -409,8 +454,9 @@ export default class RestaurantScene extends Phaser.Scene {
     });
   }
 
+  /** Fire is deadly only during the escape (before that it blocks; see the collider in create()). */
   checkFire() {
-    if (this.fading || this.escaped) return;
+    if (this.fading || this.escaped || !this.escaping) return;
     const b = this.player.body;
     if (this.fire.isDeadly(new Phaser.Geom.Rectangle(b.x, b.y, b.width, b.height))) {
       this.failEscape();

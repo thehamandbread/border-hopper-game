@@ -1,4 +1,5 @@
 import DialogueInput from '../systems/DialogueInput.js';
+import { ADVANCE_HINT, CHOICE_HINT, countAdvance, countChoice, showAdvanceHint, showChoiceHint } from '../systems/controlHints.js';
 import { pixelText, textWidth, wrapText } from '../systems/pixelText.js';
 
 // Layout, in screen pixels (everything is fixed to the camera).
@@ -43,6 +44,9 @@ export default class DialogueBox {
     this.indicator = scene.add.graphics().setScrollFactor(0).setDepth(DEPTH + 1);
     this.indicator.fillStyle(COLORS.border).fillTriangle(0, 0, 6, 0, 3, 3);
     this.indicator.setPosition(BOX.x + BOX.w - 14, BOX.y + BOX.h - 12);
+    this.spaceHint = this.make(0, 0, ADVANCE_HINT, COLORS.other);
+    this.spaceHint.setPosition(BOX.x + BOX.w - 18 - textWidth(scene, ADVANCE_HINT), BOX.y + BOX.h - 15);
+    this.choiceHint = this.make(TEXT_X, BOX.y + BOX.h - 13, CHOICE_HINT, COLORS.other);
 
     this.typeTimer = scene.time.addEvent({
       delay: 1000 / CHARS_PER_SECOND,
@@ -75,6 +79,8 @@ export default class DialogueBox {
   setVisible(v) {
     this.visible = v;
     for (const o of [this.gfx, this.tagGfx, this.tagText, this.body, this.marker, this.indicator]) o.setVisible(v);
+    this.spaceHint.setVisible(false);
+    this.choiceHint.setVisible(false);
     if (!v) {
       this.indicatorWanted = false;
       this.clearOptions();
@@ -120,6 +126,8 @@ export default class DialogueBox {
     this.body.setText('').setPosition(TEXT_X, TEXT_Y);
     this.indicatorWanted = false;
     this.indicator.setVisible(false);
+    this.spaceHint.setVisible(false);
+    this.choiceHint.setVisible(false);
     this.typing = true;
     this.typeTimer.paused = false;
   }
@@ -140,6 +148,7 @@ export default class DialogueBox {
     this.indicatorWanted = true;
     this.blinkOn = true;
     this.indicator.setVisible(true);
+    this.spaceHint.setVisible(showAdvanceHint());
   }
 
   setTag(name) {
@@ -174,6 +183,8 @@ export default class DialogueBox {
       y += (wrapped.split('\n').length) * LINE_H + 2;
     });
     this.refreshChoice();
+    this.spaceHint.setVisible(false);
+    this.choiceHint.setVisible(showChoiceHint());
   }
 
   refreshChoice() {
@@ -189,6 +200,8 @@ export default class DialogueBox {
 
   pick(index) {
     if (index < 0 || index >= this.options.length) return;
+    countChoice();
+    this.choiceHint.setVisible(false);
     this.clearOptions();
     this.marker.setVisible(false);
     this.runner.choose(index);
@@ -208,7 +221,10 @@ export default class DialogueBox {
       else if (space) this.pick(this.selected);
     } else if (space) {
       if (this.typing) this.finishTyping();
-      else this.runner.advance();
+      else {
+        countAdvance();
+        this.runner.advance();
+      }
     }
   }
 }
