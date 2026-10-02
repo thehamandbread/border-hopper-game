@@ -5,13 +5,16 @@ Outputs:
   public/assets/images/restaurant_tiles.png  384x16, restaurant interior tiles (see RESTAURANT_ORDER).
   public/assets/images/kitchen_door.png  96x16, 3 frames of 32x16 swinging cafe doors (closed, half, open).
   public/assets/images/task_marker.png   32x16, 2 frames of 16x16 red '!' marker (bright, dim).
+  public/assets/images/phone_ledge.png   32x16, 2 frames of 16x16 charging phone on a wall ledge (idle, ringing).
+  public/assets/images/phone_ui.png      112x150 corner phone frame; screen area x6 y16 w100 h118.
   public/assets/images/fire.png          48x16, 3-frame looping flame.
   public/assets/images/smoke.png         32x16, 2-frame looping smoke puff.
   tools/art/previews/preview_scene.png   small scene at 4x scale.
   tools/art/previews/preview_walk.gif    walk cycles at 6x scale.
   tools/art/previews/sheet_6x.png, tiles_6x.png  6x inspection previews.
   tools/art/previews/restaurant_tiles_6x.png, fire_6x.png, smoke_6x.png, restaurant_scene.png,
-  tools/art/previews/kitchen_door_6x.png, task_marker_6x.png, restaurant_walls_preview.png
+  tools/art/previews/kitchen_door_6x.png, task_marker_6x.png, restaurant_walls_preview.png,
+  tools/art/previews/phone_ledge_6x.png, phone_ui_4x.png
 Paths are resolved relative to this file, so it runs from any working directory.
 """
 import random
@@ -939,6 +942,70 @@ def make_restaurant_scene(tiles, frames, fire, smoke):
     return img
 
 
+# ---------------- phone ----------------
+PHONE_BODY, PHONE_EDGE, PHONE_DARK = (34, 32, 40), (58, 54, 66), (20, 18, 24)
+SCREEN_OFF = (12, 14, 20)
+SCREEN_LIT, SCREEN_LIT_HI = (168, 214, 234), (226, 244, 250)
+# Screen area inside phone_ui.png. PhoneUI.js uses the same numbers.
+PHONE_UI_W, PHONE_UI_H = 112, 150
+PHONE_SCREEN = (6, 16, 100, 118)  # x, y, w, h
+
+
+def make_phone_ledge():
+    """2 frames of 16x16, drawn over the bottom wall face: a small wooden ledge with a phone
+    standing on it, plugged in by a cable to an outlet on the baseboard. Frame 1: screen lit (ringing)."""
+    sheet = Image.new("RGBA", (T * 2, T), (0, 0, 0, 0))
+    for f in range(2):
+        layer = Image.new("RGBA", (T, T), (0, 0, 0, 0))
+        px = layer.load()
+        fill(px, 2, 9, 13, 9, WOOD_HI)             # ledge top
+        fill(px, 2, 10, 13, 10, WOOD_DK)           # ledge front edge
+        dots(px, [(3, 11), (12, 11)], WOOD_DK)     # brackets
+        fill(px, 5, 2, 9, 8, PHONE_BODY)           # phone, standing against the wall
+        fill(px, 5, 2, 5, 8, PHONE_EDGE)
+        fill(px, 6, 3, 8, 7, SCREEN_LIT if f else SCREEN_OFF)
+        if f:
+            fill(px, 6, 3, 6, 4, SCREEN_LIT_HI)
+            dots(px, [(11, 3), (12, 4), (11, 5), (3, 3), (2, 4), (3, 5)], (250, 236, 150))  # ring "buzz" marks
+        dots(px, [(10, 8), (11, 11), (11, 12)], PHONE_DARK)  # cable down to the outlet
+        fill(px, 10, 12, 12, 14, (226, 220, 204))  # wall outlet on the baseboard
+        dots(px, [(11, 13)], (120, 112, 100))
+        outline(layer)
+        sheet.paste(layer, (f * T, 0))
+    return sheet
+
+
+def make_phone_ui():
+    """Corner phone frame: dark modern smartphone with a clearly bordered screen area."""
+    w, h = PHONE_UI_W, PHONE_UI_H
+    img = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    px = img.load()
+    fill(px, 1, 1, w - 2, h - 2, PHONE_BODY)
+    fill(px, 1, 1, 2, h - 2, PHONE_EDGE)          # left edge highlight
+    fill(px, 1, 1, w - 2, 2, PHONE_EDGE)          # top edge highlight
+    fill(px, 0, 4, 0, h - 5, OUT)                 # outline with rounded corners
+    fill(px, w - 1, 4, w - 1, h - 5, OUT)
+    fill(px, 4, 0, w - 5, 0, OUT)
+    fill(px, 4, h - 1, w - 5, h - 1, OUT)
+    for cx, cy, sx, sy in ((0, 0, 1, 1), (w - 1, 0, -1, 1), (0, h - 1, 1, -1), (w - 1, h - 1, -1, -1)):
+        for dx, dy in ((1, 3), (1, 2), (2, 1), (3, 1)):
+            px[cx + sx * dx, cy + sy * dy] = OUT
+        for dx, dy in ((0, 0), (1, 0), (0, 1), (2, 0), (0, 2), (1, 1), (3, 0), (0, 3)):
+            px[cx + sx * dx, cy + sy * dy] = (0, 0, 0, 0)
+        px[cx + sx * 1, cy + sy * 1] = (0, 0, 0, 0)
+        px[cx + sx * 2, cy + sy * 2] = OUT
+    sx0, sy0, sw, sh = PHONE_SCREEN
+    fill(px, sx0 - 1, sy0 - 1, sx0 + sw, sy0 + sh, (44, 50, 66))   # screen border
+    fill(px, sx0, sy0, sx0 + sw - 1, sy0 + sh - 1, SCREEN_OFF)       # screen
+    fill(px, 46, 7, 65, 8, (66, 64, 76))          # speaker slot
+    fill(px, 71, 7, 72, 8, (70, 84, 120))         # camera
+    fill(px, 44, 141, 67, 142, (96, 94, 106))     # home bar
+    fill(px, w - 1, 30, w - 1, 44, (78, 76, 90))  # side buttons
+    fill(px, 0, 26, 0, 32, (78, 76, 90))
+    fill(px, 0, 36, 0, 42, (78, 76, 90))
+    return img
+
+
 def make_walls_preview(tiles, door, marker):
     """Mock room: top/side/bottom walls with corners, counter with end caps around a 2-tile gap,
     cafe doors (closed) in the gap, and task markers over the stove and a table."""
@@ -1019,6 +1086,18 @@ def main():
         bg = Image.new("RGBA", im.size, (150, 118, 84, 255))
         bg.alpha_composite(im)
         bg.resize((im.width * 6, im.height * 6), Image.NEAREST).save(PREVIEW_DIR / f"{name}_6x.png")
+    ledge = make_phone_ledge()
+    ledge.save(ASSET_DIR / "phone_ledge.png")
+    phone_ui = make_phone_ui()
+    phone_ui.save(ASSET_DIR / "phone_ui.png")
+    bg = Image.new("RGBA", ledge.size)
+    for f in range(2):
+        bg.paste(rest_tiles["wall"], (f * T, 0))
+    bg.alpha_composite(ledge)
+    bg.resize((bg.width * 6, bg.height * 6), Image.NEAREST).save(PREVIEW_DIR / "phone_ledge_6x.png")
+    bg = Image.new("RGBA", phone_ui.size, (150, 118, 84, 255))
+    bg.alpha_composite(phone_ui)
+    bg.resize((bg.width * 4, bg.height * 4), Image.NEAREST).save(PREVIEW_DIR / "phone_ui_4x.png")
     walls = make_walls_preview(rest_tiles, kdoor, marker)
     walls.resize((walls.width * 4, walls.height * 4), Image.NEAREST).save(PREVIEW_DIR / "restaurant_walls_preview.png")
     rscene = make_restaurant_scene(rest_tiles, frames, fire, smoke)

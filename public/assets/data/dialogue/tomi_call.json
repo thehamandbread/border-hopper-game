@@ -1,7 +1,8 @@
 {
   "id": "tomi_call",
-  "presenter": "box",
-  "lockMovement": true,
+  "presenter": "phone",
+  "lockMovement": false,
+  "caller": "TOMI",
   "start": "n01",
   "nodes": {
     "n01": {

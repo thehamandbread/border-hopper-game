@@ -33,6 +33,13 @@ export default class BootScene extends Phaser.Scene {
     });
     this.load.json('dialogue_tomi_call', assetUrl('assets/data/dialogue/tomi_call.json'));
     this.load.json('dialogue_curb', assetUrl('assets/data/dialogue/curb.json'));
+    this.load.spritesheet('phone_ledge', assetUrl('assets/images/phone_ledge.png'), {
+      frameWidth: 16,
+      frameHeight: 16,
+    });
+    this.load.image('phone_ui', assetUrl('assets/images/phone_ui.png'));
+    this.load.audio('phone_ring', assetUrl('assets/audio/phone_ring.wav'));
+    this.load.audio('smoke_alarm', assetUrl('assets/audio/smoke_alarm.wav'));
     this.load.json('closing_tasks', assetUrl('assets/data/closing_tasks.json'));
   }
 

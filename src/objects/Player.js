@@ -45,6 +45,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.facing = 'down';
     this.carrying = null;
     this.locked = false;
+    this.speedScale = 1; // e.g. 0.6 while on a phone call
     this.keys = scene.input.keyboard.addKeys({
       up: 'W',
       down: 'S',
@@ -78,6 +79,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
+  /** Multiplies walk speed (1 = normal). */
+  setSpeedScale(scale) {
+    this.speedScale = scale;
+  }
+
   update() {
     if (this.locked) return;
     const k = this.keys;
@@ -99,7 +105,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     // Normalize so diagonals aren't faster.
-    this.body.velocity.set(dx, dy).normalize().scale(PLAYER_SPEED);
+    this.body.velocity.set(dx, dy).normalize().scale(PLAYER_SPEED * this.speedScale);
     this.anims.play(`walk-${this.facing}`, true);
   }
 }

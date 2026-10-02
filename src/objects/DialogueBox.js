@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import DialogueInput from '../systems/DialogueInput.js';
 import { pixelText, textWidth, wrapText } from '../systems/pixelText.js';
 
 // Layout, in screen pixels (everything is fixed to the camera).
@@ -32,17 +32,7 @@ export default class DialogueBox {
     this.optionTexts = [];
     this.selected = 0;
 
-    const kb = scene.input.keyboard;
-    this.keys = {
-      space: kb.addKey('SPACE'),
-      up: kb.addKey('UP'),
-      down: kb.addKey('DOWN'),
-      w: kb.addKey('W'),
-      s: kb.addKey('S'),
-      n1: kb.addKey('ONE'),
-      n2: kb.addKey('TWO'),
-      n3: kb.addKey('THREE'),
-    };
+    this.input = new DialogueInput(scene);
 
     this.gfx = scene.add.graphics().setScrollFactor(0).setDepth(DEPTH);
     this.drawBox();
@@ -115,9 +105,8 @@ export default class DialogueBox {
     this.drain();
   }
 
-  /** Throw away key presses that happened before/outside the dialogue so they can't act. */
   drain() {
-    for (const k of Object.values(this.keys)) Phaser.Input.Keyboard.JustDown(k);
+    this.input.drain();
   }
 
   // ---- lines ----
@@ -209,18 +198,13 @@ export default class DialogueBox {
 
   update() {
     if (!this.runner) return;
-    const JD = Phaser.Input.Keyboard.JustDown;
-    const k = this.keys;
-    const space = JD(k.space);
-    const up = JD(k.up) || JD(k.w);
-    const down = JD(k.down) || JD(k.s);
-    const n = [JD(k.n1), JD(k.n2), JD(k.n3)].indexOf(true);
+    const { space, up, down, pick } = this.input.read();
 
     if (this.options.length) {
       if (up) this.selected = (this.selected + this.options.length - 1) % this.options.length;
       else if (down) this.selected = (this.selected + 1) % this.options.length;
       if (up || down) this.refreshChoice();
-      if (n !== -1) this.pick(n);
+      if (pick !== -1) this.pick(pick);
       else if (space) this.pick(this.selected);
     } else if (space) {
       if (this.typing) this.finishTyping();

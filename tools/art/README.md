@@ -69,6 +69,12 @@ Swinging cafe doors for a doorway 2 tiles wide. 3 frames of 32x16 (indexes 0-2):
 ### `task_marker.png` (32x16)
 Red "!" with a dark outline. 2 frames of 16x16 (indexes 0-1): bright, slightly dimmer, for a pulse. Transparent background.
 
+### `phone_ledge.png` (32x16)
+Mateo's phone charging on a small wall ledge, drawn to sit over the bottom wall face (transparent background). 2 frames of 16x16: 0 idle, 1 screen lit (ringing).
+
+### `phone_ui.png` (112x150)
+The corner phone frame: a dark smartphone. Screen area (where text goes): x 6, y 16, w 100, h 118 inside the image.
+
 ### `fire.png` (48x16)
 3 frames of 16x16 (indexes 0-2), looping flame, transparent background.
 
@@ -77,4 +83,4 @@ Red "!" with a dark outline. 2 frames of 16x16 (indexes 0-1): bright, slightly d
 
 ## Previews (`tools/art/previews/`, git-ignored)
 
-`preview_scene.png`, `preview_walk.gif`, `sheet_6x.png`, `tiles_6x.png`, `restaurant_tiles_6x.png`, `fire_6x.png`, `smoke_6x.png`, `restaurant_scene.png` (mock restaurant with Mateo, fire and smoke), `kitchen_door_6x.png`, `task_marker_6x.png`, `restaurant_walls_preview.png` (mock room: walls, corners, counter ends, cafe doors, task markers).
+`preview_scene.png`, `preview_walk.gif`, `sheet_6x.png`, `tiles_6x.png`, `restaurant_tiles_6x.png`, `fire_6x.png`, `smoke_6x.png`, `restaurant_scene.png` (mock restaurant with Mateo, fire and smoke), `kitchen_door_6x.png`, `task_marker_6x.png`, `restaurant_walls_preview.png` (mock room: walls, corners, counter ends, cafe doors, task markers), `phone_ledge_6x.png` (over the wall tile), `phone_ui_4x.png`.

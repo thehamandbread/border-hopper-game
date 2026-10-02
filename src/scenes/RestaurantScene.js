@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import DialogueBox from '../objects/DialogueBox.js';
 import KitchenDoor from '../objects/KitchenDoor.js';
+import PhonePresenter from '../objects/PhonePresenter.js';
+import PhoneUI from '../objects/PhoneUI.js';
 import Player from '../objects/Player.js';
 import TaskListHud from '../objects/TaskListHud.js';
 import { pixelText } from '../systems/pixelText.js';
@@ -63,6 +65,8 @@ export default class RestaurantScene extends Phaser.Scene {
     this.message = null;
 
     this.dialogueBox = new DialogueBox(this);
+    this.phone = new PhoneUI(this);
+    this.phonePresenter = new PhonePresenter(this, this.phone, this.player);
     this.dialogueRunner = null;
     this.createKitchenDoor(mapData);
     this.registerInteractables(mapData);
@@ -79,19 +83,23 @@ export default class RestaurantScene extends Phaser.Scene {
   startDialogue(id) {
     const data = this.cache.json.get(`dialogue_${id}`);
     if (!data) throw new Error(`Unknown dialogue "${id}"`);
-    // Only the dialogue box presenter exists so far; a phone presenter comes later.
-    const presenters = { box: this.dialogueBox };
+    const presenters = { box: this.dialogueBox, phone: this.phonePresenter };
     const presenter = presenters[data.presenter];
     if (!presenter) throw new Error(`Dialogue "${id}": no "${data.presenter}" presenter yet`);
 
     const runner = new DialogueRunner(data, gameState);
     this.dialogueRunner = runner;
-    if (runner.lockMovement) this.player.setLocked(true);
-    this.interactions.setEnabled(false);
+    // Box dialogue locks Mateo and the world; phone calls leave both running (the presenter slows him).
+    if (runner.lockMovement) {
+      this.player.setLocked(true);
+      this.interactions.setEnabled(false);
+    }
     runner.on('end', () => {
       this.dialogueRunner = null;
-      this.player.setLocked(false);
-      this.interactions.setEnabled(true);
+      if (runner.lockMovement) {
+        this.player.setLocked(false);
+        this.interactions.setEnabled(true);
+      }
     });
 
     if (import.meta.env.DEV) {
@@ -262,6 +270,7 @@ export default class RestaurantScene extends Phaser.Scene {
 
   update() {
     this.dialogueBox.update();
+    this.phonePresenter.update();
     this.player.update();
     this.player.setDepth(this.player.y); // depth-sort by feet y
     this.kitchenDoor?.update();
