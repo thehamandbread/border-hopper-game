@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { assetUrl } from '../systems/assetUrl.js';
 import { FONT_KEY } from '../systems/pixelText.js';
+import { createWalkAnimations } from '../objects/walkAnims.js';
 import { createFireAnimations } from '../objects/FireEffects.js';
 import { createKitchenDoorAnimations } from '../objects/KitchenDoor.js';
 import { PLAYER_TEXTURE, createPlayerAnimations } from '../objects/Player.js';
@@ -41,6 +42,7 @@ export default class BootScene extends Phaser.Scene {
     this.load.spritesheet('fire', assetUrl('assets/images/fire.png'), { frameWidth: 16, frameHeight: 16 });
     this.load.spritesheet('smoke', assetUrl('assets/images/smoke.png'), { frameWidth: 16, frameHeight: 16 });
     this.load.spritesheet('phone_icon', assetUrl('assets/images/phone_icon.png'), { frameWidth: 16, frameHeight: 24 });
+    this.load.spritesheet('aurelio_walk', assetUrl('assets/images/aurelio_walk.png'), { frameWidth: 16, frameHeight: 32 });
     this.load.image('phone_ui', assetUrl('assets/images/phone_ui.png'));
     this.load.audio('phone_ring', assetUrl('assets/audio/phone_ring.wav'));
     this.load.audio('smoke_alarm', assetUrl('assets/audio/smoke_alarm.wav'));
@@ -51,6 +53,7 @@ export default class BootScene extends Phaser.Scene {
     createPlayerAnimations(this.anims);
     createKitchenDoorAnimations(this.anims);
     createFireAnimations(this.anims);
+    createWalkAnimations(this.anims, 'aurelio_walk', 'aurelio-walk', 5); // slower, steadier than Mateo (8 fps)
     // Dev-only: ?scene=movement-test starts the movement test scene instead.
     const devMovementTest =
       import.meta.env.DEV && new URLSearchParams(window.location.search).get('scene') === 'movement-test';

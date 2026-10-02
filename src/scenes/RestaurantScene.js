@@ -13,6 +13,7 @@ import InteractionSystem from '../systems/InteractionSystem.js';
 import TaskList from '../systems/TaskList.js';
 import TaskMarkers from '../systems/TaskMarkers.js';
 import FireSystem from '../systems/FireSystem.js';
+import CutsceneRunner from '../systems/CutsceneRunner.js';
 
 // Indexes in restaurant_tiles.png (see tools/art/README.md).
 const TILE = {
@@ -107,9 +108,29 @@ export default class RestaurantScene extends Phaser.Scene {
 
     // Dev-only test hook: ?dialogue=tomi_call or ?dialogue=curb starts that conversation.
     if (import.meta.env.DEV) {
-      const id = new URLSearchParams(window.location.search).get('dialogue');
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('dialogue');
       if (id) this.startDialogue(id);
+      const cutscene = params.get('cutscene');
+      if (cutscene) this.playCutscene(cutscene);
     }
+  }
+
+  /** Loads and plays public/assets/data/cutscenes/<id>.json here, with player input locked throughout. */
+  async playCutscene(id) {
+    const data = await CutsceneRunner.load(this, id);
+    const cutscene = new CutsceneRunner(this, data, {
+      lockInput: (locked) => {
+        this.player.setLocked(locked);
+        this.interactions.setEnabled(!locked);
+      },
+      startDialogue: (dialogueId) => this.startDialogue(dialogueId),
+      onEnd: () => {
+        if (import.meta.env.DEV) console.log('[cutscene] end', id);
+      },
+    });
+    await cutscene.play();
+    return cutscene;
   }
 
   /** Starts a conversation from public/assets/data/dialogue/<id>.json (loaded by BootScene). */
@@ -146,6 +167,7 @@ export default class RestaurantScene extends Phaser.Scene {
 
     presenter.present(runner);
     runner.start();
+    return runner;
   }
 
   /** Cafe doors fill the 2-tile gap that starts just right of the left counter end cap. */
