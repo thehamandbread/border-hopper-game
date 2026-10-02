@@ -1,19 +1,21 @@
 {
   "tasks": [
     {
-      "id": "wipe_tables",
-      "label": "Wipe the tables",
-      "count": 3
-    },
-    {
       "id": "take_out_trash",
       "label": "Take out the trash",
       "count": 1
     },
     {
+      "id": "wipe_tables",
+      "label": "Wipe the tables",
+      "count": 3,
+      "notYet": "Trash first. It's starting to smell."
+    },
+    {
       "id": "turn_off_stove",
       "label": "Turn off the stove",
-      "count": 1
+      "count": 1,
+      "notYet": "The beans need a few more minutes."
     }
   ]
 }

@@ -1,9 +1,11 @@
 import Phaser from 'phaser';
+import KitchenDoor from '../objects/KitchenDoor.js';
 import Player from '../objects/Player.js';
 import TaskListHud from '../objects/TaskListHud.js';
 import { pixelText } from '../systems/pixelText.js';
 import InteractionSystem from '../systems/InteractionSystem.js';
 import TaskList from '../systems/TaskList.js';
+import TaskMarkers from '../systems/TaskMarkers.js';
 
 // Indexes in restaurant_tiles.png (see tools/art/README.md).
 const TILE = {
@@ -16,6 +18,7 @@ const TILE = {
   STOVE_ON: 9,
   TRASH_FULL: 10,
   TRASH_EMPTY: 11,
+  COUNTER_END_LEFT: 22,
 };
 const TRASH_BAG = 'trash bag';
 
@@ -53,36 +56,63 @@ export default class RestaurantScene extends Phaser.Scene {
     this.tasks = TaskList.fromCache(this, 'closing_tasks');
     this.hud = new TaskListHud(this, this.tasks, this.player);
     this.interactions = new InteractionSystem(this, this.player, { tileSize: tileWidth });
+    this.markers = new TaskMarkers(this, this.tasks, { enabled: mapData.showTaskMarkers === true, tileSize: tileWidth });
     this.message = null;
 
+    this.createKitchenDoor(mapData);
     this.registerInteractables(mapData);
     this.tasks.on('all-complete', () => this.showCenterMessage('Shift complete.', 2000));
   }
 
+  /** Cafe doors fill the 2-tile gap that starts just right of the left counter end cap. */
+  createKitchenDoor(mapData) {
+    const { tileWidth, tileHeight } = mapData;
+    mapData.tiles.forEach((row, y) => {
+      const x = row.indexOf(TILE.COUNTER_END_LEFT);
+      if (x !== -1) this.kitchenDoor = new KitchenDoor(this, (x + 1) * tileWidth, y * tileHeight, this.player);
+    });
+  }
+
   registerInteractables(mapData) {
+    // The trash marker moves to the back door while Mateo carries the bag.
+    this.backDoorTile = null;
+    this.trashMarker = null;
+    mapData.tiles.forEach((row, y) => {
+      const x = row.indexOf(TILE.BACK_DOOR);
+      if (x !== -1) this.backDoorTile = { x, y };
+    });
+    this.player.on('carrying-changed', (item) => {
+      if (item && this.backDoorTile) this.markers.move(this.trashMarker, this.backDoorTile.x, this.backDoorTile.y);
+    });
+
     mapData.tiles.forEach((row, y) => {
       row.forEach((index, x) => {
         switch (index) {
           case TILE.TABLE_DIRTY: {
+            const marker = this.markers.add({ taskId: 'wipe_tables', tileX: x, tileY: y });
             const item = this.interactions.register({
               tileX: x,
               tileY: y,
               prompt: 'Wipe table',
               handler: () => {
+                if (!this.canDo('wipe_tables')) return;
                 this.ground.putTileAt(TILE.TABLE_CLEAN, x, y);
                 this.interactions.unregister(item);
+                this.markers.remove(marker);
                 this.tasks.progress('wipe_tables');
               },
             });
             break;
           }
           case TILE.TRASH_FULL: {
+            this.trashMarker = this.markers.add({ taskId: 'take_out_trash', tileX: x, tileY: y });
             const item = this.interactions.register({
               tileX: x,
               tileY: y,
               prompt: 'Grab trash bag',
               enabled: () => !this.player.carrying,
               handler: () => {
+                if (!this.canDo('take_out_trash')) return;
                 this.ground.putTileAt(TILE.TRASH_EMPTY, x, y);
                 this.interactions.unregister(item);
                 this.player.setCarrying(TRASH_BAG);
@@ -103,13 +133,16 @@ export default class RestaurantScene extends Phaser.Scene {
             });
             break;
           case TILE.STOVE_ON: {
+            const marker = this.markers.add({ taskId: 'turn_off_stove', tileX: x, tileY: y });
             const item = this.interactions.register({
               tileX: x,
               tileY: y,
               prompt: 'Turn off stove',
               handler: () => {
+                if (!this.canDo('turn_off_stove')) return;
                 this.ground.putTileAt(TILE.STOVE_OFF, x, y);
                 this.interactions.unregister(item);
+                this.markers.remove(marker);
                 this.tasks.complete('turn_off_stove');
               },
             });
@@ -136,6 +169,14 @@ export default class RestaurantScene extends Phaser.Scene {
         }
       });
     });
+  }
+
+  /** Tasks go in the order listed in closing_tasks.json. Out of order, show the task's notYet line. */
+  canDo(taskId) {
+    if (this.tasks.isCurrent(taskId)) return true;
+    const notYet = this.tasks.get(taskId)?.notYet;
+    if (notYet) this.showNearPlayerMessage(notYet, 2000);
+    return false;
   }
 
   /** Short message above the player's head, replacing any current one. */
@@ -176,6 +217,8 @@ export default class RestaurantScene extends Phaser.Scene {
 
   update() {
     this.player.update();
+    this.player.setDepth(this.player.y); // depth-sort by feet y
+    this.kitchenDoor?.update();
     this.interactions.update();
   }
 }

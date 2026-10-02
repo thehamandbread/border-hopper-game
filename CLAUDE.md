@@ -48,4 +48,5 @@ tools/fonts/         Font conversion script and source fonts
 - All asset loads go through src/systems/assetUrl.js (or the loader's version option) so deploys cache-bust.
 - All in-game text uses the bitmap font, not default Phaser text.
 - Before committing, run git status and stage only the files you changed for the current task. Never use git add -A or git add . — if other files have uncommitted changes, list them and ask.
+- docs/GAME_DESIGN.md: edit it only with exact text supplied in a prompt. Never add, remove, or change design decisions on your own. If a change seems needed, ask.
 - Keep performance reasonable for low-end Chromebooks: avoid huge textures, and cap particle counts.

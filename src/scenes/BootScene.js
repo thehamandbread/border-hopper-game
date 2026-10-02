@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { assetUrl } from '../systems/assetUrl.js';
 import { FONT_KEY } from '../systems/pixelText.js';
+import { createKitchenDoorAnimations } from '../objects/KitchenDoor.js';
 import { PLAYER_TEXTURE, createPlayerAnimations } from '../objects/Player.js';
 
 export default class BootScene extends Phaser.Scene {
@@ -22,11 +23,20 @@ export default class BootScene extends Phaser.Scene {
     );
     this.load.image('restaurant_tiles', assetUrl('assets/images/restaurant_tiles.png'));
     this.load.json('restaurant_map', assetUrl('assets/data/restaurant_map.json'));
+    this.load.spritesheet('kitchen_door', assetUrl('assets/images/kitchen_door.png'), {
+      frameWidth: 32,
+      frameHeight: 16,
+    });
+    this.load.spritesheet('task_marker', assetUrl('assets/images/task_marker.png'), {
+      frameWidth: 16,
+      frameHeight: 16,
+    });
     this.load.json('closing_tasks', assetUrl('assets/data/closing_tasks.json'));
   }
 
   create() {
     createPlayerAnimations(this.anims);
+    createKitchenDoorAnimations(this.anims);
     // Dev-only: ?scene=movement-test starts the movement test scene instead.
     const devMovementTest =
       import.meta.env.DEV && new URLSearchParams(window.location.search).get('scene') === 'movement-test';
