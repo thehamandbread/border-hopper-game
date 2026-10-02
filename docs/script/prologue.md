@@ -47,6 +47,17 @@ Approved dialogue for the prologue. The dialogue system will load lines from dat
 
 *(Call ends. Smoke is pouring through the café doors. No line from Mateo.)*
 
+## The Escape
+
+**Hints:**
+- During the call, walking into fire: "It's too hot."
+- At the stove after ignition: "Too late."
+- When the call ends: "The front's locked. Use the back."
+- New task: "Get out the back door"
+- On touching fire: "You got burned."
+- First restart only: "Move when the flames die down."
+- At the back door: "E: Get out"
+
 ## The Curb
 
 *(Night. Mateo sits on the curb outside the burned restaurant, waiting for the owner, Doña Lupe, as the firefighters asked. The last fire truck pulls away. An old, spotless sedan pulls up. Don Aurelio gets out slowly and walks over.)*
@@ -105,3 +116,12 @@ Approved dialogue for the prologue. The dialogue system will load lines from dat
 **DON AURELIO:** No. You didn't.
 
 *(He walks back to his car and drives away. A moment later, the phone buzzes. A text from an unknown number: "Tomorrow. I'll send the address." Reading it expands the phone for the first time: the texting tutorial.)*
+
+## The First Text
+
+*(After Don Aurelio drives away, the phone buzzes. Hint: "You got a text. Press Q to read.")*
+
+**From: Unknown number**
+Tomorrow. I'll send the address.
+
+*(Hint inside the phone: "Q: close". After closing: fade to black. "END OF PROLOGUE" / "More coming soon.")*

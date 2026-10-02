@@ -5,11 +5,15 @@ import PhoneUI from '../objects/PhoneUI.js';
 import CutsceneRunner from '../systems/CutsceneRunner.js';
 import DialogueRunner from '../systems/DialogueRunner.js';
 import { gameState } from '../systems/GameState.js';
+import { pixelText } from '../systems/pixelText.js';
 
 const NIGHT_DEPTH = 900;      // over the street, the actors and the car
 const LIGHT_DEPTH = 950;      // the streetlight's pool glows above the night overlay
 const SMOKE_DEPTH = 905;      // faint wisps just above the overlay
 const TRUCK_GLOW_W = 60;
+const END_PAUSE_MS = 800;
+const END_FADE_MS = 1200;
+const MATEO_SEAT = { x: 200, y: 146 }; // matches the "mateo" actor in cutscenes/curb.json
 
 /**
  * The curb outside the burned restaurant, at night. Builds the street, the night look (a dark blue
@@ -45,7 +49,15 @@ export default class CurbScene extends Phaser.Scene {
     this.makeTruckGlowTexture();
 
     this.dialogueBox = new DialogueBox(this);
-    this.phone = new PhoneUI(this);
+    this.phone = new PhoneUI(this, { canOpen: () => !this.dialogueBox.active && !this.ending });
+    this.textRead = false;
+    this.phone.on('opened', () => {
+      if (this.phone.messages.length) this.textRead = true;
+      this.hint?.destroy();
+    });
+    this.phone.on('closed', () => {
+      if (this.textRead) this.endPrologue();
+    });
     this.events.once('shutdown', () => this.sound.stopAll());
     this.playCurb();
   }
@@ -96,7 +108,39 @@ export default class CurbScene extends Phaser.Scene {
   }
 
   /** Story events the scene handles itself (the cutscene file handles the rest). */
-  onStoryEvent() {}
+  onStoryEvent(name, payload) {
+    if (name === 'first_text') {
+      this.phone.receiveText(payload);
+      // Hint above Mateo's head (above the night overlay), until he opens the phone.
+      this.hint = pixelText(this, 0, 0, 'You got a text. Press Q to read.').setOrigin(0, 1).setDepth(2000);
+      this.hint.setPosition(Math.round(MATEO_SEAT.x - this.hint.width / 2), MATEO_SEAT.y - 36);
+    }
+  }
+
+  /** After the first text is read and the phone closed: fade out to the end card. Any key starts over. */
+  endPrologue() {
+    if (this.ending) return;
+    this.ending = true;
+    this.time.delayedCall(END_PAUSE_MS, () => {
+      const cam = this.cameras.main;
+      const black = this.add.rectangle(0, 0, cam.width, cam.height, 0x000000).setOrigin(0, 0).setScrollFactor(0).setDepth(7000).setAlpha(0);
+      this.tweens.add({
+        targets: black,
+        alpha: 1,
+        duration: END_FADE_MS,
+        onComplete: () => {
+          const title = pixelText(this, 0, 0, 'END OF PROLOGUE', { size: 16 }).setScrollFactor(0).setDepth(7001);
+          title.setPosition(Math.round((cam.width - title.width) / 2), Math.round(cam.height / 2 - 14));
+          const sub = pixelText(this, 0, 0, 'More coming soon.', { color: 0xb8b0c0 }).setScrollFactor(0).setDepth(7001);
+          sub.setPosition(Math.round((cam.width - sub.width) / 2), Math.round(cam.height / 2 + 8));
+          this.input.keyboard.once('keydown', () => {
+            gameState.reset();
+            this.scene.start('RestaurantScene');
+          });
+        },
+      });
+    });
+  }
 
   startDialogue(id) {
     const data = this.cache.json.get(`dialogue_${id}`);
@@ -112,5 +156,6 @@ export default class CurbScene extends Phaser.Scene {
 
   update() {
     this.dialogueBox.update();
+    this.phone.update();
   }
 }

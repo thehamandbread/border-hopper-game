@@ -77,7 +77,12 @@ export default class RestaurantScene extends Phaser.Scene {
     this.message = null;
 
     this.dialogueBox = new DialogueBox(this);
-    this.phone = new PhoneUI(this);
+    // Q opens the texting phone when nothing else is going on; Mateo stands still while it's open.
+    this.phone = new PhoneUI(this, { canOpen: () => !this.dialogueRunner && !this.fading });
+    this.phone.on('opened', () => this.player.setLocked(true));
+    this.phone.on('closed', () => {
+      if (!this.fading) this.player.setLocked(false);
+    });
     this.phonePresenter = new PhonePresenter(this, this.phone, this.player);
     this.dialogueRunner = null;
     this.phoneState = 'idle';
@@ -550,6 +555,7 @@ export default class RestaurantScene extends Phaser.Scene {
     if (!this.fading) this.fire.update(delta);
     this.dialogueBox.update();
     this.phonePresenter.update();
+    this.phone.update();
     this.player.update();
     this.player.setDepth(this.player.y); // depth-sort by feet y
     this.kitchenDoor?.update();

@@ -11,21 +11,23 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 - Advance dialogue: Space (completes the current line first if it's still appearing).
 - Dialogue choices: W/S or up/down arrows to highlight, Space to confirm, 1-3 as shortcuts.
 - E is never used inside dialogue; it's reserved for interacting with the world.
+- Phone: Q opens and closes the expanded phone (texts).
 
 ## Phone
-- The phone sits small in the bottom-right corner of the screen. Incoming calls and texts appear there while the game keeps running.
-- Calls use an earpiece and stay in the corner. During a call, Mateo walks with his hand to his ear at about 60% speed. He can still move and act, just slower.
+- The phone sits as a small icon in the bottom-right corner. Incoming calls and texts appear there while the game keeps running. Unread texts show a badge.
+- Calls use an earpiece. Only a small phone icon shows in the corner. The caller's lines appear in a speech bubble pointing at the icon; Mateo's lines and choices appear in a bubble above his head. During a call, Mateo walks with his hand to his ear at about 60% speed. He can still move and act, just slower.
 - Texting (reading a thread, typing a reply) expands the phone to take over more of the screen. While it's expanded, Mateo stands still and the world keeps going. The game does not pause.
 - Declining or ignoring calls is possible and can have consequences (e.g., Don Aurelio doesn't like being ignored).
 - Possible later: Mateo talking on a call makes a small noise radius that guards can hear. Not yet decided.
 
 ## Dialogue
-- Standard dialogue appears in a box at the bottom of the screen with the speaker's name. Phone calls appear in the corner phone instead.
+- Standard dialogue appears in a box at the bottom of the screen with the speaker's name. Phone calls use speech bubbles instead (see Phone).
 - Text appears with a typewriter effect.
 - Player movement is locked during box dialogue. During phone calls, Mateo can move slowly (see Phone).
 - Dialogue is data-driven: conversations live in public/assets/data/dialogue/, built from the approved scripts in docs/script/.
 - Choices can change meters, add to flags, and set remembered answers that later scenes quote back.
 - Character voice blips play as text appears (planned).
+- During the prologue, control hints show ("SPACE" to advance; "W/S: choose · SPACE: confirm" for choices) until the player has used each control a few times.
 
 ## Setting
 - Present day.
@@ -55,6 +57,7 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 - Mateo's father worked for him and died on a job. Don Aurelio feels he owes the family. Keeping Mateo close is, in his own code, repaying that debt.
 - Sees Mateo as "the man my son should have been."
 - Never lies outright. Speaks in deliberately ambiguous terms and lets people deceive themselves.
+- Appearance: late 60s, gray hair and mustache, cream guayabera, dark slacks, a slight stoop. Moves slowly and deliberately. Drives an old, spotless, dark maroon sedan.
 
 ### Rafael Salgado
 - Don Aurelio's son, late 20s. Ruthless, efficient, modern.
@@ -90,6 +93,11 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 - After the tables are wiped, Mateo's phone rings. It is charging on a ledge by the front door, in the far corner of the dining room. Walking over and answering is the first step of the phone tutorial.
 - A few seconds into the call, the stove ignites. Mateo is at the far end of the restaurant and moving slowly on the call, so he can't reach it in time. If he gets to the kitchen anyway, the stove is already burning and can't be turned off.
 - Escape the burning building. The front door is locked (Doña Lupe locks it at closing; staff use the back), so Mateo must cross the dining room, go through the café doors into the burning kitchen, and get out the back door. Fire spreads deterministically; some tiles on the path flare on a timer. Touching fire fades to black and restarts the escape from the end of the call. No health bar. No stealth yet.
+- During the call, fire blocks Mateo ("It's too hot.") instead of hurting him, so the call always plays in full. Fire becomes deadly when the call ends.
+- When the call ends, the stove task shows as failed, a new task "Get out the back door" appears, the marker moves to the back door, and the hint "The front's locked. Use the back." shows.
+- Touching fire during the escape: red flash, fade to black, "You got burned.", then a restart from the end of the call. The first restart adds the tip "Move when the flames die down."
+- After the escape: "Later that night." Mateo sits on the curb at night as the last fire truck leaves. Don Aurelio arrives in an old, spotless, dark maroon sedan, sits beside him, and the curb conversation plays as a cutscene.
+- After he drives away, the first text arrives: "Tomorrow. I'll send the address." from an unknown number. Reading it (Q) is the texting tutorial. The prologue ends on an "END OF PROLOGUE" card.
 - That night, Mateo waits on the curb outside the burned restaurant for the owner, Doña Lupe, as the firefighters asked. She never comes. Don Aurelio arrives in her place: "Lupe asked me to come." He sits beside Mateo, calm and fatherly, and asks for help with "something" in deliberately vague terms. The player is led to assume one job settles it.
 - This conversation has real choices:
   - Mateo can apologize, stay defiant, or try to bargain. This sets the starting relationship and nudges starting Loyalty slightly.
@@ -204,6 +212,8 @@ Each mission alternates between two modes that can flow into each other:
   - Border tiles: sand, sand with pebbles, scrub, dirt, asphalt, asphalt with horizontal lane dash, bollard border fence, cinder block wall, crate, asphalt with vertical lane dash.
   - Restaurant tiles: kitchen floor, dining floor, wall, wall with window, counter, dirty table, clean table, chair, stove off, stove on, trash full, trash empty, sink, front door, back door, locked back-room door, left and right side walls, four wall corners, left and right counter end caps.
   - Effects: 3-frame fire animation, 2-frame smoke animation, 3-frame café door animation, 2-frame pulsing task marker.
+  - Phone: small corner icon (idle and ringing), phone on a charging ledge, large texting phone.
+  - Curb scene: sidewalk, curb, street, burned storefront tiles, streetlight with light pool, dark maroon sedan (headlights off and on), Don Aurelio walk cycle, sitting frames for Mateo and Don Aurelio.
   - Tile and frame indexes are listed in tools/art/README.md.
 - Known art gaps: dirt path transition tiles, arm swing in walk cycle, side-profile polish, slightly speckled smoke at 1x, hand-to-ear walk cycle for calls (all 4 directions; normal walk at 60% speed is used until then).
 - Dialogue portraits and concept art may be generated with Canva. Canva is not used for in-game sprites.
@@ -230,7 +240,7 @@ Each mission alternates between two modes that can flow into each other:
 - Phone visual design and text/reply UI details.
 - Save system.
 - Music and sound direction.
-- Remaining key bindings (phone, pause, menu).
+- Remaining key bindings (pause, menu).
 - Sprint key: likely added with traversal; sprinting should be louder (noise tradeoff for stealth).
 
 ## Future Polish (deferred)

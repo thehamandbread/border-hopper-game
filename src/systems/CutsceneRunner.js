@@ -40,6 +40,7 @@ const tileToFeet = ([tx, ty]) => ({ x: tx * TILE + TILE / 2, y: (ty + 1) * TILE 
  *   playSound   { key, loop?, volume? }   stopSound { key }
  *   setFlag     { flag, value } | { flag, add }
  *   dialogue    { id }                                  runs the conversation; its story events run "events"
+ *   notify      { name, data? }                         tells the scene a story event happened (onStoryEvent)
  *   end         {}
  *
  * Options: lockInput(bool), startDialogue(id) -> DialogueRunner, onEnd().
@@ -234,6 +235,9 @@ export default class CutsceneRunner {
         return Promise.resolve();
       case 'dialogue':
         return this.dialogue(step.id);
+      case 'notify':
+        this.onStoryEvent?.(step.name, step.data);
+        return Promise.resolve();
       default:
         return Promise.reject(new Error(`Cutscene: unknown step "${step.type}"`));
     }
@@ -276,18 +280,20 @@ export default class CutsceneRunner {
     }
   }
 
-  /** Runs a conversation. Its story events start their step lists; the step finishes when the
-   *  conversation has ended and every event step list it started has finished. */
+  /** Runs a conversation. Each story event with a step list in "events" queues it (in order); other
+   *  events go straight to onStoryEvent. The step finishes when the conversation has ended and every
+   *  queued step list has finished. */
   dialogue(id) {
     return new Promise((resolve) => {
       const runner = this.startDialogue(id);
       const events = this.data.events ?? {};
-      const running = [];
+      // Event step lists run one after another, in the order the conversation emits them.
+      let queue = Promise.resolve();
       runner.on('event', (name, payload) => {
-        if (events[name]) running.push(this.runSteps(events[name]));
-        this.onStoryEvent?.(name, payload);
+        if (events[name]) queue = queue.then(() => this.runSteps(events[name]));
+        else this.onStoryEvent?.(name, payload);
       });
-      runner.on('end', () => Promise.all(running).then(resolve));
+      runner.on('end', () => queue.then(resolve));
     });
   }
 
