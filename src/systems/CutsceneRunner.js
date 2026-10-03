@@ -24,6 +24,7 @@ const tileToFeet = ([tx, ty]) => ({ x: tx * TILE + TILE / 2, y: (ty + 1) * TILE 
  *     "startBlack": true,                                   // optional: begin faded out (e.g. after a title card)
  *     "actorDepthBase": 1000, "actorTint": "0xc8ccdc"       // optional: actors' depth offset and tint
  *   }
+ * Any step may have a "label" (a name to start from; see the skipTo option).
  * Actors stand on their feet (origin bottom-centre) and are depth-sorted by feet y.
  *
  * Steps run in order; each finishes before the next starts, unless it has "parallel": true.
@@ -43,10 +44,23 @@ const tileToFeet = ([tx, ty]) => ({ x: tx * TILE + TILE / 2, y: (ty + 1) * TILE 
  *   notify      { name, data? }                         tells the scene a story event happened (onStoryEvent)
  *   end         {}
  *
- * Options: lockInput(bool), startDialogue(id) -> DialogueRunner, onEnd().
+ * Options: lockInput(bool), startDialogue(id, startNode?) -> DialogueRunner, onEnd(), onStoryEvent(name, data),
+ * skipTo, preEvents, dialogueNodes (see the constructor).
  */
 export default class CutsceneRunner {
-  constructor(scene, data, { lockInput = () => {}, startDialogue, onEnd = () => {}, onStoryEvent } = {}) {
+  constructor(
+    scene,
+    data,
+    { lockInput = () => {}, startDialogue, onEnd = () => {}, onStoryEvent, skipTo, preEvents = [], dialogueNodes = {} } = {},
+  ) {
+    // Starting partway (e.g. for playtesting): steps before the one labelled `skipTo` are fast-forwarded
+    // (applied instantly, waits and dialogue skipped), then the `preEvents` step lists are applied
+    // instantly, then play continues from `skipTo`. `dialogueNodes` maps a conversation id to the node
+    // its dialogue step starts at.
+    this.skipTo = skipTo;
+    this.preEvents = preEvents;
+    this.dialogueNodes = dialogueNodes;
+    this.instant = false;
     this.onStoryEvent = onStoryEvent; // also told about every story event (e.g. ones the scene handles itself)
     this.scene = scene;
     this.data = data;
@@ -125,8 +139,63 @@ export default class CutsceneRunner {
 
   async play() {
     this.lockInput(true);
-    await this.runSteps(this.data.steps ?? []);
+    let steps = this.data.steps ?? [];
+    if (this.skipTo) {
+      const at = steps.findIndex((s) => s.label === this.skipTo);
+      const skipped = at === -1 ? steps : steps.slice(0, at);
+      this.instant = true;
+      await this.runSteps(skipped.filter((s) => s.type !== 'end'));
+      for (const name of this.preEvents) await this.runSteps(this.data.events?.[name] ?? []);
+      this.instant = false;
+      steps = at === -1 ? [] : steps.slice(at);
+    }
+    await this.runSteps(steps);
     this.finish();
+  }
+
+  /** Applies a step's end state immediately (fast-forward). Waits, text, sounds and dialogue are skipped. */
+  runInstant(step) {
+    const cam = this.scene.cameras.main;
+    switch (step.type) {
+      case 'fade':
+        this.overlay.setAlpha(step.dir === 'out' ? 1 : 0);
+        break;
+      case 'moveActor': {
+        const a = this.get(step.actor);
+        const pts = step.path ? step.path.map(tileToFeet) : [step.toPx ? { x: step.toPx[0], y: step.toPx[1] } : tileToFeet(step.to)];
+        const last = pts[pts.length - 1];
+        const prev = pts.length > 1 ? pts[pts.length - 2] : { x: a.x, y: a.y };
+        const dx = last.x - prev.x;
+        const dy = last.y - prev.y;
+        if (dx || dy) a.facing = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'down' : 'up';
+        a.setPosition(last.x, last.y).setDepth(this.actorDepth(last.y));
+        if (a.walk) {
+          a.anims.stop();
+          a.setFrame(standingFrame(a.facing));
+        }
+        break;
+      }
+      case 'moveObject': {
+        const o = this.get(step.object);
+        o.setPosition(step.toPx[0], step.toPx[1]);
+        if (o.fixedDepth === undefined) o.setDepth(o.y);
+        break;
+      }
+      case 'tween':
+        if (!step.yoyo) Object.assign(this.get(step.actor ?? step.object), step.to);
+        break;
+      case 'cameraPan':
+        cam.centerOn(step.toPx[0], step.toPx[1]);
+        break;
+      case 'setFrame':
+      case 'playAnim':
+      case 'show':
+      case 'setFlag':
+      case 'notify':
+        return this.runStep({ ...step, parallel: false });
+      default: // wait, showText, playSound, stopSound, dialogue, end: nothing to apply
+    }
+    return Promise.resolve();
   }
 
   finish() {
@@ -162,6 +231,7 @@ export default class CutsceneRunner {
 
   runStep(step) {
     const scene = this.scene;
+    if (this.instant && !step.__applying) return this.runInstant({ ...step, __applying: true });
     switch (step.type) {
       case 'wait':
         return this.wait(step.ms);
@@ -285,7 +355,7 @@ export default class CutsceneRunner {
    *  queued step list has finished. */
   dialogue(id) {
     return new Promise((resolve) => {
-      const runner = this.startDialogue(id);
+      const runner = this.startDialogue(id, this.dialogueNodes[id]);
       const events = this.data.events ?? {};
       // Event step lists run one after another, in the order the conversation emits them.
       let queue = Promise.resolve();

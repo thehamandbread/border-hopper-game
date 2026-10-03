@@ -85,7 +85,8 @@
         184
       ],
       "ms": 3200,
-      "ease": "Cubic.easeOut"
+      "ease": "Cubic.easeOut",
+      "label": "car_arrives"
     },
     {
       "type": "wait",
@@ -129,7 +130,8 @@
     },
     {
       "type": "dialogue",
-      "id": "curb"
+      "id": "curb",
+      "label": "conversation"
     }
   ],
   "events": {

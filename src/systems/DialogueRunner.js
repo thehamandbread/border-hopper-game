@@ -33,9 +33,10 @@ export default class DialogueRunner extends Phaser.Events.EventEmitter {
     return this.data.lockMovement === true;
   }
 
-  start() {
+  /** Starts at the conversation's first node, or at `nodeId` to begin partway through. */
+  start(nodeId) {
     this.emit('start', this.data);
-    this.goto(this.data.start);
+    this.goto(nodeId ?? this.data.start);
   }
 
   /** Move past the current line. */

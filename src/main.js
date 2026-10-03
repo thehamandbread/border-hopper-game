@@ -5,7 +5,7 @@ import { gameState } from './systems/GameState.js';
 import RestaurantScene from './scenes/RestaurantScene.js';
 import CurbScene from './scenes/CurbScene.js';
 
-const game = new Phaser.Game({
+const config = {
   type: Phaser.AUTO,
   width: 480,
   height: 270,
@@ -21,10 +21,17 @@ const game = new Phaser.Game({
     arcade: { debug: false },
   },
   scene: [BootScene, MovementTestScene, RestaurantScene, CurbScene],
-});
+};
 
-// Dev-only handle for browser tests.
 if (import.meta.env.DEV) {
-  window.__game = game;
-  window.__gameState = gameState;
+  // Dev tools (checkpoint menu, state panel) load only in dev builds; production never includes them.
+  import('./dev/DevMenu.js').then(({ installDevTools }) => {
+    const game = new Phaser.Game(config);
+    installDevTools(game);
+    // Handles for browser tests.
+    window.__game = game;
+    window.__gameState = gameState;
+  });
+} else {
+  new Phaser.Game(config); // eslint-disable-line no-new
 }

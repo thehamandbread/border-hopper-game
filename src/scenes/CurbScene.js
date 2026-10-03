@@ -25,7 +25,8 @@ export default class CurbScene extends Phaser.Scene {
     super('CurbScene');
   }
 
-  create() {
+  /** data (optional): { skipTo, preEvents, dialogueNodes } to start the cutscene partway (see CutsceneRunner). */
+  create(data = {}) {
     const mapData = this.cache.json.get('curb_map');
     const { tileWidth, tileHeight, width, height } = mapData;
     const map = this.add.tilemap(undefined, tileWidth, tileHeight, width, height, mapData.tiles);
@@ -59,7 +60,7 @@ export default class CurbScene extends Phaser.Scene {
       if (this.textRead) this.endPrologue();
     });
     this.events.once('shutdown', () => this.sound.stopAll());
-    this.playCurb();
+    this.playCurb(data);
   }
 
   /** Smoke wisps rising slowly from the storefront and fading, staggered so they don't move together. */
@@ -96,14 +97,18 @@ export default class CurbScene extends Phaser.Scene {
     g.destroy();
   }
 
-  async playCurb() {
+  async playCurb({ skipTo, preEvents, dialogueNodes } = {}) {
     const data = await CutsceneRunner.load(this, 'curb');
-    // The glow is fixed to the screen's right edge.
     const cutscene = new CutsceneRunner(this, data, {
-      startDialogue: (id) => this.startDialogue(id),
+      startDialogue: (id, node) => this.startDialogue(id, node),
       onStoryEvent: (name, payload) => this.onStoryEvent(name, payload),
+      skipTo,
+      preEvents,
+      dialogueNodes,
     });
+    // The glow is fixed to the screen's right edge.
     cutscene.get('truckGlow').setScrollFactor(0).setAlpha(0.8);
+    this.cutscene = cutscene;
     await cutscene.play();
   }
 
@@ -142,7 +147,7 @@ export default class CurbScene extends Phaser.Scene {
     });
   }
 
-  startDialogue(id) {
+  startDialogue(id, startNode) {
     const data = this.cache.json.get(`dialogue_${id}`);
     const runner = new DialogueRunner(data, gameState);
     if (import.meta.env.DEV) {
@@ -150,7 +155,7 @@ export default class CurbScene extends Phaser.Scene {
       runner.on('choice-made', (option, i) => console.log('[dialogue] choice', i + 1, option.text));
     }
     this.dialogueBox.present(runner);
-    runner.start();
+    runner.start(startNode);
     return runner;
   }
 

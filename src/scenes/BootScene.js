@@ -61,6 +61,11 @@ export default class BootScene extends Phaser.Scene {
     createKitchenDoorAnimations(this.anims);
     createFireAnimations(this.anims);
     createWalkAnimations(this.anims, 'aurelio_walk', 'aurelio-walk', 5); // slower, steadier than Mateo (8 fps)
+    // Dev-only: ?checkpoint=<id> (dev tools start the checkpoint instead of the normal first scene).
+    if (import.meta.env.DEV && this.game.devTools?.handleBoot()) {
+      this.scene.stop();
+      return;
+    }
     // Dev-only: ?scene=movement-test starts the movement test scene instead.
     const devMovementTest =
       import.meta.env.DEV && new URLSearchParams(window.location.search).get('scene') === 'movement-test';

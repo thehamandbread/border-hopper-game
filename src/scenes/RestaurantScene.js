@@ -309,6 +309,14 @@ export default class RestaurantScene extends Phaser.Scene {
     });
   }
 
+  /** A looping sound. If the browser hasn't unlocked audio yet (no key pressed), it starts on unlock. */
+  playLoop(key) {
+    const snd = this.sound.add(key, { loop: true });
+    if (this.sound.locked) this.sound.once(Phaser.Sound.Events.UNLOCKED, () => snd.play());
+    else snd.play();
+    return snd;
+  }
+
   // ---- Tomi's call and the fire ----
 
   /** The last table is wiped: the phone on the ledge rings. */
@@ -317,8 +325,7 @@ export default class RestaurantScene extends Phaser.Scene {
     this.phoneState = 'ringing';
     this.stoveState = 'locked';
     this.phoneLedge.setFrame(1);
-    this.ringSound = this.sound.add('phone_ring', { loop: true });
-    this.ringSound.play();
+    this.ringSound = this.playLoop('phone_ring');
     this.phone.ring(this.cache.json.get('dialogue_tomi_call').caller);
     this.phoneMarker = this.markers.add({ taskId: null, tileX: this.phoneTile.x, tileY: this.phoneTile.y });
     this.markers.setHidden(this.stoveMarker, true);
@@ -356,8 +363,7 @@ export default class RestaurantScene extends Phaser.Scene {
 
   startAlarm() {
     if (this.alarmSound) return;
-    this.alarmSound = this.sound.add('smoke_alarm', { loop: true });
-    this.alarmSound.play();
+    this.alarmSound = this.playLoop('smoke_alarm');
     // Red alarm light on the kitchen's back wall: an 8x8 lamp with a soft glow, flashing.
     const cx = 17 * 16 + 8; // clear of the checklist in the top-left
     const cy = 7;

@@ -21,6 +21,7 @@ src/main.js          Phaser.Game config and entry point
 src/scenes/          Scene classes (BootScene, menus, levels)
 src/objects/         Custom game objects (player, enemies, pickups)
 src/systems/         Reusable logic (input, save, dialogue, AI)
+src/dev/             Dev-only tools (checkpoint menu, state panel). Never shipped.
 public/assets/images/  Sprites, tilesets, backgrounds
 public/assets/audio/   Music and sound effects
 public/assets/data/    JSON data (levels, dialogue, config)
@@ -51,4 +52,6 @@ tools/audio/         Python scripts that generate placeholder sound effects into
 - All in-game text uses the bitmap font, not default Phaser text.
 - Before committing, run git status and stage only the files you changed for the current task. Never use git add -A or git add . — if other files have uncommitted changes, list them and ask.
 - docs/GAME_DESIGN.md: edit it only with exact text supplied in a prompt. Never add, remove, or change design decisions on your own. If a change seems needed, ask.
+- Every new mission or major scene must register dev checkpoints in src/dev/checkpoints.js.
+- When you notice polish issues that are out of scope for the current task, add them to docs/POLISH.md instead of fixing them.
 - Keep performance reasonable for low-end Chromebooks: avoid huge textures, and cap particle counts.

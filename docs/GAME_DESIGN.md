@@ -249,3 +249,4 @@ Each mission alternates between two modes that can flow into each other:
 - Full voice acting is deferred until the script is locked, because rewrites and branching multiply recording work, audio adds download size, and accented or code-switched voices need careful review.
 - Character voice blips (short pitched sounds as text appears) are planned with the dialogue system.
 - Placeholder sound effects (phone ring, smoke alarm) are code-generated in tools/audio/. Replace them as part of the sound direction.
+- The running list of polish items lives in docs/POLISH.md.
