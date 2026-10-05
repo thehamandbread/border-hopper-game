@@ -1,3 +1,5 @@
+import { gameState } from '../systems/GameState.js';
+
 // Dev-only checkpoint registry (never shipped: only loaded from main.js in dev builds).
 //
 // Each checkpoint names the scene to start (with optional scene data) and a setup(scene) that runs
@@ -59,6 +61,26 @@ function doCall(scene) {
   placeMateo(scene, spot.x, spot.y);
 }
 
+/** A plausible end of the prologue, so Mission 1 checkpoints work without playing it. */
+function prologueState(gs) {
+  gs.setMeter('loyalty', 0);
+  gs.setAnswer('prologue_want', 'family');
+  gs.setFlag('tomi_involved', 0);
+}
+
+/** ...and of Mission 1's home scene. */
+function homeState(gs) {
+  prologueState(gs);
+  gs.setAnswer('abuela_morning', 'deflect');
+  gs.giveItem('tortilla');
+}
+
+function placeAtTile(scene, tileX, tileY) {
+  const { x, y } = scene.tileFeet(tileX, tileY);
+  scene.player.setPosition(x, y);
+  scene.player.body.reset(x, y);
+}
+
 export const CHECKPOINTS = [
   {
     id: 'prologue_start',
@@ -117,6 +139,58 @@ export const CHECKPOINTS = [
     // Everything fast-forwarded: Don Aurelio has driven off; then the first text arrives.
     data: { skipTo: '__after_end', preEvents: ['aurelio_leaves', 'first_text'] },
     setup: () => {},
+  },
+  {
+    id: 'm1_start',
+    label: 'M1: home, waking up',
+    scene: 'ApartmentScene',
+    setup: () => prologueState(gameState),
+  },
+  {
+    id: 'm1_table',
+    label: 'M1: home, breakfast scene',
+    scene: 'ApartmentScene',
+    data: { awake: true },
+    setup: (scene) => {
+      prologueState(gameState);
+      placeAtTile(scene, 3, 6); // beside the table
+      scene.startBreakfast();
+    },
+  },
+  {
+    id: 'm1_text',
+    label: 'M1: home, the text arrives',
+    scene: 'ApartmentScene',
+    data: { awake: true },
+    // Breakfast so far applied instantly (Mateo and Abuela seated, plate and bottle down); the
+    // conversation starts at "Mateo's phone buzzes." (node n26).
+    setup: (scene) => {
+      prologueState(gameState);
+      gameState.setAnswer('abuela_morning', 'deflect');
+      placeAtTile(scene, 4, 8); // where he stands up from his chair later
+      scene.startBreakfast({
+        skipTo: 'conversation',
+        preEvents: ['mateo_sits', 'abuela_brings_plate', 'plate_down', 'abuela_sits', 'bottle_down'],
+        dialogueNodes: { m1_home: 'n26' },
+      });
+    },
+  },
+  {
+    id: 'm1_tireshop',
+    label: 'M1: tire shop, entering',
+    scene: 'TireShopScene',
+    setup: () => homeState(gameState),
+  },
+  {
+    id: 'm1_nando',
+    label: 'M1: tire shop, Nando',
+    scene: 'TireShopScene',
+    data: { ruizDone: true },
+    setup: (scene) => {
+      homeState(gameState);
+      placeAtTile(scene, 11, 5); // just under the truck
+      scene.talkToNando();
+    },
   },
 ];
 

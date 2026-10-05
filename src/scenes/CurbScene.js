@@ -141,7 +141,7 @@ export default class CurbScene extends Phaser.Scene {
           this.input.keyboard.once('keydown', async () => {
             title.destroy();
             await showCard(this, 'MISSION 1: THE ENVELOPE', { size: 16, holdMs: 2500, fromBlack: true });
-            this.scene.start('ApartmentScene');
+            this.scene.start('ApartmentScene', {}); // fresh data (Phaser keeps the last start's otherwise)
           });
         },
       });

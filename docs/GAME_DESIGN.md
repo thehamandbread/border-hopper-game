@@ -48,11 +48,13 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 ### Tomás "Tomi" Ibarra
 - Mateo's younger brother, 14.
 - Impressed by the money coming in. If Mateo lets him get close to the work, he may follow Mateo into the cartel (see Endings).
+- Appearance: shorter than Mateo, messy hair, a white school polo, a backpack with a taped strap.
 
 ### Abuela Esperanza Ibarra
 - Mateo's grandmother. Raised both boys.
 - Uneasy about the cartel money from the start.
 - Knew that Mateo's father worked for Don Aurelio, and has kept it secret.
+- Appearance: small and upright, gray hair in a bun, a cardigan over a housedress.
 
 ### Don Aurelio Salgado (the handler)
 - Aging old-guard cartel figure who assigns and manages Mateo's missions.
@@ -242,6 +244,7 @@ Each mission alternates between two modes that can flow into each other:
   - Effects: 3-frame fire animation, 2-frame smoke animation, 3-frame café door animation, 2-frame pulsing task marker.
   - Phone: small corner icon (idle and ringing), phone on a charging ledge, large texting phone.
   - Curb scene: sidewalk, curb, street, burned storefront tiles, streetlight with light pool, dark maroon sedan (headlights off and on), Don Aurelio walk cycle, sitting frames for Mateo and Don Aurelio.
+  - Mission 1: apartment tiles and props, tire shop tiles, pickup truck and creeper, character sheets for Abuela, Tomi, Sr. Ruiz, and Nando, and extra Mateo frames (lying on the couch, sitting at a table).
   - Tile and frame indexes are listed in tools/art/README.md.
 - Known art gaps: dirt path transition tiles, arm swing in walk cycle, side-profile polish, slightly speckled smoke at 1x, hand-to-ear walk cycle for calls (all 4 directions; normal walk at 60% speed is used until then).
 - Dialogue portraits and concept art may be generated with Canva. Canva is not used for in-game sprites.

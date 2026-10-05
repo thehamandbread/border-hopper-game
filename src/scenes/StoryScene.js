@@ -171,10 +171,10 @@ export default class StoryScene extends Phaser.Scene {
   }
 
   /** Fades to a location card, then starts the next scene (GameState carries over). */
-  async goToScene(key, { card, data } = {}) {
+  async goToScene(key, { card, data = {} } = {}) {
     this.setLock('leaving', true);
     if (card) await showCard(this, card);
-    this.scene.start(key, data);
+    this.scene.start(key, data); // always pass data: Phaser keeps a scene's previous data otherwise
   }
 
   update() {
