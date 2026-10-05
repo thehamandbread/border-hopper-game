@@ -7,13 +7,16 @@ import Phaser from 'phaser';
  * Conversation JSON:
  *   { id, presenter: 'box', lockMovement: true, start: 'n01', nodes: { n01: node, ... } }
  * Nodes:
- *   { type: 'line',   speaker, text, next }
+ *   { type: 'line',      speaker, text, next, speed?, pauseAfter? }
+ *   { type: 'narration', text, next, speed?, pauseAfter? }  no speaker; muted and typed at 0.7x
  *   { type: 'choice', options: [{ text, effects?, next }] }
  *   { type: 'event',  name, data?, next }      emitted for the scene, then the runner continues
  *   { type: 'end' }
  * Effects: { meter, add } | { flag, add } | { answer, set }
+ * speed: typing speed multiplier. pauseAfter: ms held after the line is typed, before the advance
+ * indicator. Inside text, {p:600} holds the typewriter 600 ms at that point (never displayed).
  *
- * Events: 'start' (data), 'line' (node), 'choice' (node), 'choice-made' (option, index),
+ * Events: 'start' (data), 'line' (line or narration node), 'choice' (node), 'choice-made' (option, index),
  *         'event' (name, data), 'end' (data).
  */
 export default class DialogueRunner extends Phaser.Events.EventEmitter {
@@ -41,7 +44,7 @@ export default class DialogueRunner extends Phaser.Events.EventEmitter {
 
   /** Move past the current line. */
   advance() {
-    if (this.current?.type === 'line') this.goto(this.current.next);
+    if (this.current?.type === 'line' || this.current?.type === 'narration') this.goto(this.current.next);
   }
 
   /** Pick option `index` of the current choice. */
@@ -62,6 +65,7 @@ export default class DialogueRunner extends Phaser.Events.EventEmitter {
       if (!node) throw new Error(`Dialogue "${this.data.id}": missing node "${nodeId}"`);
       switch (node.type) {
         case 'line':
+        case 'narration':
           this.current = node;
           this.emit('line', node);
           return;

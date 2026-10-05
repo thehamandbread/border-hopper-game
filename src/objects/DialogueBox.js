@@ -1,6 +1,7 @@
 import DialogueInput from '../systems/DialogueInput.js';
 import { ADVANCE_HINT, CHOICE_HINT, countAdvance, countChoice, showAdvanceHint, showChoiceHint } from '../systems/controlHints.js';
 import { pixelText, textWidth, wrapText } from '../systems/pixelText.js';
+import Typewriter, { lineSpeed, parsePauses } from '../systems/Typewriter.js';
 
 // Layout, in screen pixels (everything is fixed to the camera).
 const BOX = { x: 6, y: 196, w: 468, h: 68 };
@@ -9,14 +10,13 @@ const TEXT_Y = BOX.y + 9;
 const TEXT_W = BOX.w - 16 - 10; // leaves room for the "more" indicator
 const LINE_H = 10;
 const TAG_H = 13;
-const CHARS_PER_SECOND = 40;
 const DEPTH = 4000;
 
-const COLORS = { fill: 0x16121c, border: 0xe8d8b0, name: 0xf0d080, text: 0xffffff, pick: 0xffe08a, other: 0xb8b0c0 };
+const COLORS = { fill: 0x16121c, border: 0xe8d8b0, name: 0xf0d080, text: 0xffffff, narration: 0x98a4bc, pick: 0xffe08a, other: 0xb8b0c0 };
 
 /**
  * Dialogue box presenter: a box along the bottom with a speaker tag, typewriter text, a blinking
- * "more" indicator, and a choice list.
+ * "more" indicator, and a choice list. Narration has no tag and a muted color.
  *
  * Controls: Space completes a line, then advances. Choices: W/S or up/down to highlight, Space to
  * confirm, 1-3 to pick directly. One key press is one action (holding Space does not repeat).
@@ -26,9 +26,6 @@ export default class DialogueBox {
   constructor(scene) {
     this.scene = scene;
     this.runner = null;
-    this.fullText = '';
-    this.shown = 0;
-    this.typing = false;
     this.options = [];
     this.optionTexts = [];
     this.selected = 0;
@@ -48,11 +45,9 @@ export default class DialogueBox {
     this.spaceHint.setPosition(BOX.x + BOX.w - 18 - textWidth(scene, ADVANCE_HINT), BOX.y + BOX.h - 15);
     this.choiceHint = this.make(TEXT_X, BOX.y + BOX.h - 13, CHOICE_HINT, COLORS.other);
 
-    this.typeTimer = scene.time.addEvent({
-      delay: 1000 / CHARS_PER_SECOND,
-      loop: true,
-      paused: true,
-      callback: () => this.typeNext(),
+    this.typer = new Typewriter(scene, {
+      onReveal: (n) => this.body.setText(this.typer.text.slice(0, n)),
+      onDone: () => this.finishTyping(),
     });
     this.blinkTimer = scene.time.addEvent({
       delay: 400,
@@ -104,8 +99,7 @@ export default class DialogueBox {
   }
 
   hide() {
-    this.typeTimer.paused = true;
-    this.typing = false;
+    this.typer.stop();
     this.runner = null;
     this.setVisible(false);
     this.drain();
@@ -120,31 +114,18 @@ export default class DialogueBox {
   showLine(node) {
     this.clearOptions();
     this.marker.setVisible(false);
-    this.setTag(node.speaker);
-    this.fullText = wrapText(this.scene, node.text, TEXT_W);
-    this.shown = 0;
-    this.body.setText('').setPosition(TEXT_X, TEXT_Y);
+    const narration = node.type === 'narration';
+    this.setTag(narration ? '' : node.speaker);
+    const { text, pauses } = parsePauses(node.text);
+    this.body.setPosition(TEXT_X, TEXT_Y).setTint(narration ? COLORS.narration : COLORS.text);
     this.indicatorWanted = false;
     this.indicator.setVisible(false);
     this.spaceHint.setVisible(false);
     this.choiceHint.setVisible(false);
-    this.typing = true;
-    this.typeTimer.paused = false;
-  }
-
-  typeNext() {
-    if (!this.typing) return;
-    this.shown += 1;
-    while (this.fullText[this.shown - 1] === '\n' && this.shown < this.fullText.length) this.shown += 1;
-    this.body.setText(this.fullText.slice(0, this.shown));
-    if (this.shown >= this.fullText.length) this.finishTyping();
+    this.typer.start(wrapText(this.scene, text, TEXT_W), { pauses, speed: lineSpeed(node), pauseAfter: node.pauseAfter });
   }
 
   finishTyping() {
-    this.typing = false;
-    this.typeTimer.paused = true;
-    this.shown = this.fullText.length;
-    this.body.setText(this.fullText);
     this.indicatorWanted = true;
     this.blinkOn = true;
     this.indicator.setVisible(true);
@@ -168,8 +149,7 @@ export default class DialogueBox {
   showChoice(node) {
     this.setTag('');
     this.body.setText('');
-    this.typing = false;
-    this.typeTimer.paused = true;
+    this.typer.stop();
     this.indicatorWanted = false;
     this.indicator.setVisible(false);
     this.clearOptions();
@@ -220,7 +200,7 @@ export default class DialogueBox {
       if (pick !== -1) this.pick(pick);
       else if (space) this.pick(this.selected);
     } else if (space) {
-      if (this.typing) this.finishTyping();
+      if (this.typer.busy) this.typer.complete();
       else {
         countAdvance();
         this.runner.advance();

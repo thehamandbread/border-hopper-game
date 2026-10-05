@@ -1,14 +1,17 @@
 import DialogueInput from '../systems/DialogueInput.js';
 import { ADVANCE_HINT, CHOICE_HINT, countAdvance, countChoice, showAdvanceHint, showChoiceHint } from '../systems/controlHints.js';
-import SpeechBubble from './SpeechBubble.js';
+import { pixelText, textWidth, wrapText } from '../systems/pixelText.js';
+import Typewriter, { lineSpeed, parsePauses } from '../systems/Typewriter.js';
+import SpeechBubble, { BUBBLE_DEPTH } from './SpeechBubble.js';
 
-const CHARS_PER_SECOND = 40;
 const CALL_SPEED = 0.6; // Mateo walks at 60% speed for the whole call
 const HEAD_ABOVE_FEET = 28; // bubble tail tip, px above Mateo's feet
+const NARRATION = { y: 8, w: 160, color: 0x98a4bc }; // narrow enough to clear the task list (top left)
 
 /**
  * Dialogue presenter for phone calls, in speech bubbles. The caller's lines point at the corner
  * phone icon; Mateo's lines and choices sit above his head and follow him. One bubble at a time.
+ * Narration shows as a small line of muted text at the top centre of the screen, not in a bubble.
  * Same controls as DialogueBox. Mateo walks at 60% for the call; while a choice is showing he
  * stands still, so W/S and the arrows only move the highlight.
  */
@@ -20,27 +23,39 @@ export default class PhonePresenter {
     this.runner = null;
     this.input = new DialogueInput(scene);
     this.bubble = new SpeechBubble(scene);
-    this.typing = false;
-    this.fullText = '';
-    this.shown = 0;
     this.options = [];
     this.selected = 0;
     this.mateoBubble = false; // true while the bubble is above Mateo (prompts move below his feet)
 
-    this.typeTimer = scene.time.addEvent({
-      delay: 1000 / CHARS_PER_SECOND,
-      loop: true,
-      paused: true,
-      callback: () => this.typeNext(),
+    this.narrating = false; // the current line is narration (top-centre text, no bubble)
+    this.narration = pixelText(scene, 0, NARRATION.y, '', { color: NARRATION.color }).setScrollFactor(0).setDepth(BUBBLE_DEPTH + 1);
+    this.narrationIndicator = scene.add.graphics().setScrollFactor(0).setDepth(BUBBLE_DEPTH + 1);
+    this.narrationIndicator.fillStyle(NARRATION.color).fillTriangle(0, 0, 5, 0, 2.5, 3);
+    this.hideNarration();
+
+    this.typer = new Typewriter(scene, {
+      onReveal: (n) => (this.narrating ? this.narration.setText(this.typer.text.slice(0, n)) : this.bubble.reveal(n)),
+      onDone: () => this.finishTyping(),
     });
     this.blinkTimer = scene.time.addEvent({
       delay: 400,
       loop: true,
       callback: () => {
         this.blinkOn = !this.blinkOn;
-        this.bubble.setIndicator(this.waiting && this.blinkOn);
+        this.setIndicator(this.waiting && this.blinkOn);
       },
     });
+  }
+
+  setIndicator(on) {
+    if (this.narrating) this.narrationIndicator.setVisible(on);
+    else this.bubble.setIndicator(on);
+  }
+
+  hideNarration() {
+    this.narrating = false;
+    this.narration.setText('').setVisible(false);
+    this.narrationIndicator.setVisible(false);
   }
 
   get active() {
@@ -59,9 +74,9 @@ export default class PhonePresenter {
   }
 
   finish() {
-    this.typing = false;
     this.waiting = false;
-    this.typeTimer.paused = true;
+    this.typer.stop();
+    this.hideNarration();
     this.bubble.hide();
     this.setMateoBubble(false);
     this.runner = null;
@@ -87,42 +102,50 @@ export default class PhonePresenter {
 
   showLine(node) {
     this.options = [];
+    this.waiting = false;
+    const { text, pauses } = parsePauses(node.text);
+    const timing = { pauses, speed: lineSpeed(node), pauseAfter: node.pauseAfter };
+    if (node.type === 'narration') {
+      this.showNarration(text, timing);
+      return;
+    }
+    this.hideNarration();
     const fromCaller = node.speaker === this.caller;
     this.setMateoBubble(!fromCaller);
-    this.fullText = node.text;
-    this.bubble.showText(node.text, fromCaller ? this.callerAnchor : this.mateoAnchor);
+    this.bubble.showText(text, fromCaller ? this.callerAnchor : this.mateoAnchor);
     if (showAdvanceHint()) this.bubble.setHint(ADVANCE_HINT, { align: 'right', visible: false });
-    this.fullText = this.bubble.full; // wrapped
-    this.shown = 0;
-    this.waiting = false;
-    this.typing = true;
-    this.typeTimer.paused = false;
+    this.typer.start(this.bubble.full, timing); // bubble.full is the wrapped text
   }
 
-  typeNext() {
-    if (!this.typing) return;
-    this.shown += 1;
-    while (this.fullText[this.shown - 1] === '\n' && this.shown < this.fullText.length) this.shown += 1;
-    this.bubble.reveal(this.shown);
-    if (this.shown >= this.fullText.length) this.finishTyping();
+  /** Narration: no bubble; a left-aligned block centred at the top of the screen. */
+  showNarration(text, timing) {
+    this.bubble.hide();
+    this.setMateoBubble(false);
+    this.narrating = true;
+    const cam = this.scene.cameras.main;
+    const wrapped = wrapText(this.scene, text, NARRATION.w);
+    const lines = wrapped.split('\n');
+    const x = Math.round((cam.width - Math.max(...lines.map((l) => textWidth(this.scene, l)))) / 2);
+    this.narration.setPosition(x, NARRATION.y).setVisible(true);
+    const last = lines[lines.length - 1];
+    this.narrationIndicator.setPosition(Math.round(x + textWidth(this.scene, last) + 3), NARRATION.y + (lines.length - 1) * 10 + 3);
+    this.narrationIndicator.setVisible(false);
+    this.typer.start(wrapped, timing);
   }
 
   finishTyping() {
-    this.typing = false;
-    this.typeTimer.paused = true;
-    this.bubble.reveal(this.fullText.length);
     this.waiting = true;
     this.blinkOn = true;
-    this.bubble.setIndicator(true);
-    if (showAdvanceHint()) this.bubble.setHintVisible(true);
+    this.setIndicator(true);
+    if (!this.narrating && showAdvanceHint()) this.bubble.setHintVisible(true);
   }
 
   // ---- choices ----
 
   showChoice(node) {
-    this.typing = false;
     this.waiting = false;
-    this.typeTimer.paused = true;
+    this.typer.stop();
+    this.hideNarration();
     this.player.setLocked(true); // stand still while choosing
     this.setMateoBubble(true);
     this.options = node.options;
@@ -153,7 +176,7 @@ export default class PhonePresenter {
       if (pick !== -1) this.pick(pick);
       else if (space) this.pick(this.selected);
     } else if (space) {
-      if (this.typing) this.finishTyping();
+      if (this.typer.busy) this.typer.complete();
       else {
         countAdvance();
         this.runner.advance();
