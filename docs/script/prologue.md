@@ -124,4 +124,4 @@ Approved dialogue for the prologue. The dialogue system will load lines from dat
 **From: Unknown number**
 Tomorrow. I'll send the address.
 
-*(Hint inside the phone: "Q: close". After closing: fade to black. "END OF PROLOGUE" / "More coming soon.")*
+*(Hint inside the phone: "Q: close". After closing: fade to black. "END OF PROLOGUE". Any key: the Mission 1 title card, "MISSION 1: THE ENVELOPE".)*

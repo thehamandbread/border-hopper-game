@@ -5,6 +5,7 @@ import PhoneUI from '../objects/PhoneUI.js';
 import CutsceneRunner from '../systems/CutsceneRunner.js';
 import DialogueRunner from '../systems/DialogueRunner.js';
 import { gameState } from '../systems/GameState.js';
+import { showCard } from '../systems/cards.js';
 import { pixelText } from '../systems/pixelText.js';
 
 const NIGHT_DEPTH = 900;      // over the street, the actors and the car
@@ -122,7 +123,8 @@ export default class CurbScene extends Phaser.Scene {
     }
   }
 
-  /** After the first text is read and the phone closed: fade out to the end card. Any key starts over. */
+  /** After the first text is read and the phone closed: fade out to the end card. Any key goes on to the
+   *  Mission 1 title card and the home scene (GameState carries over). */
   endPrologue() {
     if (this.ending) return;
     this.ending = true;
@@ -135,12 +137,11 @@ export default class CurbScene extends Phaser.Scene {
         duration: END_FADE_MS,
         onComplete: () => {
           const title = pixelText(this, 0, 0, 'END OF PROLOGUE', { size: 16 }).setScrollFactor(0).setDepth(7001);
-          title.setPosition(Math.round((cam.width - title.width) / 2), Math.round(cam.height / 2 - 14));
-          const sub = pixelText(this, 0, 0, 'More coming soon.', { color: 0xb8b0c0 }).setScrollFactor(0).setDepth(7001);
-          sub.setPosition(Math.round((cam.width - sub.width) / 2), Math.round(cam.height / 2 + 8));
-          this.input.keyboard.once('keydown', () => {
-            gameState.reset();
-            this.scene.start('RestaurantScene');
+          title.setPosition(Math.round((cam.width - title.width) / 2), Math.round((cam.height - title.height) / 2));
+          this.input.keyboard.once('keydown', async () => {
+            title.destroy();
+            await showCard(this, 'MISSION 1: THE ENVELOPE', { size: 16, holdMs: 2500, fromBlack: true });
+            this.scene.start('ApartmentScene');
           });
         },
       });

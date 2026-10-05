@@ -29,7 +29,8 @@ const MSG_WRAP = 84;
  *
  * Texting: receiveText() stores a message, buzzes and shows an unread badge. Q opens the expanded
  * phone (it slides up from the corner) showing the thread; Q closes it. Emits 'opened' and 'closed'
- * so the scene can hold Mateo still while it's open (the world keeps going).
+ * so the scene can hold Mateo still while it's open (the world keeps going). A text that arrives during
+ * a conversation opens the phone by itself (open({ spaceCloses: true })): Space closes it too.
  */
 export default class PhoneUI extends Phaser.Events.EventEmitter {
   constructor(scene, { canOpen = () => true } = {}) {
@@ -54,6 +55,8 @@ export default class PhoneUI extends Phaser.Events.EventEmitter {
     for (const p of this.parts) p.setScrollFactor(0).setDepth(PHONE_DEPTH);
     this.badge.setDepth(PHONE_DEPTH + 1);
     this.qKey = scene.input.keyboard.addKey('Q');
+    this.spaceKey = scene.input.keyboard.addKey('SPACE');
+    this.spaceCloses = false;
     this.big = [];
 
     this.buzzTimer = scene.time.addEvent({ delay: BUZZ_MS, loop: true, callback: () => this.buzz() });
@@ -119,14 +122,22 @@ export default class PhoneUI extends Phaser.Events.EventEmitter {
   }
 
   update() {
-    if (!Phaser.Input.Keyboard.JustDown(this.qKey)) return;
+    const JD = Phaser.Input.Keyboard.JustDown;
+    if (this.expanded && this.spaceCloses && JD(this.spaceKey)) {
+      this.close();
+      return;
+    }
+    if (!JD(this.qKey)) return;
     if (this.expanded) this.close();
     else if (this.state === 'idle' && this.canOpen()) this.open();
   }
 
-  open() {
+  /** spaceCloses: Space closes it as well as Q (for texts opened during a conversation). */
+  open({ spaceCloses = false } = {}) {
     if (this.expanded) return;
     this.expanded = true;
+    this.spaceCloses = spaceCloses;
+    if (spaceCloses) Phaser.Input.Keyboard.JustDown(this.spaceKey); // ignore a press from before it opened
     this.unread = 0;
     this.badge.setVisible(false);
     this.buildThread();

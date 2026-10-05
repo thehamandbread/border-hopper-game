@@ -16,7 +16,8 @@ const COLORS = { fill: 0x16121c, border: 0xe8d8b0, name: 0xf0d080, text: 0xfffff
 
 /**
  * Dialogue box presenter: a box along the bottom with a speaker tag, typewriter text, a blinking
- * "more" indicator, and a choice list. Narration has no tag and a muted color.
+ * "more" indicator, and a choice list. Narration has no tag and a muted color. While the conversation
+ * is paused at a wait event (e.g. a text arriving) the box is hidden and ignores input.
  *
  * Controls: Space completes a line, then advances. Choices: W/S or up/down to highlight, Space to
  * confirm, 1-3 to pick directly. One key press is one action (holding Space does not repeat).
@@ -95,6 +96,7 @@ export default class DialogueBox {
     this.marker.setVisible(false);
     runner.on('line', (node) => this.showLine(node));
     runner.on('choice', (node) => this.showChoice(node));
+    runner.on('waiting', () => this.setVisible(false));
     runner.on('end', () => this.hide());
   }
 
@@ -111,7 +113,15 @@ export default class DialogueBox {
 
   // ---- lines ----
 
+  /** Back from a wait event: show the box again, and ignore presses made while it was hidden. */
+  reappear() {
+    if (this.visible) return;
+    this.setVisible(true);
+    this.drain();
+  }
+
   showLine(node) {
+    this.reappear();
     this.clearOptions();
     this.marker.setVisible(false);
     const narration = node.type === 'narration';
@@ -147,6 +157,7 @@ export default class DialogueBox {
   // ---- choices ----
 
   showChoice(node) {
+    this.reappear();
     this.setTag('');
     this.body.setText('');
     this.typer.stop();
@@ -190,7 +201,7 @@ export default class DialogueBox {
   // ---- input ----
 
   update() {
-    if (!this.runner) return;
+    if (!this.runner || this.runner.waiting) return; // paused: leave keys alone (e.g. Space closes the phone)
     const { space, up, down, pick } = this.input.read();
 
     if (this.options.length) {

@@ -351,17 +351,23 @@ export default class CutsceneRunner {
   }
 
   /** Runs a conversation. Each story event with a step list in "events" queues it (in order); other
-   *  events go straight to onStoryEvent. The step finishes when the conversation has ended and every
-   *  queued step list has finished. */
+   *  events go straight to onStoryEvent. A wait event (see DialogueRunner) with a step list resumes the
+   *  conversation when its steps are done; one without is resumed by the scene (onStoryEvent gets the
+   *  runner and node). The step finishes when the conversation has ended and every queued step list
+   *  has finished. */
   dialogue(id) {
     return new Promise((resolve) => {
       const runner = this.startDialogue(id, this.dialogueNodes[id]);
       const events = this.data.events ?? {};
       // Event step lists run one after another, in the order the conversation emits them.
       let queue = Promise.resolve();
-      runner.on('event', (name, payload) => {
-        if (events[name]) queue = queue.then(() => this.runSteps(events[name]));
-        else this.onStoryEvent?.(name, payload);
+      runner.on('event', (name, payload, node) => {
+        if (events[name]) {
+          queue = queue.then(() => this.runSteps(events[name]));
+          if (node?.wait) queue = queue.then(() => runner.resume());
+        } else {
+          this.onStoryEvent?.(name, payload, runner, node);
+        }
       });
       runner.on('end', () => queue.then(resolve));
     });

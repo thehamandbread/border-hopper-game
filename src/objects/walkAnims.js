@@ -3,11 +3,15 @@
 export const WALK_DIRECTIONS = ['down', 'up', 'right', 'left'];
 export const WALK_FRAMES_PER_DIR = 4;
 
-/** Registers `${prefix}-down` etc. for `texture`. Safe to call more than once. */
-export function createWalkAnimations(anims, texture, prefix, fps) {
-  WALK_DIRECTIONS.forEach((dir, row) => {
+/**
+ * Registers `${prefix}-down` etc. for `texture`. Safe to call more than once. firstRow: the sheet row
+ * the four direction rows start at (e.g. 4 for a second set of walk rows, like Tomi's one-shoe walk).
+ */
+export function createWalkAnimations(anims, texture, prefix, fps, firstRow = 0) {
+  WALK_DIRECTIONS.forEach((dir, i) => {
     const key = `${prefix}-${dir}`;
     if (anims.exists(key)) return;
+    const row = firstRow + i;
     anims.create({
       key,
       frames: anims.generateFrameNumbers(texture, {

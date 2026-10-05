@@ -54,6 +54,16 @@ export default class BootScene extends Phaser.Scene {
     this.load.json('curb_map', assetUrl('assets/data/curb_map.json'));
     this.load.json('cutscene_curb', assetUrl('assets/data/cutscenes/curb.json'));
     this.load.json('closing_tasks', assetUrl('assets/data/closing_tasks.json'));
+    // Mission 1
+    this.load.image('apartment_tiles', assetUrl('assets/images/apartment_tiles.png'));
+    this.load.spritesheet('apartment_props', assetUrl('assets/images/apartment_props.png'), { frameWidth: 16, frameHeight: 16 });
+    this.load.image('tireshop_tiles', assetUrl('assets/images/tireshop_tiles.png'));
+    this.load.image('pickup_truck', assetUrl('assets/images/pickup_truck.png'));
+    this.load.image('creeper', assetUrl('assets/images/creeper.png'));
+    for (const who of ['abuela', 'tomi', 'ruiz', 'nando']) {
+      this.load.spritesheet(`${who}_walk`, assetUrl(`assets/images/${who}_walk.png`), { frameWidth: 16, frameHeight: 32 });
+    }
+    this.load.spritesheet('mateo_extra', assetUrl('assets/images/mateo_extra.png'), { frameWidth: 32, frameHeight: 32 });
   }
 
   create() {
@@ -61,6 +71,11 @@ export default class BootScene extends Phaser.Scene {
     createKitchenDoorAnimations(this.anims);
     createFireAnimations(this.anims);
     createWalkAnimations(this.anims, 'aurelio_walk', 'aurelio-walk', 5); // slower, steadier than Mateo (8 fps)
+    createWalkAnimations(this.anims, 'abuela_walk', 'abuela-walk', 6);
+    createWalkAnimations(this.anims, 'tomi_walk', 'tomi-walk', 9);
+    createWalkAnimations(this.anims, 'tomi_walk', 'tomi-oneshoe', 9, 4); // rows 4-7: one shoe off
+    createWalkAnimations(this.anims, 'ruiz_walk', 'ruiz-walk', 7);
+    createWalkAnimations(this.anims, 'nando_walk', 'nando-walk', 8);
     // Dev-only: ?checkpoint=<id> (dev tools start the checkpoint instead of the normal first scene).
     if (import.meta.env.DEV && this.game.devTools?.handleBoot()) {
       this.scene.stop();
