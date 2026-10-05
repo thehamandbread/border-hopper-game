@@ -21,10 +21,17 @@ Collected during development. Fixed in a dedicated polish pass after all mission
 - "Unknown number" wraps onto two lines in the texting phone.
 - Phone-call narration sits over the restaurant's top wall and reads a little busy. Consider a subtle backing or a different position.
 
+## Mission 1
+- Sr. Ruiz has no frame for looking up from the receipt book ("Sr. Ruiz looks up from the receipt book."); for now he just stops writing.
+- Poses switch with no in-between frames: Mateo getting up from the couch, Abuela sitting down and standing up, Nando lying down on the creeper.
+- The dialogue box covers the bottom two rows of the apartment and the tire shop, so Tomi standing behind Mateo, and Mateo at the counter, are partly hidden while it's up. Consider moving the camera or the box.
+- The phone's thread starts empty in each scene: the prologue's "Tomorrow. I'll send the address." isn't there when the Mission 1 text arrives from the same number.
+
 ## Art
 - Hand-to-ear walk cycle for calls (normal walk at 60% is used until then).
 - Arm swing in walk cycles; side-profile polish.
 - Dirt path transition tiles. Slightly speckled smoke at 1x.
 
 ## Audio
+- Tire shop ambience: the air compressor and the radio the narration mentions.
 - Placeholder ring and alarm sounds. Voice blips. Full sound direction.

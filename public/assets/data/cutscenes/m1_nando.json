@@ -1,0 +1,228 @@
+{
+ "_comment": "Mission 1, Scene 2: Nando. Actors and objects are TireShopScene's sprites: player, nando (standing; nando_walk), nandoLying (nando_walk 16 legs only / 17 whole body, on the creeper, drawn under the truck), creeper. Frames: down 0, up 4, right 8, left 12.",
+ "steps": [
+  {
+   "type": "setFrame",
+   "actor": "player",
+   "frame": 12
+  },
+  {
+   "type": "wait",
+   "ms": 200
+  },
+  {
+   "type": "dialogue",
+   "id": "m1_nando",
+   "label": "conversation"
+  }
+ ],
+ "events": {
+  "nando_rolls_out": [
+   {
+    "type": "setFrame",
+    "object": "nandoLying",
+    "frame": 17
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   },
+   {
+    "type": "moveObject",
+    "object": "nandoLying",
+    "toPx": [
+     168,
+     112
+    ],
+    "ms": 900,
+    "ease": "Sine.easeInOut",
+    "parallel": true
+   },
+   {
+    "type": "moveObject",
+    "object": "creeper",
+    "toPx": [
+     168,
+     112
+    ],
+    "ms": 900,
+    "ease": "Sine.easeInOut"
+   },
+   {
+    "type": "wait",
+    "ms": 250
+   },
+   {
+    "type": "show",
+    "object": "nandoLying",
+    "visible": false
+   },
+   {
+    "type": "show",
+    "actor": "nando",
+    "visible": true
+   },
+   {
+    "type": "setFrame",
+    "actor": "nando",
+    "frame": 8
+   },
+   {
+    "type": "wait",
+    "ms": 250
+   }
+  ],
+  "nando_gets_envelope": [
+   {
+    "type": "playAnim",
+    "actor": "nando",
+    "anim": "nando-wiping"
+   },
+   {
+    "type": "wait",
+    "ms": 1600
+   },
+   {
+    "type": "setFrame",
+    "actor": "nando",
+    "frame": 8
+   },
+   {
+    "type": "moveActor",
+    "actor": "nando",
+    "path": [
+     [
+      10,
+      7
+     ],
+     [
+      16,
+      7
+     ],
+     [
+      16,
+      2
+     ]
+    ],
+    "speed": 64
+   },
+   {
+    "type": "setFrame",
+    "actor": "nando",
+    "frame": 4
+   },
+   {
+    "type": "wait",
+    "ms": 700
+   },
+   {
+    "type": "moveActor",
+    "actor": "nando",
+    "path": [
+     [
+      16,
+      7
+     ],
+     [
+      11,
+      7
+     ],
+     [
+      11,
+      6
+     ]
+    ],
+    "speed": 64
+   },
+   {
+    "type": "setFrame",
+    "actor": "nando",
+    "frame": 8
+   }
+  ],
+  "nando_returns": [
+   {
+    "type": "wait",
+    "ms": 150
+   }
+  ],
+  "give_envelope": [
+   {
+    "type": "setFlag",
+    "flag": "has_envelope",
+    "value": true
+   }
+  ],
+  "nando_back_under": [
+   {
+    "type": "wait",
+    "ms": 300
+   },
+   {
+    "type": "moveActor",
+    "actor": "nando",
+    "path": [
+     [
+      10,
+      6
+     ]
+    ],
+    "speed": 50
+   },
+   {
+    "type": "setFrame",
+    "actor": "nando",
+    "frame": 0
+   },
+   {
+    "type": "wait",
+    "ms": 200
+   },
+   {
+    "type": "show",
+    "actor": "nando",
+    "visible": false
+   },
+   {
+    "type": "setFrame",
+    "object": "nandoLying",
+    "frame": 17
+   },
+   {
+    "type": "show",
+    "object": "nandoLying",
+    "visible": true
+   },
+   {
+    "type": "moveObject",
+    "object": "nandoLying",
+    "toPx": [
+     168,
+     88
+    ],
+    "ms": 900,
+    "ease": "Sine.easeInOut",
+    "parallel": true
+   },
+   {
+    "type": "moveObject",
+    "object": "creeper",
+    "toPx": [
+     168,
+     88
+    ],
+    "ms": 900,
+    "ease": "Sine.easeInOut"
+   },
+   {
+    "type": "setFrame",
+    "object": "nandoLying",
+    "frame": 16
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   }
+  ]
+ }
+}

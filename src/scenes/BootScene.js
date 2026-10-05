@@ -65,6 +65,10 @@ export default class BootScene extends Phaser.Scene {
     }
     this.load.json('apartment_map', assetUrl('assets/data/apartment_map.json'));
     this.load.json('dialogue_m1_home', assetUrl('assets/data/dialogue/m1_home.json'));
+    this.load.json('tireshop_map', assetUrl('assets/data/tireshop_map.json'));
+    for (const id of ['m1_shop_arrive', 'm1_ruiz', 'm1_nando']) {
+      this.load.json(`dialogue_${id}`, assetUrl(`assets/data/dialogue/${id}.json`));
+    }
     this.load.spritesheet('mateo_extra', assetUrl('assets/images/mateo_extra.png'), { frameWidth: 32, frameHeight: 32 });
   }
 
@@ -78,6 +82,9 @@ export default class BootScene extends Phaser.Scene {
     createWalkAnimations(this.anims, 'tomi_walk', 'tomi-oneshoe', 9, 4); // rows 4-7: one shoe off
     createWalkAnimations(this.anims, 'ruiz_walk', 'ruiz-walk', 7);
     createWalkAnimations(this.anims, 'nando_walk', 'nando-walk', 8);
+    // Row 4 extras: Sr. Ruiz's pen moving (frames 16-17), Nando wiping his hands (frames 18-19).
+    this.anims.create({ key: 'ruiz-writing', frames: this.anims.generateFrameNumbers('ruiz_walk', { start: 16, end: 17 }), frameRate: 3, repeat: -1 });
+    this.anims.create({ key: 'nando-wiping', frames: this.anims.generateFrameNumbers('nando_walk', { start: 18, end: 19 }), frameRate: 5, repeat: -1 });
     // Dev-only: ?checkpoint=<id> (dev tools start the checkpoint instead of the normal first scene).
     if (import.meta.env.DEV && this.game.devTools?.handleBoot()) {
       this.scene.stop();

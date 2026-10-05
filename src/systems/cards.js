@@ -51,3 +51,24 @@ export function fadeInFromBlack(scene, ms = 800) {
     });
   });
 }
+
+/**
+ * A card that stays up until any key is pressed (e.g. the end of what's built so far). Fades to black,
+ * shows the line, and resolves on the next key press.
+ */
+export function showCardUntilKey(scene, text, { size = 16, fadeMs = 800 } = {}) {
+  const cam = scene.cameras.main;
+  const black = scene.add.rectangle(0, 0, cam.width, cam.height, 0x000000).setOrigin(0, 0).setScrollFactor(0).setDepth(CARD_DEPTH).setAlpha(0);
+  return new Promise((resolve) => {
+    scene.tweens.add({
+      targets: black,
+      alpha: 1,
+      duration: fadeMs,
+      onComplete: () => {
+        const t = pixelText(scene, 0, 0, text, { size }).setScrollFactor(0).setDepth(CARD_DEPTH + 1);
+        t.setPosition(Math.round((cam.width - t.width) / 2), Math.round((cam.height - t.height) / 2));
+        scene.input.keyboard.once('keydown', () => resolve());
+      },
+    });
+  });
+}

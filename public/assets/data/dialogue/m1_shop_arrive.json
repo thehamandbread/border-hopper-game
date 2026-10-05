@@ -1,0 +1,16 @@
+{
+ "id": "m1_shop_arrive",
+ "presenter": "box",
+ "lockMovement": true,
+ "start": "a1",
+ "nodes": {
+  "a1": {
+   "type": "narration",
+   "text": "Stacked tires. An air compressor running. A radio playing somewhere in the back. A man in his sixties stands at the counter, writing in a receipt book.",
+   "next": "end"
+  },
+  "end": {
+   "type": "end"
+  }
+ }
+}

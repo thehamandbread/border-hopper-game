@@ -1,0 +1,87 @@
+{
+ "id": "m1_ruiz",
+ "presenter": "box",
+ "lockMovement": true,
+ "start": "r01",
+ "nodes": {
+  "r01": {
+   "type": "line",
+   "speaker": "SR. RUIZ",
+   "text": "Morning. Flat?",
+   "next": "r02"
+  },
+  "r02": {
+   "type": "line",
+   "speaker": "MATEO",
+   "text": "I'm looking for Nando.",
+   "next": "r03"
+  },
+  "r03": {
+   "type": "event",
+   "name": "ruiz_looks_up",
+   "next": "r04"
+  },
+  "r04": {
+   "type": "narration",
+   "text": "Sr. Ruiz looks up from the receipt book.",
+   "next": "r05"
+  },
+  "r05": {
+   "type": "line",
+   "speaker": "SR. RUIZ",
+   "text": "You're Tomi's brother. Same face.",
+   "next": "r06"
+  },
+  "r06": {
+   "type": "line",
+   "speaker": "MATEO",
+   "text": "…Yeah.",
+   "next": "r07"
+  },
+  "r07": {
+   "type": "line",
+   "speaker": "SR. RUIZ",
+   "text": "Good kid, your brother. He was here Saturday asking a hundred questions about the balancer.",
+   "next": "r08"
+  },
+  "r08": {
+   "type": "choice",
+   "options": [
+    {
+     "text": "Don't tell him I was here.",
+     "effects": [
+      {
+       "flag": "ruiz_secret",
+       "set": true
+      }
+     ],
+     "next": "r09"
+    },
+    {
+     "text": "(Say nothing.)",
+     "next": "r11"
+    }
+   ]
+  },
+  "r09": {
+   "type": "narration",
+   "text": "Sr. Ruiz looks at him a moment longer.",
+   "next": "r10"
+  },
+  "r10": {
+   "type": "line",
+   "speaker": "SR. RUIZ",
+   "text": "Sure. Nando's in the back.",
+   "next": "end"
+  },
+  "r11": {
+   "type": "line",
+   "speaker": "SR. RUIZ",
+   "text": "Nando's in the back.",
+   "next": "end"
+  },
+  "end": {
+   "type": "end"
+  }
+ }
+}

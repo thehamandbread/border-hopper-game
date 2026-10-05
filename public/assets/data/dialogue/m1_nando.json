@@ -1,0 +1,101 @@
+{
+ "id": "m1_nando",
+ "presenter": "box",
+ "lockMovement": true,
+ "start": "d01",
+ "nodes": {
+  "d01": {
+   "type": "narration",
+   "text": "In the back, a pair of legs sticks out from under a pickup truck.",
+   "next": "d02"
+  },
+  "d02": {
+   "type": "line",
+   "speaker": "MATEO",
+   "text": "Nando?",
+   "next": "d03"
+  },
+  "d03": {
+   "type": "line",
+   "speaker": "NANDO",
+   "text": "Who's asking?",
+   "next": "d04"
+  },
+  "d04": {
+   "type": "line",
+   "speaker": "MATEO",
+   "text": "Mateo. I was told to—",
+   "next": "d05"
+  },
+  "d05": {
+   "type": "line",
+   "speaker": "NANDO",
+   "text": "Yeah. Hold on.",
+   "next": "d06"
+  },
+  "d06": {
+   "type": "event",
+   "name": "nando_rolls_out",
+   "wait": true,
+   "next": "d07"
+  },
+  "d07": {
+   "type": "event",
+   "name": "nando_gets_envelope",
+   "next": "d08"
+  },
+  "d08": {
+   "type": "narration",
+   "text": "He rolls out on a creeper and wipes his hands on a rag. He opens a drawer in the workbench and takes out a thin envelope.",
+   "next": "d09"
+  },
+  "d09": {
+   "type": "event",
+   "name": "nando_returns",
+   "wait": true,
+   "next": "d10"
+  },
+  "d10": {
+   "type": "line",
+   "speaker": "NANDO",
+   "text": "Don't open it. Walt, at the laundromat on Fourth Street. In Three Hills.",
+   "next": "d11"
+  },
+  "d11": {
+   "type": "line",
+   "speaker": "MATEO",
+   "text": "And then?",
+   "next": "d12"
+  },
+  "d12": {
+   "type": "line",
+   "speaker": "NANDO",
+   "text": "That's it.",
+   "next": "d13"
+  },
+  "d13": {
+   "type": "narration",
+   "text": "He holds out the envelope. Someone has signed across the flap.",
+   "next": "d14"
+  },
+  "d14": {
+   "type": "event",
+   "name": "give_envelope",
+   "next": "d15"
+  },
+  "d15": {
+   "type": "event",
+   "name": "nando_back_under",
+   "wait": true,
+   "next": "d16"
+  },
+  "d16": {
+   "type": "narration",
+   "text": "Mateo puts it inside his jacket. Nando is already back under the truck.",
+   "next": "end"
+  },
+  "end": {
+   "type": "end"
+  }
+ }
+}
