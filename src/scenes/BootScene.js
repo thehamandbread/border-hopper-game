@@ -63,6 +63,8 @@ export default class BootScene extends Phaser.Scene {
     for (const who of ['abuela', 'tomi', 'ruiz', 'nando']) {
       this.load.spritesheet(`${who}_walk`, assetUrl(`assets/images/${who}_walk.png`), { frameWidth: 16, frameHeight: 32 });
     }
+    this.load.json('apartment_map', assetUrl('assets/data/apartment_map.json'));
+    this.load.json('dialogue_m1_home', assetUrl('assets/data/dialogue/m1_home.json'));
     this.load.spritesheet('mateo_extra', assetUrl('assets/images/mateo_extra.png'), { frameWidth: 32, frameHeight: 32 });
   }
 

@@ -19,7 +19,9 @@ const BIG_H = 150;
 const BIG_SCREEN = { x: 6, y: 16, w: 100, h: 118 };
 const SLIDE_MS = 260;
 const TEXT_DEPTH = PHONE_DEPTH + 60;
-const MSG_WRAP = 84;
+const MSG_WRAP = 88;     // message text width; bubbles are 8 px wider, filling the screen less 2 px each side
+const MSG_LINE_H = 9;    // the font's line height
+const HINT_H = 11;       // the "Q: close" row at the bottom of the screen
 
 /**
  * The corner phone: a small icon fixed to the camera in the bottom-right. States:
@@ -179,20 +181,26 @@ export default class PhoneUI extends Phaser.Events.EventEmitter {
     add(this.scene.add.rectangle(sx + 4, ruleY, BIG_SCREEN.w - 8, 1, 0x2c3448).setOrigin(0, 0));
     let y = ruleY + 5;
     if (!this.messages.length) add(pixelText(this.scene, sx + 4, y, 'No messages.', { color: 0x8890a0 }));
-    for (const m of this.messages) {
+    // Newest messages last; if the thread is taller than the screen, the oldest ones are left out.
+    const bubbles = this.messages.map((m) => {
       const wrapped = wrapText(this.scene, m.text, MSG_WRAP);
       const lines = wrapped.split('\n');
       const w = Math.ceil(Math.max(...lines.map((l) => textWidth(this.scene, l)))) + 8;
-      const h = lines.length * 10 + 5;
+      return { wrapped, w, h: lines.length * MSG_LINE_H + 5 };
+    });
+    const room = sy + BIG_SCREEN.h - HINT_H - y;
+    let first = bubbles.length;
+    for (let used = 0; first > 0 && used + bubbles[first - 1].h <= room; first--) used += bubbles[first - 1].h + 4;
+    for (const { wrapped, w, h } of bubbles.slice(Math.min(first, bubbles.length - 1))) {
       const g = this.scene.add.graphics();
-      g.fillStyle(0x2a3448).fillRoundedRect(sx + 4, y, w, h, 3);
+      g.fillStyle(0x2a3448).fillRoundedRect(sx + 2, y, w, h, 3);
       add(g);
       g.baseY = 0;
       g.offsetOnly = true;
-      add(pixelText(this.scene, sx + 8, y + 3, wrapped));
+      add(pixelText(this.scene, sx + 6, y + 3, wrapped));
       y += h + 4;
     }
-    const hint = pixelText(this.scene, 0, sy + BIG_SCREEN.h - 11, 'Q: close', { color: 0x8890a0 });
+    const hint = pixelText(this.scene, 0, sy + BIG_SCREEN.h - HINT_H, 'Q: close', { color: 0x8890a0 });
     hint.setX(Math.round(sx + (BIG_SCREEN.w - textWidth(this.scene, 'Q: close')) / 2));
     add(hint);
   }

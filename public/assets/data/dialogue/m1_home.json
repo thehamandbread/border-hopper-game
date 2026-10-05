@@ -1,0 +1,346 @@
+{
+ "id": "m1_home",
+ "presenter": "box",
+ "lockMovement": true,
+ "start": "n01",
+ "nodes": {
+  "n01": {
+   "type": "narration",
+   "text": "Abuela is at the stove. A pan of eggs.",
+   "next": "n02"
+  },
+  "n02": {
+   "type": "line",
+   "speaker": "ABUELA",
+   "text": "Sit down and eat something, mijo.",
+   "next": "n03"
+  },
+  "n03": {
+   "type": "event",
+   "name": "mateo_sits",
+   "wait": true,
+   "next": "n04"
+  },
+  "n04": {
+   "type": "line",
+   "speaker": "MATEO",
+   "text": "I'm not hungry.",
+   "next": "n05"
+  },
+  "n05": {
+   "type": "line",
+   "speaker": "ABUELA",
+   "text": "You didn't eat last night. Eat a little.",
+   "next": "n06"
+  },
+  "n06": {
+   "type": "event",
+   "name": "abuela_brings_plate",
+   "wait": true,
+   "next": "n07"
+  },
+  "n07": {
+   "type": "event",
+   "name": "plate_down",
+   "next": "n08"
+  },
+  "n08": {
+   "type": "narration",
+   "text": "She sets a plate in front of him.",
+   "next": "n09"
+  },
+  "n09": {
+   "type": "line",
+   "speaker": "ABUELA",
+   "text": "You still smell like smoke.",
+   "next": "n10"
+  },
+  "n10": {
+   "type": "line",
+   "speaker": "MATEO",
+   "text": "I'll shower after.",
+   "next": "n11"
+  },
+  "n11": {
+   "type": "line",
+   "speaker": "TOMI",
+   "text": "Abuela, where's my other shoe?",
+   "next": "n12"
+  },
+  "n12": {
+   "type": "line",
+   "speaker": "ABUELA",
+   "text": "It's where you left it.",
+   "next": "n13"
+  },
+  "n13": {
+   "type": "event",
+   "name": "abuela_sits",
+   "wait": true,
+   "next": "n14"
+  },
+  "n14": {
+   "type": "narration",
+   "text": "She sits down across from Mateo.",
+   "next": "n15"
+  },
+  "n15": {
+   "type": "line",
+   "speaker": "ABUELA",
+   "text": "Chuy came by this morning, before seven.",
+   "next": "n16"
+  },
+  "n16": {
+   "type": "line",
+   "speaker": "ABUELA",
+   "text": "He said the pills were already taken care of.",
+   "next": "n17"
+  },
+  "n17": {
+   "type": "event",
+   "name": "bottle_down",
+   "next": "n18"
+  },
+  "n18": {
+   "type": "narration",
+   "text": "She sets the pill bottle on the table between them. She waits.",
+   "next": "n19"
+  },
+  "n19": {
+   "type": "choice",
+   "options": [
+    {
+     "text": "That was nice of him.",
+     "effects": [
+      {
+       "answer": "abuela_morning",
+       "set": "deflect"
+      }
+     ],
+     "next": "n20"
+    },
+    {
+     "text": "I'll pay him back.",
+     "effects": [
+      {
+       "answer": "abuela_morning",
+       "set": "promise"
+      }
+     ],
+     "next": "n22"
+    },
+    {
+     "text": "(Say nothing.)",
+     "effects": [
+      {
+       "answer": "abuela_morning",
+       "set": "silent"
+      }
+     ],
+     "next": "n25"
+    }
+   ]
+  },
+  "n20": {
+   "type": "line",
+   "speaker": "ABUELA",
+   "text": "Yes. It was.",
+   "next": "n21"
+  },
+  "n21": {
+   "type": "narration",
+   "text": "She doesn't pick the bottle back up.",
+   "next": "n26"
+  },
+  "n22": {
+   "type": "line",
+   "speaker": "MATEO",
+   "text": "I'll find something. When they cut my hours, I covered rent anyway. I'll cover this.",
+   "next": "n23"
+  },
+  "n23": {
+   "type": "line",
+   "speaker": "ABUELA",
+   "text": "I know you will.",
+   "next": "n24"
+  },
+  "n24": {
+   "type": "narration",
+   "text": "She keeps looking at him.",
+   "next": "n26"
+  },
+  "n25": {
+   "type": "narration",
+   "text": "Mateo eats. Abuela turns the bottle until the label faces her.",
+   "next": "n26"
+  },
+  "n26": {
+   "type": "narration",
+   "text": "Mateo's phone buzzes.",
+   "next": "n27"
+  },
+  "n27": {
+   "type": "event",
+   "name": "text_message",
+   "data": {
+    "from": "Unknown number",
+    "text": "Good morning, Mateo. Please be at Llantera Ruiz, Calle Morelos 214, at ten o'clock. Ask for Nando."
+   },
+   "wait": true,
+   "next": "n28"
+  },
+  "n28": {
+   "type": "event",
+   "name": "tomi_enters",
+   "wait": true,
+   "next": "n29"
+  },
+  "n29": {
+   "type": "narration",
+   "text": "Tomi is behind him, reading over his shoulder. He has one shoe on.",
+   "next": "n30"
+  },
+  "n30": {
+   "type": "line",
+   "speaker": "TOMI",
+   "text": "That's Beto's uncle's shop.",
+   "next": "n31"
+  },
+  "n31": {
+   "type": "line",
+   "speaker": "MATEO",
+   "text": "Don't read my phone.",
+   "next": "n32"
+  },
+  "n32": {
+   "type": "line",
+   "speaker": "TOMI",
+   "text": "Did he hire you? Are you working there now? Because I know where everything is, Teo, I was there Saturday, I can show you where they keep the—",
+   "next": "n33"
+  },
+  "n33": {
+   "type": "line",
+   "speaker": "MATEO",
+   "text": "It's not like that.",
+   "next": "n34"
+  },
+  "n34": {
+   "type": "line",
+   "speaker": "TOMI",
+   "text": "Then what is it?",
+   "next": "n35"
+  },
+  "n35": {
+   "type": "narration",
+   "text": "Abuela is watching them both.",
+   "next": "n36"
+  },
+  "n36": {
+   "type": "choice",
+   "options": [
+    {
+     "text": "Go to school, Tomi.",
+     "next": "n37"
+    },
+    {
+     "text": "Next time. Maybe.",
+     "effects": [
+      {
+       "flag": "tomi_involved",
+       "add": 1
+      }
+     ],
+     "next": "n40"
+    }
+   ]
+  },
+  "n37": {
+   "type": "line",
+   "speaker": "TOMI",
+   "text": "Fine. Whatever.",
+   "next": "n38"
+  },
+  "n38": {
+   "type": "narration",
+   "text": "He grabs his backpack and leaves.",
+   "next": "n39"
+  },
+  "n39": {
+   "type": "event",
+   "name": "tomi_leaves",
+   "wait": true,
+   "next": "n44"
+  },
+  "n40": {
+   "type": "line",
+   "speaker": "TOMI",
+   "text": "For real?",
+   "next": "n41"
+  },
+  "n41": {
+   "type": "line",
+   "speaker": "MATEO",
+   "text": "Maybe. Go to school.",
+   "next": "n42"
+  },
+  "n42": {
+   "type": "narration",
+   "text": "Tomi grabs his backpack. He's smiling.",
+   "next": "n43"
+  },
+  "n43": {
+   "type": "event",
+   "name": "tomi_leaves",
+   "wait": true,
+   "next": "n44"
+  },
+  "n44": {
+   "type": "event",
+   "name": "mateo_to_jacket",
+   "wait": true,
+   "next": "n45"
+  },
+  "n45": {
+   "type": "narration",
+   "text": "Mateo stands up and reaches for his jacket.",
+   "next": "n46"
+  },
+  "n46": {
+   "type": "line",
+   "speaker": "ABUELA",
+   "text": "Wait.",
+   "next": "n47"
+  },
+  "n47": {
+   "type": "event",
+   "name": "abuela_brings_tortilla",
+   "wait": true,
+   "next": "n48"
+  },
+  "n48": {
+   "type": "narration",
+   "text": "She wraps the eggs he didn't finish in a tortilla and puts it in his hand.",
+   "next": "n49"
+  },
+  "n49": {
+   "type": "event",
+   "name": "give_tortilla",
+   "next": "n50"
+  },
+  "n50": {
+   "type": "line",
+   "speaker": "ABUELA",
+   "text": "For later.",
+   "next": "n51"
+  },
+  "n51": {
+   "type": "event",
+   "name": "take_jacket",
+   "wait": true,
+   "next": "end"
+  },
+  "end": {
+   "type": "end"
+  }
+ }
+}

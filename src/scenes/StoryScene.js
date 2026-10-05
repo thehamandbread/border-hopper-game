@@ -146,10 +146,18 @@ export default class StoryScene extends Phaser.Scene {
     });
   }
 
-  /** Loads and plays cutscenes/<id>.json; options go to CutsceneRunner (e.g. skipTo). */
-  async playCutscene(id, options = {}) {
-    const data = await CutsceneRunner.load(this, id);
+  /**
+   * Loads and plays cutscenes/<id>.json; options go to CutsceneRunner (e.g. skipTo, things). Mateo's
+   * player sprite is always available as the actor "player" (its physics body is off meanwhile).
+   * prepend: steps to run first (e.g. walking Mateo from wherever he is).
+   */
+  async playCutscene(id, { prepend = [], things = {}, ...options } = {}) {
+    const loaded = await CutsceneRunner.load(this, id);
+    const data = prepend.length ? { ...loaded, steps: [...prepend, ...loaded.steps] } : loaded;
+    this.player.walk = 'walk';
+    this.player.body.enable = false;
     const cutscene = new CutsceneRunner(this, data, {
+      things: { player: this.player, ...things },
       lockInput: (locked) => this.setLock('cutscene', locked),
       startDialogue: (dialogueId, node) => this.startDialogue(dialogueId, node, { routeEvents: false }),
       onStoryEvent: (name, payload, runner, node) => this.handleStoryEvent(name, payload, runner, node),
@@ -157,6 +165,8 @@ export default class StoryScene extends Phaser.Scene {
     });
     this.cutscene = cutscene;
     await cutscene.play();
+    this.player.body.enable = true;
+    this.player.body.reset(this.player.x, this.player.y);
     return cutscene;
   }
 

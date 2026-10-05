@@ -5,6 +5,7 @@ import { gameState } from './systems/GameState.js';
 import RestaurantScene from './scenes/RestaurantScene.js';
 import CurbScene from './scenes/CurbScene.js';
 import ApartmentScene from './scenes/ApartmentScene.js';
+import TireShopScene from './scenes/TireShopScene.js';
 
 const config = {
   type: Phaser.AUTO,
@@ -21,7 +22,7 @@ const config = {
     default: 'arcade',
     arcade: { debug: false },
   },
-  scene: [BootScene, MovementTestScene, RestaurantScene, CurbScene, ApartmentScene],
+  scene: [BootScene, MovementTestScene, RestaurantScene, CurbScene, ApartmentScene, TireShopScene],
 };
 
 if (import.meta.env.DEV) {

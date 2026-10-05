@@ -45,13 +45,24 @@ const tileToFeet = ([tx, ty]) => ({ x: tx * TILE + TILE / 2, y: (ty + 1) * TILE 
  *   end         {}
  *
  * Options: lockInput(bool), startDialogue(id, startNode?) -> DialogueRunner, onEnd(), onStoryEvent(name, data),
- * skipTo, preEvents, dialogueNodes (see the constructor).
+ * skipTo, preEvents, dialogueNodes (see the constructor), things: { id: sprite } the scene's own sprites to
+ * use as actors and objects (set sprite.walk / sprite.facing on actors; sprite.frameOffset picks their
+ * standing frames from later sheet rows, e.g. Tomi's one-shoe walk).
  */
 export default class CutsceneRunner {
   constructor(
     scene,
     data,
-    { lockInput = () => {}, startDialogue, onEnd = () => {}, onStoryEvent, skipTo, preEvents = [], dialogueNodes = {} } = {},
+    {
+      lockInput = () => {},
+      startDialogue,
+      onEnd = () => {},
+      onStoryEvent,
+      skipTo,
+      preEvents = [],
+      dialogueNodes = {},
+      things = {},
+    } = {},
   ) {
     // Starting partway (e.g. for playtesting): steps before the one labelled `skipTo` are fast-forwarded
     // (applied instantly, waits and dialogue skipped), then the `preEvents` step lists are applied
@@ -79,6 +90,7 @@ export default class CutsceneRunner {
       .setDepth(OVERLAY_DEPTH)
       .setAlpha(data.startBlack ? 1 : 0);
     this.createThings();
+    for (const [id, sprite] of Object.entries(things)) this.things.set(id, sprite);
   }
 
   /** Loads a cutscene file (and any dialogue it uses) at runtime, then resolves with its data. */
@@ -171,7 +183,7 @@ export default class CutsceneRunner {
         a.setPosition(last.x, last.y).setDepth(this.actorDepth(last.y));
         if (a.walk) {
           a.anims.stop();
-          a.setFrame(standingFrame(a.facing));
+          a.setFrame((a.frameOffset ?? 0) + standingFrame(a.facing));
         }
         break;
       }
@@ -346,7 +358,7 @@ export default class CutsceneRunner {
     a.y = Math.round(a.y);
     if (a.walk) {
       a.anims.stop();
-      a.setFrame(standingFrame(a.facing));
+      a.setFrame((a.frameOffset ?? 0) + standingFrame(a.facing));
     }
   }
 

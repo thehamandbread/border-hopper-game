@@ -1,0 +1,342 @@
+{
+ "_comment": "Mission 1, Scene 1 breakfast. Actors and props are the scene's own sprites (ApartmentScene passes them in): player, abuela, tomi, mateoSit, plate, bottle, backpack, jacket. Frames: player/abuela down 0, up 4, right 8, left 12; abuela sitting 16; tomi's one-shoe rows start at 16 (his frameOffset).",
+ "steps": [
+  {
+   "type": "setFrame",
+   "actor": "player",
+   "frame": 4
+  },
+  {
+   "type": "wait",
+   "ms": 250
+  },
+  {
+   "type": "dialogue",
+   "id": "m1_home",
+   "label": "conversation"
+  }
+ ],
+ "events": {
+  "mateo_sits": [
+   {
+    "type": "show",
+    "actor": "player",
+    "visible": false
+   },
+   {
+    "type": "show",
+    "object": "mateoSit",
+    "visible": true
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   }
+  ],
+  "abuela_brings_plate": [
+   {
+    "type": "moveActor",
+    "actor": "abuela",
+    "path": [
+     [
+      3,
+      6
+     ]
+    ],
+    "speed": 32
+   },
+   {
+    "type": "setFrame",
+    "actor": "abuela",
+    "frame": 8
+   },
+   {
+    "type": "wait",
+    "ms": 250
+   }
+  ],
+  "plate_down": [
+   {
+    "type": "show",
+    "object": "plate",
+    "visible": true
+   }
+  ],
+  "abuela_sits": [
+   {
+    "type": "moveActor",
+    "actor": "abuela",
+    "path": [
+     [
+      3,
+      3
+     ],
+     [
+      4,
+      3
+     ]
+    ],
+    "speed": 32
+   },
+   {
+    "type": "setFrame",
+    "actor": "abuela",
+    "frame": 0
+   },
+   {
+    "type": "wait",
+    "ms": 200
+   },
+   {
+    "type": "setFrame",
+    "actor": "abuela",
+    "frame": 16
+   },
+   {
+    "type": "tween",
+    "actor": "abuela",
+    "to": {
+     "y": 83
+    },
+    "ms": 1
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   }
+  ],
+  "bottle_down": [
+   {
+    "type": "show",
+    "object": "bottle",
+    "visible": true
+   }
+  ],
+  "tomi_enters": [
+   {
+    "type": "show",
+    "actor": "tomi",
+    "visible": true
+   },
+   {
+    "type": "moveActor",
+    "actor": "tomi",
+    "path": [
+     [
+      18,
+      3
+     ],
+     [
+      6,
+      3
+     ],
+     [
+      6,
+      8
+     ],
+     [
+      4,
+      8
+     ]
+    ],
+    "speed": 56
+   },
+   {
+    "type": "setFrame",
+    "actor": "tomi",
+    "frame": 20
+   },
+   {
+    "type": "wait",
+    "ms": 250
+   }
+  ],
+  "tomi_leaves": [
+   {
+    "type": "moveActor",
+    "actor": "tomi",
+    "path": [
+     [
+      6,
+      8
+     ],
+     [
+      6,
+      9
+     ],
+     [
+      16,
+      9
+     ]
+    ],
+    "speed": 60
+   },
+   {
+    "type": "setFrame",
+    "actor": "tomi",
+    "frame": 24
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   },
+   {
+    "type": "show",
+    "object": "backpack",
+    "visible": false
+   },
+   {
+    "type": "wait",
+    "ms": 250
+   },
+   {
+    "type": "moveActor",
+    "actor": "tomi",
+    "path": [
+     [
+      16,
+      10
+     ]
+    ],
+    "speed": 50
+   },
+   {
+    "type": "show",
+    "actor": "tomi",
+    "visible": false
+   },
+   {
+    "type": "wait",
+    "ms": 400
+   }
+  ],
+  "mateo_to_jacket": [
+   {
+    "type": "show",
+    "object": "mateoSit",
+    "visible": false
+   },
+   {
+    "type": "show",
+    "actor": "player",
+    "visible": true
+   },
+   {
+    "type": "setFrame",
+    "actor": "player",
+    "frame": 0
+   },
+   {
+    "type": "wait",
+    "ms": 250
+   },
+   {
+    "type": "moveActor",
+    "actor": "player",
+    "path": [
+     [
+      6,
+      8
+     ],
+     [
+      6,
+      2
+     ],
+     [
+      7,
+      2
+     ]
+    ],
+    "speed": 60
+   },
+   {
+    "type": "setFrame",
+    "actor": "player",
+    "frame": 4
+   },
+   {
+    "type": "wait",
+    "ms": 200
+   }
+  ],
+  "abuela_brings_tortilla": [
+   {
+    "type": "setFrame",
+    "actor": "abuela",
+    "frame": 0
+   },
+   {
+    "type": "tween",
+    "actor": "abuela",
+    "to": {
+     "y": 64
+    },
+    "ms": 1
+   },
+   {
+    "type": "wait",
+    "ms": 250
+   },
+   {
+    "type": "show",
+    "object": "plate",
+    "visible": false
+   },
+   {
+    "type": "moveActor",
+    "actor": "abuela",
+    "path": [
+     [
+      5,
+      3
+     ],
+     [
+      6,
+      3
+     ],
+     [
+      6,
+      2
+     ]
+    ],
+    "speed": 34
+   },
+   {
+    "type": "setFrame",
+    "actor": "abuela",
+    "frame": 8
+   },
+   {
+    "type": "setFrame",
+    "actor": "player",
+    "frame": 12
+   },
+   {
+    "type": "wait",
+    "ms": 250
+   }
+  ],
+  "give_tortilla": [
+   {
+    "type": "setFlag",
+    "flag": "has_tortilla",
+    "value": true
+   }
+  ],
+  "take_jacket": [
+   {
+    "type": "wait",
+    "ms": 300
+   },
+   {
+    "type": "show",
+    "object": "jacket",
+    "visible": false
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   }
+  ]
+ }
+}
