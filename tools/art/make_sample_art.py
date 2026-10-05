@@ -22,6 +22,9 @@ Outputs:
   tools/art/previews/kitchen_door_6x.png, task_marker_6x.png, restaurant_walls_preview.png,
   tools/art/previews/phone_ledge_6x.png, phone_ui_4x.png, phone_icon_6x.png,
   tools/art/previews/curb_scene.png and 6x previews of each curb image
+  Mission 1: apartment_tiles.png, apartment_props.png, tireshop_tiles.png, pickup_truck.png, creeper.png,
+  abuela_walk.png, tomi_walk.png, ruiz_walk.png, nando_walk.png, mateo_extra.png (see the README),
+  and previews apartment_scene.png, tireshop_scene.png, m1_lineup_1x/6x.png
 Paths are resolved relative to this file, so it runs from any working directory.
 """
 import random
@@ -1441,6 +1444,1383 @@ def make_walls_preview(tiles, door, marker):
     return img
 
 
+# ---------------- Mission 1: characters ----------------
+# Mission 1 art uses its own random stream (mrng) and its own frame builder, so nothing here can change
+# an earlier output. Characters are built bottom-up: every character's feet end on the same row as
+# Mateo's (row 28 of the 16x32 frame), whatever their height.
+mrng = random.Random(51)
+FEET_ROW = 28
+
+
+def check_rows(name, rows, width=FW):
+    for r in rows:
+        assert len(r) == width, f"{name}: row {r!r} is {len(r)} wide, not {width}"
+    return rows
+
+
+LEGS_MATEO = {"front": [(4, 3), (9, 3)], "stand": (7, 3), "back": (5, 3), "fwd": (9, 3)}
+
+
+def draw_char_legs(px, ch, view, step, ly, bare):
+    """Legs and shoes in Mateo's style. bare: the character's own left foot has no shoe (sock 'K')."""
+    L = ch["legs"]
+    g = ch.get("leg_geom", LEGS_MATEO)
+    if view in ("front", "back"):
+        lifts = (1 if step == 1 else 0, 1 if step == 3 else 0)
+        for i, ((x0, w), lift) in enumerate(zip(g["front"], lifts)):
+            h = L - lift
+            rect(px, x0, ly, w, h, "J")
+            rect(px, x0 + w - 1 if i == 0 else x0, ly, 1, h, "j")     # inner-side shading
+            own_left = (i == 1) if view == "front" else (i == 0)
+            shoe = "K" if bare and own_left else ("b" if view == "back" else "B")
+            rect(px, x0, ly + h, w, 2, shoe)
+    elif step in (0, 2):
+        x0, w = g["stand"]
+        rect(px, x0, ly, w, L, "J")
+        rect(px, x0 + w - 1, ly, 1, L, "j")
+        rect(px, x0, ly + L, w + 1, 2, "B")
+    else:
+        near, far = ("J", "j") if step == 1 else ("j", "J")
+        bx, bw = g["back"]
+        fx, fw = g["fwd"]
+        rect(px, bx, ly, bw, L - 1, far)                               # back leg
+        rect(px, bx - 1, ly + L - 1, bw + 1, 2, "K" if bare else "b")
+        rect(px, fx, ly, fw, L - 1, near)                              # front leg
+        rect(px, fx, ly + L - 1, fw + 1, 2, "B")
+
+
+def char_frame(direction, step, ch, bare=False):
+    CUR["pal"] = ch["pal"]
+    img = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+    px = img.load()
+    view = {"down": "front", "up": "back"}.get(direction, "side")
+    head = ch["head_" + {"front": "down", "back": "up", "side": "side"}[view]]
+    torso = ch["torso_" + view]
+    skirt = ch.get("skirt_" + view, [])
+    total = len(head) + len(torso) + len(skirt) + ch["legs"] + 2
+    y = FEET_ROW + 1 - total + (ch["bob"] if step in (1, 3) else 0)
+    blit_rows(px, torso, y + len(head))
+    blit_rows(px, head, y)
+    blit_rows(px, skirt, y + len(head) + len(torso))
+    draw_char_legs(px, ch, view, step, y + len(head) + len(torso) + len(skirt), bare)
+    outline(img)
+    CUR["pal"] = PAL
+    return img
+
+
+def char_sheet(ch, extra_rows=()):
+    """mateo_walk.png layout (rows down, up, right, left; 4 frames each), plus extra rows of frames."""
+    sheet = Image.new("RGBA", (FW * 4, FH * (4 + len(extra_rows))), (0, 0, 0, 0))
+    frames = {}
+    for r, d in enumerate(("down", "up", "right")):
+        for f in range(4):
+            frames[(d, f)] = char_frame(d, f, ch)
+            sheet.paste(frames[(d, f)], (f * FW, r * FH))
+    for f in range(4):
+        frames[("left", f)] = frames[("right", f)].transpose(Image.FLIP_LEFT_RIGHT)
+        sheet.paste(frames[("left", f)], (f * FW, 3 * FH))
+    for r, row in enumerate(extra_rows):
+        for f, fr in enumerate(row):
+            sheet.paste(fr, (f * FW, (4 + r) * FH))
+    return sheet, frames
+
+
+def rows_frame(ch, rows, bottom=FEET_ROW, size=(FW, FH)):
+    """A frame from whole-figure rows (e.g. lying down), drawn so the last row lands on `bottom`."""
+    CUR["pal"] = ch["pal"]
+    img = Image.new("RGBA", size, (0, 0, 0, 0))
+    px = img.load()
+    y0 = bottom - len(rows) + 1
+    for dy, row in enumerate(rows):
+        for x, c in enumerate(row):
+            if c != ".":
+                px[x, y0 + dy] = ch["pal"][c] + (255,)
+    outline(img)
+    CUR["pal"] = PAL
+    return img
+
+
+def seated_frame(ch, head, torso):
+    """Waist-up, for sitting behind a table or standing behind a counter: the frame's bottom row is
+    the edge of the table or counter in front of them (the furniture hides the rest)."""
+    return rows_frame(ch, head + torso, bottom=FH - 1)
+
+
+# Abuela Esperanza: small and upright (3 px shorter than Mateo), gray hair in a bun, plum cardigan
+# over a pale floral housedress, tan stockings, black shoes.
+ABUELA_PAL = {
+    "H": (172, 168, 164), "h": (206, 204, 200),
+    "S": (172, 120, 90), "s": (136, 92, 66), "E": (28, 20, 18),
+    "T": (118, 70, 96), "t": (88, 50, 72),
+    "D": (214, 170, 160), "d": (186, 140, 132), "f": (238, 224, 168),
+    "J": (182, 140, 110), "j": (150, 112, 86),
+    "B": (44, 36, 36), "b": (30, 24, 24), "K": (230, 228, 222),
+}
+ABUELA = {
+    "pal": ABUELA_PAL, "legs": 2, "bob": 1,
+    "leg_geom": {"front": [(5, 2), (9, 2)], "stand": (7, 2), "back": (6, 2), "fwd": (8, 2)},
+    "head_down": check_rows("abuela", [
+        "......HhHH......",
+        ".....HHHHHH.....",
+        "....HHhHHhHH....",
+        "....HHSSSSHH....",
+        "....HSESSESH....",
+        "....SSSSSSSS....",
+        ".....sSSSSs.....",
+        "......ssss......",
+    ]),
+    "head_up": check_rows("abuela", [
+        "......HhHH......",
+        ".....HHhhHH.....",
+        "....HHHhhHHH....",
+        "....HHHHHHHH....",
+        "....HHHHHHHH....",
+        "....HHHHHHHH....",
+        ".....sHHHHs.....",
+        "......ssss......",
+    ]),
+    "head_side": check_rows("abuela", [
+        "......HHHH......",
+        "...HhHHHHHH.....",
+        "...HHHHHHSSS....",
+        "....HHHSSSESS...",
+        "....HHSSSSSSS...",
+        ".....sSSSSSS....",
+        "......sSSSs.....",
+        ".......sss......",
+    ]),
+    "torso_front": check_rows("abuela", [
+        ".....TTTTTT.....",
+        "....TTTDDTTT....",
+        "....TtTDDTtT....",
+        "....TtTDDTtT....",
+        "....STDDDDTS....",
+    ]),
+    "torso_back": check_rows("abuela", [
+        ".....tTTTTt.....",
+        "....TTttttTT....",
+        "....TtTTTTtT....",
+        "....TtTTTTtT....",
+        "....STTTTTTS....",
+    ]),
+    "torso_side": check_rows("abuela", [
+        "......TTTT......",
+        ".....TTTTTD.....",
+        ".....TtTTTD.....",
+        ".....TtTTTD.....",
+        ".....tSttTD.....",
+    ]),
+    "skirt_front": check_rows("abuela", [
+        "....DdDDDDdD....",
+        "....DDDfDDDD....",
+        "...DDfDDDDfDD...",
+    ]),
+    "skirt_back": check_rows("abuela", [
+        "....DDDDDDDD....",
+        "....DdDDfDdD....",
+        "...DDDDDDDDDD...",
+    ]),
+    "skirt_side": check_rows("abuela", [
+        ".....DDDDDD.....",
+        ".....DDfDDD.....",
+        "....DDDDDDDD....",
+    ]),
+}
+
+# Tomi: 14, 3 px shorter than Mateo, messy black hair, white school polo, navy school pants, black shoes.
+TOMI_PAL = {
+    "H": (30, 24, 24), "h": (62, 50, 48),
+    "S": (170, 114, 80), "s": (134, 88, 62), "E": (28, 20, 18),
+    "T": (228, 226, 220), "t": (186, 184, 180),
+    "J": (54, 58, 80), "j": (40, 42, 60),
+    "B": (36, 32, 34), "b": (24, 22, 24), "K": (238, 236, 230),
+}
+TOMI = {
+    "pal": TOMI_PAL, "legs": 4, "bob": 1,
+    "head_down": check_rows("tomi", [
+        "....H.HHH.H.....",
+        "...HHHHhHHHH....",
+        "...HHhHHHHhHH...",
+        "...HHSSSSSSHH...",
+        "...HSSESSESSH...",
+        "....SSSSSSSS....",
+        ".....sSSSSs.....",
+        "......ssss......",
+    ]),
+    "head_up": check_rows("tomi", [
+        "....H.HHH.H.....",
+        "...HHHHHHHHH....",
+        "...HHhHHHHhHH...",
+        "...HHHHHhHHHH...",
+        "...HHHHHHHHHH...",
+        "....HHHHHHHH....",
+        ".....sSSSSs.....",
+        "......ssss......",
+    ]),
+    "head_side": check_rows("tomi", [
+        ".....H.HHH......",
+        "....HHHHhHH.....",
+        "....HHHHHHHH....",
+        "....HHHHSSSS....",
+        "....HHHSSSSSS...",
+        "....HHHSSSESS...",
+        ".....HSSSSSS....",
+        "......sSSSs.....",
+    ]),
+    "torso_front": check_rows("tomi", [
+        "....TTtTTtTT....",
+        "...TTTTtTTTT....",
+        "...TtTTTTTTtT...",
+        "...TtTTTTTTtT...",
+        "...SttttttttS...",
+        "....JJJJJJJJ....",
+    ]),
+    "torso_back": check_rows("tomi", [
+        "....tTTTTTTt....",
+        "...TTttttttTT...",
+        "...TtTTTTTTtT...",
+        "...TtTTTTTTtT...",
+        "...SttttttttS...",
+        "....JJJJJJJJ....",
+    ]),
+    "torso_side": check_rows("tomi", [
+        ".....TTTTTT.....",
+        ".....TtTTTTT....",
+        ".....TtTTTTT....",
+        ".....TtTTTTT....",
+        ".....tSttttt....",
+        "......JJJJJ.....",
+    ]),
+}
+
+# Sr. Ruiz: 60s, mustard work cap, glasses, gray mustache, a little heavyset (wide torso), light blue
+# work shirt, gray work pants, brown boots.
+RUIZ_PAL = {
+    "C": (198, 152, 60), "c": (156, 116, 42),
+    "H": (150, 146, 140), "h": (182, 178, 172),
+    "S": (168, 112, 80), "s": (132, 88, 62), "E": (28, 20, 18),
+    "G": (44, 44, 52), "M": (140, 136, 130),
+    "T": (140, 170, 196), "t": (108, 136, 162),
+    "J": (100, 96, 90), "j": (76, 72, 68),
+    "B": (98, 64, 42), "b": (72, 46, 30), "K": (230, 228, 222),
+    "W": (236, 232, 220), "w": (176, 170, 160), "P": (40, 52, 140),
+}
+RUIZ_HEAD_DOWN = check_rows("ruiz", [
+    "....CCCCCCCC....",
+    "...CCCCCCCCCC...",
+    "..cccccccccccc..",
+    "...HSSSSSSSSH...",
+    "...HSGGSSGGSH...",
+    "...HSSSSSSSSH...",
+    "....SMMMMMMS....",
+    ".....sSSSSs.....",
+    "......ssss......",
+])
+RUIZ_TORSO_FRONT = check_rows("ruiz", [
+    "...TTTTTTTTTT...",
+    ".TTTTTTTTTTTTTT.",
+    ".TtTTTTTTTTTTtT.",
+    ".TtTTTTTTTTTTtT.",
+    ".TtTTTTTTTTTTtT.",
+    ".SttttttttttttS.",
+    "...JJJJJJJJJJ...",
+])
+RUIZ = {
+    "pal": RUIZ_PAL, "legs": 5, "bob": 1,
+    "head_down": RUIZ_HEAD_DOWN,
+    "head_up": check_rows("ruiz", [
+        "....CCCCCCCC....",
+        "...CCCCCCCCCC...",
+        "...CCCCcCCCCC...",
+        "...HHHHHHHHHH...",
+        "...HHHHHHHHHH...",
+        "...HHHHHHHHHH...",
+        "....HHHHHHHH....",
+        ".....sSSSSs.....",
+        "......ssss......",
+    ]),
+    "head_side": check_rows("ruiz", [
+        ".....CCCCC......",
+        "....CCCCCCC.....",
+        "....CCCCCCcccc..",
+        "....HHHHSSSS....",
+        "....HHHSSGGSS...",
+        "....HHHSSSSSS...",
+        ".....HSSSMMMM...",
+        "......sSSSs.....",
+        ".......sss......",
+    ]),
+    "torso_front": RUIZ_TORSO_FRONT,
+    "torso_back": check_rows("ruiz", [
+        "...tTTTTTTTTt...",
+        ".TTTttttttttTTT.",
+        ".TtTTTTTTTTTTtT.",
+        ".TtTTTTTTTTTTtT.",
+        ".TtTTTTTTTTTTtT.",
+        ".SttttttttttttS.",
+        "...JJJJJJJJJJ...",
+    ]),
+    "torso_side": check_rows("ruiz", [
+        ".....TTTTTT.....",
+        "....TTTTTTTT....",
+        "....TtTTTTTTT...",
+        "....TtTTTTTTTT..",
+        "....TtTTTTTTT...",
+        "....tSttttttt...",
+        ".....JJJJJJ.....",
+    ]),
+}
+# Writing at the counter: looking down (the brim hides his eyes), hands on a receipt book.
+RUIZ_WRITING_HEAD = check_rows("ruiz", [
+    "....CCCCCCCC....",
+    "...CCCCCCCCCC...",
+    "...CCCCCCCCCC...",
+    "..cccccccccccc..",
+    "...HSGGSSGGSH...",
+    "...HSSSSSSSSH...",
+    "....SMMMMMMS....",
+    ".....sSSSSs.....",
+])
+RUIZ_WRITING_TORSO = [
+    check_rows("ruiz", [
+        "...TTTTTTTTTT...",
+        ".TTTTTTTTTTTTTT.",
+        ".TtTTTTTTTTTTtT.",
+        ".TtTTTTTTTTTTtT.",
+        "..tTTTTTTTTTTt..",
+        "...SWWWWWWWPS...",
+        "...WwWwWwWwWW...",
+    ]),
+    check_rows("ruiz", [
+        "...TTTTTTTTTT...",
+        ".TTTTTTTTTTTTTT.",
+        ".TtTTTTTTTTTTtT.",
+        ".TtTTTTTTTTTTtT.",
+        "..tTTTTTTTTTTt..",
+        "...SWWWWWWPSW...",
+        "...WwWwWwWwWW...",
+    ]),
+]
+
+# Nando: 40s, navy coveralls (one colour head to boots), red bandana, dark mustache, black boots.
+NANDO_PAL = {
+    "R": (178, 42, 40), "r": (128, 28, 30),
+    "H": (44, 34, 30), "h": (70, 56, 50),
+    "S": (152, 100, 68), "s": (118, 76, 52), "E": (28, 20, 18), "M": (44, 34, 30),
+    "T": (48, 60, 96), "t": (34, 42, 70), "Z": (150, 158, 178), "P": (222, 222, 214),
+    "J": (48, 60, 96), "j": (34, 42, 70),
+    "B": (34, 30, 32), "b": (22, 20, 22), "K": (230, 228, 222),
+    "G": (204, 198, 186), "g": (150, 138, 118),
+}
+NANDO_HEAD_DOWN = check_rows("nando", [
+    ".....RRRRRR.....",
+    "....RRrRRRRR....",
+    "...RRRRRRRRRR...",
+    "...HHSSSSSSHH...",
+    "...HSSSSSSSSH...",
+    "...HSSESSESSH...",
+    "....SMMMMMMS....",
+    ".....sSSSSs.....",
+    "......ssss......",
+])
+NANDO = {
+    "pal": NANDO_PAL, "legs": 5, "bob": 1,
+    "head_down": NANDO_HEAD_DOWN,
+    "head_up": check_rows("nando", [
+        ".....RRRRRR.....",
+        "....RRRRRRRR....",
+        "...RRRRRRRRRR...",
+        "...RRRRrRRRRR...",
+        "...HHHHrrHHHH...",
+        "...HHHHHHHHHH...",
+        "....HHHHHHHH....",
+        ".....sSSSSs.....",
+        "......ssss......",
+    ]),
+    "head_side": check_rows("nando", [
+        ".....RRRRR......",
+        "....RRRRRRR.....",
+        "....RRRRRRRR....",
+        "...rRHHHSSSS....",
+        "...r.HHSSSSSS...",
+        "....HHHSSSESS...",
+        ".....HSSSMMMM...",
+        "......sSSSs.....",
+        ".......sss......",
+    ]),
+    "torso_front": check_rows("nando", [
+        "....TTTTTTTT....",
+        "..TTTTTZTTTTTT..",
+        "..TtTPTZTTTTtT..",
+        "..TtTTTZTTTTtT..",
+        "..TtTTTZTTTTtT..",
+        "..SttttZtttttS..",
+        "....TTTTTTTT....",
+    ]),
+    "torso_back": check_rows("nando", [
+        "....tTTTTTTt....",
+        "..TTtttttttTTT..",
+        "..TtTTTTTTTTtT..",
+        "..TtTTTTTTTTtT..",
+        "..TtTTTTTTTTtT..",
+        "..SttttttttttS..",
+        "....TTTTTTTT....",
+    ]),
+    "torso_side": check_rows("nando", [
+        ".....TTTTTT.....",
+        ".....TTTTTTT....",
+        ".....TtTTTZT....",
+        ".....TtTTTZT....",
+        ".....TtTTTZT....",
+        ".....tStttttt...",
+        "......TTTTT.....",
+    ]),
+}
+# Lying on his back on the creeper, seen from above: head toward the truck (up), boots toward us.
+NANDO_LYING = check_rows("nando", [
+    ".....RRRRRR.....",
+    "....RRRRRRRR....",
+    "....RRrRRRRR....",
+    "....HSSSSSSH....",
+    "....SSESSESS....",
+    "....SMMMMMMS....",
+    ".....sSSSSs.....",
+    "...TTTTTTTTTT...",
+    "..TTTTTZTTTTTT..",
+    "..TtTPTZTTTTtT..",
+    "..TtTTTZTTTTtT..",
+    "..TtTTTZTTTTtT..",
+    "..SttttZtttttS..",
+    "....TTTTTTTT....",
+    "....TTT..TTT....",
+    "....TTt..tTT....",
+    "....TTt..tTT....",
+    "....TTt..tTT....",
+    "....TTt..tTT....",
+    "....TTt..tTT....",
+    "....BBB..BBB....",
+    "...BBBB..BBBB...",
+])
+NANDO_LEGS_FROM = 13  # NANDO_LYING rows from here down: hips to boots (under the truck, only these show)
+# Standing, wiping his hands on a rag (2 frames).
+NANDO_WIPING = [
+    check_rows("nando", [
+        "....TTTTTTTT....",
+        "..TTTTTZTTTTTT..",
+        "..TtTPTZTTTTtT..",
+        "..TtTTTZTTTTtT..",
+        "..TttTTZTTTttT..",
+        "....tSGGGGSt....",
+        "....TTGgGGTT....",
+    ]),
+    check_rows("nando", [
+        "....TTTTTTTT....",
+        "..TTTTTZTTTTTT..",
+        "..TtTPTZTTTTtT..",
+        "..TtTTTZTTTTtT..",
+        "..TttTTZTTTttT..",
+        "....tGGSGGSt....",
+        "....TTGGgGTT....",
+    ]),
+]
+
+
+def with_parts(ch, **parts):
+    return {**ch, **parts}
+
+
+def make_abuela():
+    seated = seated_frame(ABUELA, ABUELA["head_down"], ABUELA["torso_front"])
+    return char_sheet(ABUELA, [[seated]])
+
+
+def make_tomi():
+    """Rows 4-7: the walk again with his left shoe off (sock showing). Frame 0 of each row is standing."""
+    rows = []
+    bare = {d: [char_frame(d, f, TOMI, bare=True) for f in range(4)] for d in ("down", "up", "right")}
+    bare["left"] = [fr.transpose(Image.FLIP_LEFT_RIGHT) for fr in bare["right"]]
+    for d in ("down", "up", "right", "left"):
+        rows.append(bare[d])
+    return char_sheet(TOMI, rows)
+
+
+def make_ruiz():
+    writing = [seated_frame(RUIZ, RUIZ_WRITING_HEAD, t) for t in RUIZ_WRITING_TORSO]
+    return char_sheet(RUIZ, [writing])
+
+
+def make_nando():
+    lying = rows_frame(NANDO, NANDO_LYING, bottom=29)
+    legs_rows = ["." * FW] * NANDO_LEGS_FROM + NANDO_LYING[NANDO_LEGS_FROM:]
+    legs = rows_frame(NANDO, legs_rows, bottom=29)
+    wiping = [char_frame("down", 0, with_parts(NANDO, torso_front=t)) for t in NANDO_WIPING]
+    return char_sheet(NANDO, [[legs, lying] + wiping])
+
+
+KCHAIR, KCHAIR_DK, KCHAIR_HI = (74, 124, 146), (52, 92, 110), (104, 156, 176)  # painted kitchen chairs
+
+
+def make_mateo_extra():
+    """32x32 frames: 0 lying on the couch (head left, eyes closed); 1 sitting at a table facing up, his
+    back to us over the back of his chair (the frame's bottom is the chair's feet, on the floor)."""
+    sheet = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
+    sleeping = {**MATEO, "head_down": [r.replace("E", "s") for r in HEAD_DOWN]}
+    lying = make_frame("down", 0, sleeping).rotate(90, expand=True)   # 32x16: head on the left
+    sheet.alpha_composite(lying, (0, 16))
+    CUR["pal"] = PAL
+    sit = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+    px = sit.load()
+    blit_rows(px, HEAD_UP, 6)
+    blit_rows(px, TORSO_BACK, 15)
+    outline(sit)
+    chair = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+    draw_chair_back(chair.load(), oy=16)
+    outline(chair)
+    sit.alpha_composite(chair)
+    sheet.alpha_composite(sit, (32 + 8, 0))
+    return sheet
+
+
+# ---------------- Mission 1: apartment tiles and props ----------------
+APT_PAINT, APT_PAINT_DK, APT_PAINT_HI = (178, 196, 170), (152, 170, 146), (198, 212, 190)  # sage green
+APT_BASE, APT_BASE_DK, APT_BASE_HI = (112, 82, 62), (84, 60, 46), (140, 106, 82)
+LINO, LINO_PRINT, LINO_DK, LINO_HI = (198, 184, 150), (188, 174, 140), (168, 154, 122), (214, 202, 174)
+CERAMIC, CERAMIC_DK, GROUT = (176, 170, 160), (164, 158, 148), (140, 134, 126)
+FRIDGE, FRIDGE_DK, FRIDGE_HI = (230, 230, 224), (200, 200, 194), (244, 244, 240)
+COUCH, COUCH_DK, COUCH_HI, COUCH_WORN = (150, 98, 66), (116, 72, 48), (176, 124, 88), (186, 146, 112)
+
+
+def wall_face(paint, dk, hi, base, base_dk, base_hi, speckles=0):
+    """A wall face in the restaurant's structure: paint, shading above a baseboard."""
+    img = solid(paint)
+    d = img.load()
+    fill(d, 0, 10, 15, 11, dk)
+    fill(d, 0, 0, 15, 0, hi)
+    fill(d, 0, 12, 15, 12, base_hi)
+    fill(d, 0, 13, 15, 14, base)
+    fill(d, 0, 15, 15, 15, base_dk)
+    for _ in range(speckles):
+        d[mrng.randrange(T), mrng.randrange(10)] = mrng.choice([dk, hi]) + (255,)
+    return img
+
+
+def side_wall_left(cap, shades):
+    """Top edge of a left wall seen from above (same rules as the restaurant's)."""
+    img = solid(cap)
+    d = img.load()
+    fill(d, 0, 0, 0, 15, OUT)
+    for i, c in enumerate(shades):
+        fill(d, T - len(shades) + i, 0, T - len(shades) + i, 15, c)
+    return img
+
+
+def wall_set(face_plain, cap, shades):
+    """Side walls and corners for one wall colour, as in the restaurant (indexes: see the README)."""
+    side = side_wall_left(cap, shades)
+    top_left = face_plain.copy()
+    top_left.paste(side.crop((0, 0, 12, T)), (0, 0))
+    bottom_left = face_plain.copy()
+    bottom_left.paste(side.crop((0, 0, T, 10)), (0, 0))
+    fill(bottom_left.load(), 0, 10, 0, 15, OUT)
+    return {
+        "wall_side_left": side, "wall_side_right": flip(side),
+        "wall_corner_top_left": top_left, "wall_corner_top_right": flip(top_left),
+        "wall_corner_bottom_left": bottom_left, "wall_corner_bottom_right": flip(bottom_left),
+    }
+
+
+def on_face(face, draw_fn):
+    """Draw something on a transparent layer, outline it, and put it on a copy of a wall face."""
+    layer = Image.new("RGBA", (T, T), (0, 0, 0, 0))
+    draw_fn(layer.load())
+    outline(layer)
+    img = face.copy()
+    img.alpha_composite(layer)
+    return img
+
+
+def prop_tall_on(floor, draw_fn):
+    """A prop two tiles tall: drawn and outlined as one piece, returned as (top, bottom) tiles."""
+    layer = Image.new("RGBA", (T, T * 2), (0, 0, 0, 0))
+    draw_fn(layer.load())
+    outline(layer)
+    out = Image.new("RGBA", (T, T * 2))
+    out.paste(floor, (0, 0))
+    out.paste(floor, (0, T))
+    out.alpha_composite(layer)
+    return out.crop((0, 0, T, T)), out.crop((0, T, T, T * 2))
+
+
+def prop2_on(floor, draw_fn):
+    """A prop two tiles wide: drawn and outlined as one piece, returned as (left, right) tiles."""
+    layer = Image.new("RGBA", (T * 2, T), (0, 0, 0, 0))
+    draw_fn(layer.load())
+    outline(layer)
+    out = Image.new("RGBA", (T * 2, T))
+    out.paste(floor, (0, 0))
+    out.paste(floor, (T, 0))
+    out.alpha_composite(layer)
+    return out.crop((0, 0, T, T)), out.crop((T, 0, T * 2, T))
+
+
+def tile_linoleum(worn=False):
+    img = solid(LINO)
+    d = img.load()
+    for y in range(T):
+        for x in range(T):
+            if ((x // 4) + (y // 4)) % 2:
+                d[x, y] = LINO_PRINT + (255,)            # faded printed checker
+    if worn:  # worn through in front of the stove: the print is gone in a soft patch
+        for y in range(T):
+            for x in range(T):
+                if ((x - 8) ** 2) / 30 + ((y - 7) ** 2) / 14 < 1:
+                    d[x, y] = LINO_HI + (255,)
+    for _ in range(4):
+        d[mrng.randrange(T), mrng.randrange(T)] = LINO_DK + (255,)   # scuffs
+    return img
+
+
+def tile_ceramic():
+    img = solid(CERAMIC)
+    d = img.load()
+    for y in range(9, 16):
+        for x in range(9, 16):
+            d[x, y] = CERAMIC_DK + (255,)
+    for y in range(1, 8):
+        for x in range(1, 8):
+            d[x, y] = CERAMIC_DK + (255,)
+    for i in range(T):
+        for p in ((i, 0), (i, 8), (0, i), (8, i)):
+            d[p] = GROUT + (255,)
+    for _ in range(4):
+        x, y = mrng.randrange(1, T), mrng.randrange(1, T)
+        if d[x, y][:3] != GROUT:
+            d[x, y] = (186, 180, 170, 255)
+    return img
+
+
+def apt_face():
+    return wall_face(APT_PAINT, APT_PAINT_DK, APT_PAINT_HI, APT_BASE, APT_BASE_DK, APT_BASE_HI)
+
+
+def tile_apt_wall():
+    return wall_face(APT_PAINT, APT_PAINT_DK, APT_PAINT_HI, APT_BASE, APT_BASE_DK, APT_BASE_HI, speckles=8)
+
+
+def tile_apt_window():
+    """Window in morning light: warm sky, sheer curtains drawn to the sides."""
+    img = apt_face()
+    d = img.load()
+    fill(d, 2, 1, 13, 10, OUT)
+    fill(d, 3, 2, 12, 9, (234, 236, 236))                # painted frame
+    fill(d, 4, 3, 11, 8, (250, 222, 150))                # morning sky
+    fill(d, 4, 3, 11, 4, (252, 238, 194))
+    fill(d, 7, 3, 8, 8, (234, 236, 236))                 # mullion
+    fill(d, 4, 6, 11, 6, (234, 236, 236))
+    fill(d, 3, 2, 4, 9, (240, 236, 222))                 # curtains
+    fill(d, 11, 2, 12, 9, (240, 236, 222))
+    dots(d, [(4, 4), (4, 7), (11, 3), (11, 8)], (220, 214, 198))
+    fill(d, 2, 10, 13, 10, (226, 224, 216))              # sill
+    fill(d, 2, 11, 13, 11, APT_PAINT_DK)
+    return img
+
+
+def tile_apt_photo():
+    """Framed photo on the wall: a couple at a wedding, a baby in her arms (tiny)."""
+    def draw(px):
+        fill(px, 4, 2, 11, 9, (92, 62, 42))              # frame
+        fill(px, 5, 3, 10, 8, (198, 176, 138))           # sepia picture
+        dots(px, [(6, 4), (9, 4)], (60, 44, 40))         # heads
+        fill(px, 6, 5, 6, 7, (242, 238, 230))            # her white dress
+        dots(px, [(7, 5)], (226, 188, 170))              # the baby
+        fill(px, 9, 5, 9, 7, (52, 52, 62))               # his dark suit
+        dots(px, [(4, 2), (11, 9)], (120, 86, 60))
+    return on_face(apt_face(), draw)
+
+
+def draw_hallway(px):
+    fill(px, 2, 0, 13, 15, (112, 80, 54))                # door frame
+    fill(px, 3, 1, 12, 15, (46, 40, 40))                 # dark hallway beyond
+    fill(px, 3, 1, 12, 3, (34, 30, 30))
+    fill(px, 3, 12, 12, 15, (82, 72, 64))                # hallway floor in the light from the room
+    fill(px, 2, 0, 13, 0, (138, 104, 76))
+
+
+def draw_apt_door(px):
+    fill(px, 2, 1, 13, 15, (128, 70, 50))                # painted wooden door
+    fill(px, 2, 1, 13, 1, (156, 94, 70))
+    fill(px, 4, 3, 11, 7, (110, 58, 42))                 # panels
+    fill(px, 4, 9, 11, 14, (110, 58, 42))
+    fill(px, 4, 3, 11, 3, (96, 50, 36))
+    fill(px, 4, 9, 11, 9, (96, 50, 36))
+    fill(px, 7, 2, 8, 2, (40, 36, 36))                   # peephole
+    dots(px, [(11, 8)], (226, 196, 96))                  # knob
+    dots(px, [(11, 6)], (190, 190, 196))                 # deadbolt
+    dots(px, [(3, 4), (3, 12)], (90, 70, 60))            # hinges
+
+
+def draw_fridge_top(px):
+    """Upper part of the fridge, drawn over the wall face (it stands against the wall)."""
+    fill(px, 1, 1, 14, 15, FRIDGE)
+    fill(px, 1, 1, 14, 2, FRIDGE_HI)                     # top surface
+    fill(px, 14, 3, 14, 15, FRIDGE_DK)
+    fill(px, 1, 10, 14, 10, FRIDGE_DK)                   # freezer door seam
+    fill(px, 12, 4, 12, 8, (170, 170, 166))              # freezer handle
+    dots(px, [(4, 6)], (60, 140, 200))                   # magnet
+    dots(px, [(7, 4), (8, 4)], (210, 80, 60))
+
+
+def draw_fridge_bottom(px):
+    """Lower door, on the floor row: past-due notices held up with magnets."""
+    fill(px, 1, 0, 14, 13, FRIDGE)
+    fill(px, 14, 0, 14, 13, FRIDGE_DK)
+    fill(px, 12, 1, 12, 6, (170, 170, 166))              # handle
+    fill(px, 1, 13, 14, 14, (90, 90, 92))                # kick plate
+    fill(px, 4, 3, 9, 9, (214, 212, 200))                # the notice underneath
+    fill(px, 3, 2, 8, 8, (244, 242, 232))                # the top notice
+    fill(px, 4, 4, 7, 4, (170, 168, 160))                # print lines
+    fill(px, 4, 6, 6, 6, (170, 168, 160))
+    fill(px, 5, 5, 7, 5, (196, 44, 40))                  # PAST DUE, stamped in red
+    dots(px, [(5, 2)], (60, 140, 200))                   # magnet
+    dots(px, [(9, 10)], (230, 190, 60))
+
+
+def tile_apt_counter():
+    img = solid((96, 128, 150))
+    d = img.load()
+    fill(d, 0, 0, 15, 0, OUT)
+    fill(d, 0, 1, 15, 7, (230, 226, 214))                # tiled worktop
+    for x in (3, 7, 11, 15):
+        fill(d, x, 1, x, 7, (184, 192, 198))
+    fill(d, 0, 4, 15, 4, (184, 192, 198))
+    dots(d, [(1, 2), (5, 6), (9, 2), (13, 6)], (64, 96, 170))   # blue Talavera tiles
+    fill(d, 0, 8, 15, 8, (118, 114, 106))                # front edge
+    fill(d, 0, 9, 15, 14, (96, 128, 150))                # painted cabinets
+    fill(d, 1, 10, 6, 13, (82, 110, 132))
+    fill(d, 9, 10, 14, 13, (82, 110, 132))
+    dots(d, [(6, 11), (9, 11)], (210, 200, 170))
+    fill(d, 0, 15, 15, 15, OUT)
+    return img
+
+
+def draw_apt_stove(px):
+    """Small white enamel stove; a pan of eggs on the front-left burner."""
+    fill(px, 1, 1, 14, 14, (226, 222, 212))
+    fill(px, 1, 1, 14, 9, (120, 118, 116))               # cooktop
+    fill(px, 1, 1, 14, 1, (240, 238, 230))
+    for cx in (4, 11):
+        for cy in (3, 7):
+            fill(px, cx - 1, cy - 1, cx + 1, cy + 1, (52, 50, 52))
+            px[cx, cy] = (30, 28, 30, 255)
+    fill(px, 2, 5, 7, 9, (44, 44, 48))                   # the pan
+    fill(px, 3, 6, 6, 8, (238, 204, 76))                 # eggs
+    dots(px, [(3, 6), (6, 8)], (246, 242, 226))
+    dots(px, [(5, 7)], (200, 60, 40))
+    fill(px, 8, 7, 10, 7, (44, 44, 48))                  # handle
+    fill(px, 1, 10, 14, 10, (196, 192, 184))
+    fill(px, 3, 12, 12, 13, (70, 66, 64))                # oven window
+    fill(px, 3, 11, 12, 11, (204, 204, 208))             # handle
+    dots(px, [(3, 10), (6, 10), (9, 10), (12, 10)], (60, 58, 60))
+
+
+def draw_kitchen_table(px):
+    """16 wide, 32 deep: a small table for two (one at each end) under a red gingham oilcloth."""
+    for y in range(2, 26):
+        for x in range(1, 15):
+            px[x, y] = ((196, 66, 58) if ((x // 2) + (y // 2)) % 2 == 0 else (238, 232, 220)) + (255,)
+    fill(px, 1, 2, 14, 2, (244, 238, 228))
+    for x in range(1, 15):                                  # the cloth hanging over the front edge
+        px[x, 26] = ((168, 52, 46) if (x // 2) % 2 == 0 else (212, 204, 192)) + (255,)
+        px[x, 27] = ((150, 44, 40) if (x // 2) % 2 == 0 else (190, 182, 170)) + (255,)
+    fill(px, 2, 28, 3, 30, WOOD_DK)                         # legs
+    fill(px, 12, 28, 13, 30, WOOD_DK)
+
+
+def draw_kitchen_chair(px):
+    """Facing down (backrest at the top), like the restaurant chair, painted blue."""
+    fill(px, 4, 1, 11, 6, KCHAIR_DK)
+    fill(px, 5, 2, 6, 5, KCHAIR)
+    fill(px, 9, 2, 10, 5, KCHAIR)
+    fill(px, 7, 2, 8, 5, (64, 108, 128))
+    fill(px, 4, 1, 11, 1, KCHAIR_HI)
+    fill(px, 3, 7, 12, 10, KCHAIR_HI)
+    fill(px, 3, 10, 12, 11, KCHAIR_DK)
+    fill(px, 4, 12, 5, 14, KCHAIR_DK)
+    fill(px, 10, 12, 11, 14, KCHAIR_DK)
+
+
+def draw_chair_back(px, oy=0):
+    """Facing up (away from us): the back of the backrest, the seat's edges peeking out at the sides."""
+    fill(px, 3, oy + 6, 3, oy + 9, KCHAIR_HI)
+    fill(px, 12, oy + 6, 12, oy + 9, KCHAIR_HI)
+    fill(px, 4, oy + 1, 11, oy + 9, KCHAIR_DK)
+    fill(px, 5, oy + 2, 10, oy + 8, KCHAIR)
+    fill(px, 4, oy + 1, 11, oy + 1, KCHAIR_HI)
+    fill(px, 4, oy + 10, 5, oy + 14, KCHAIR_DK)
+    fill(px, 10, oy + 10, 11, oy + 14, KCHAIR_DK)
+
+
+def draw_couch(px):
+    """32 wide: a worn couch facing down. Faded cushions, a split seam on the backrest."""
+    fill(px, 1, 1, 30, 6, COUCH_DK)                      # backrest
+    fill(px, 1, 1, 30, 1, COUCH)
+    fill(px, 1, 2, 3, 13, COUCH)                         # arms
+    fill(px, 28, 2, 30, 13, COUCH)
+    fill(px, 1, 2, 3, 2, COUCH_HI)
+    fill(px, 28, 2, 30, 2, COUCH_HI)
+    fill(px, 4, 7, 27, 11, COUCH_HI)                     # seat cushions
+    fill(px, 15, 7, 16, 11, COUCH_DK)
+    fill(px, 4, 12, 27, 13, COUCH_DK)                    # seat front
+    fill(px, 7, 8, 9, 9, COUCH_WORN)                     # worn patches
+    fill(px, 21, 9, 24, 10, COUCH_WORN)
+    dots(px, [(20, 3), (21, 3), (21, 4)], (226, 214, 184))   # stuffing showing through a split seam
+    fill(px, 2, 14, 3, 14, (60, 40, 30))                 # feet
+    fill(px, 28, 14, 29, 14, (60, 40, 30))
+
+
+APARTMENT_ORDER = ["linoleum", "linoleum_worn", "ceramic", "wall", "wall_window",
+                   "wall_side_left", "wall_side_right", "wall_corner_top_left", "wall_corner_top_right",
+                   "wall_corner_bottom_left", "wall_corner_bottom_right",
+                   "counter", "stove", "fridge_top", "fridge", "table_top", "table_bottom",
+                   "chair", "chair_back", "couch_left", "couch_right", "hallway", "front_door", "photo"]
+
+
+def make_apartment_tiles():
+    lino, ceramic = tile_linoleum(), tile_ceramic()
+    apt_cap_shades = [APT_PAINT, APT_PAINT_DK, (134, 150, 128), (118, 132, 112), (104, 116, 98)]
+    table_t, table_b = prop_tall_on(lino, draw_kitchen_table)
+    couch_l, couch_r = prop2_on(ceramic, draw_couch)
+    tiles = {
+        "linoleum": lino, "linoleum_worn": tile_linoleum(worn=True), "ceramic": ceramic,
+        "wall": tile_apt_wall(), "wall_window": tile_apt_window(),
+        **wall_set(apt_face(), APT_PAINT_HI, apt_cap_shades),
+        "counter": tile_apt_counter(), "stove": prop_on(lino, draw_apt_stove),
+        "fridge_top": on_face(apt_face(), draw_fridge_top), "fridge": prop_on(lino, draw_fridge_bottom),
+        "table_top": table_t, "table_bottom": table_b,
+        "chair": prop_on(lino, draw_kitchen_chair), "chair_back": prop_on(lino, draw_chair_back),
+        "couch_left": couch_l, "couch_right": couch_r,
+        "hallway": on_face(apt_face(), draw_hallway), "front_door": on_face(apt_face(), draw_apt_door),
+        "photo": tile_apt_photo(),
+    }
+    sheet = Image.new("RGBA", (T * len(APARTMENT_ORDER), T))
+    for i, k in enumerate(APARTMENT_ORDER):
+        sheet.paste(tiles[k], (i * T, 0))
+    return sheet, tiles
+
+
+PROP_ORDER = ["pill_bottle", "plate_eggs", "backpack", "jacket_on_chair"]
+
+
+def draw_pill_bottle(px):
+    fill(px, 6, 8, 9, 13, (196, 122, 40))                # amber bottle
+    fill(px, 6, 8, 6, 13, (224, 160, 70))
+    fill(px, 6, 10, 9, 11, (238, 234, 222))              # label
+    fill(px, 6, 6, 9, 7, (244, 244, 240))                # white cap
+
+
+def draw_plate_eggs(px):
+    fill(px, 3, 8, 12, 12, (236, 236, 230))              # plate
+    fill(px, 4, 7, 11, 7, (236, 236, 230))
+    fill(px, 4, 13, 11, 13, (200, 200, 196))
+    fill(px, 5, 8, 10, 11, (238, 202, 72))               # eggs
+    dots(px, [(6, 9), (9, 10)], (200, 60, 40))           # tomato
+    dots(px, [(8, 8), (5, 10)], (90, 150, 70))           # chile
+    dots(px, [(10, 9)], (250, 236, 170))
+
+
+def draw_backpack(px):
+    """Tomi's backpack, sitting on the floor. One strap is held on with silver tape."""
+    fill(px, 5, 1, 10, 3, (36, 48, 86))                  # carry loop / straps over the top
+    fill(px, 7, 2, 8, 3, (0, 0, 0, 0))
+    fill(px, 9, 1, 10, 2, (196, 198, 204))               # the taped strap
+    fill(px, 4, 4, 11, 14, (52, 72, 128))                # body
+    fill(px, 4, 4, 11, 4, (78, 100, 156))
+    fill(px, 5, 9, 10, 13, (40, 56, 104))                # front pocket
+    fill(px, 5, 9, 10, 9, (176, 180, 190))               # zipper
+    dots(px, [(10, 10)], (210, 210, 216))
+
+
+def draw_jacket_on_chair(px):
+    """His work jacket hung over the back of a chair (drawn to sit on the 'chair' tile)."""
+    fill(px, 3, 1, 12, 6, (92, 72, 54))                  # over the backrest
+    fill(px, 3, 1, 12, 1, (122, 98, 74))                 # collar
+    fill(px, 2, 3, 3, 10, (78, 60, 44))                  # sleeves hanging down
+    fill(px, 12, 3, 13, 10, (78, 60, 44))
+    fill(px, 7, 2, 8, 6, (70, 54, 40))                   # front opening
+    dots(px, [(5, 4), (10, 3), (4, 8)], (52, 46, 44))    # soot
+
+
+def make_apartment_props():
+    sheet = Image.new("RGBA", (T * len(PROP_ORDER), T), (0, 0, 0, 0))
+    for i, fn in enumerate((draw_pill_bottle, draw_plate_eggs, draw_backpack, draw_jacket_on_chair)):
+        layer = Image.new("RGBA", (T, T), (0, 0, 0, 0))
+        fn(layer.load())
+        outline(layer)
+        sheet.paste(layer, (i * T, 0))
+    return sheet
+
+
+# ---------------- Mission 1: tire shop tiles, truck, creeper ----------------
+CONC, CONC_DK, CONC_HI = (156, 154, 146), (138, 136, 130), (170, 168, 160)
+OIL, OIL_DK = (108, 106, 104), (84, 82, 82)
+SHOP_PAINT, SHOP_PAINT_DK, SHOP_PAINT_HI = (206, 200, 184), (184, 178, 164), (220, 216, 202)
+SHOP_RED = (176, 58, 46)
+SHOP_BASE, SHOP_BASE_DK, SHOP_BASE_HI = (92, 90, 88), (70, 68, 66), (116, 114, 110)
+ALU, ALU_DK, ALU_HI = (176, 180, 186), (132, 136, 144), (210, 214, 218)
+TIRE, TIRE_DK, TIRE_HI = (44, 42, 44), (24, 22, 24), (74, 72, 74)
+
+
+def tile_concrete(oil=False):
+    img = solid(CONC)
+    d = img.load()
+    for _ in range(16):
+        d[mrng.randrange(T), mrng.randrange(T)] = mrng.choice([CONC_DK, CONC_HI]) + (255,)
+    if oil:  # an old oil stain
+        for y in range(T):
+            for x in range(T):
+                r = ((x - 7) ** 2) / 26 + ((y - 9) ** 2) / 12
+                if r < 0.55:
+                    d[x, y] = OIL_DK + (255,)
+                elif r < 1:
+                    d[x, y] = OIL + (255,)
+        dots(d, [(12, 4), (13, 5)], OIL)
+    return img
+
+
+def shop_face(speckles=0):
+    """Painted cinder block with a red stripe above the baseboard."""
+    img = solid(SHOP_PAINT)
+    d = img.load()
+    for y in (2, 6):
+        fill(d, 0, y, 15, y, SHOP_PAINT_DK)
+    for x0, y0, y1 in ((3, 0, 1), (11, 0, 1), (7, 3, 5), (15, 3, 5), (3, 7, 8), (11, 7, 8)):
+        fill(d, x0, y0, x0, y1, SHOP_PAINT_DK)
+    fill(d, 0, 0, 15, 0, SHOP_PAINT_HI)
+    fill(d, 0, 9, 15, 10, SHOP_RED)
+    fill(d, 0, 11, 15, 11, SHOP_PAINT_DK)
+    fill(d, 0, 12, 15, 12, SHOP_BASE_HI)
+    fill(d, 0, 13, 15, 14, SHOP_BASE)
+    fill(d, 0, 15, 15, 15, SHOP_BASE_DK)
+    for _ in range(speckles):
+        d[mrng.randrange(T), mrng.randrange(9)] = mrng.choice([SHOP_PAINT_DK, SHOP_PAINT_HI]) + (255,)
+    return img
+
+
+def draw_tire_stack(px):
+    """Three tires stacked, seen from above at an angle: the top tire's ring and hole, then each
+    tire's rounded side as a band."""
+    for top in (6, 9, 12):
+        fill(px, 3, top, 12, top + 2, TIRE)
+        fill(px, 2, top + 1, 13, top + 2, TIRE)
+        fill(px, 3, top, 12, top, (62, 60, 62))          # each tire's upper shoulder catches the light
+        fill(px, 2, top + 2, 13, top + 2, TIRE_DK)
+    fill(px, 4, 1, 11, 1, TIRE_HI)                       # top tire, seen from above
+    fill(px, 3, 2, 12, 2, TIRE)
+    fill(px, 2, 3, 13, 5, TIRE)
+    fill(px, 3, 6, 12, 6, TIRE)
+    fill(px, 5, 2, 10, 5, (68, 66, 68))                  # inner rim
+    fill(px, 6, 3, 9, 4, (16, 14, 16))                   # hole
+
+
+def draw_compressor(px):
+    fill(px, 2, 8, 13, 13, (190, 50, 40))                # tank
+    fill(px, 1, 9, 14, 12, (190, 50, 40))
+    fill(px, 2, 8, 13, 8, (224, 96, 74))
+    fill(px, 2, 13, 13, 13, (140, 34, 28))
+    fill(px, 4, 3, 10, 7, (90, 94, 100))                 # motor
+    fill(px, 4, 3, 10, 3, (124, 128, 134))
+    fill(px, 11, 4, 12, 7, (70, 72, 78))                 # belt guard
+    dots(px, [(6, 5)], (236, 236, 230))                  # gauge
+    fill(px, 2, 14, 3, 15, (30, 28, 30))                 # wheels
+    fill(px, 12, 14, 13, 15, (30, 28, 30))
+    dots(px, [(14, 6), (15, 7), (14, 8), (13, 7)], (220, 190, 60))   # coiled yellow hose
+
+
+def draw_workbench(px, drawer):
+    fill(px, 0, 2, 15, 8, (150, 110, 70))                # wooden top
+    fill(px, 0, 2, 15, 2, (176, 134, 90))
+    fill(px, 0, 8, 15, 8, (110, 80, 50))
+    fill(px, 0, 9, 15, 14, (92, 92, 96))                 # steel front
+    fill(px, 0, 9, 15, 9, (120, 120, 126))
+    if drawer:
+        fill(px, 2, 10, 13, 13, (110, 110, 116))
+        fill(px, 2, 10, 13, 10, (136, 136, 142))
+        fill(px, 6, 12, 9, 12, (200, 200, 206))          # handle
+        fill(px, 3, 4, 7, 4, (170, 174, 180))            # a wrench on the top
+        dots(px, [(3, 3), (7, 5)], (170, 174, 180))
+        dots(px, [(11, 5), (12, 5)], (200, 60, 40))      # rag
+    else:
+        fill(px, 4, 3, 9, 6, (80, 86, 96))               # vise
+        fill(px, 5, 2, 8, 2, (110, 116, 126))
+        fill(px, 10, 4, 12, 4, (180, 180, 186))
+        dots(px, [(13, 6), (14, 6)], (220, 180, 50))     # screwdriver handle
+
+
+def tile_shop_counter():
+    img = solid((164, 48, 40))
+    d = img.load()
+    fill(d, 0, 0, 15, 0, OUT)
+    fill(d, 0, 1, 15, 7, (190, 186, 176))                # laminate top
+    fill(d, 0, 1, 15, 1, (214, 210, 200))
+    dots(d, [(3, 4), (11, 3), (12, 6)], (172, 168, 158))
+    fill(d, 0, 8, 15, 8, (100, 98, 94))                  # metal edge
+    fill(d, 0, 9, 15, 14, (164, 48, 40))                 # red front panel
+    fill(d, 0, 9, 15, 9, (190, 70, 58))
+    fill(d, 7, 10, 8, 14, (140, 38, 32))
+    fill(d, 0, 15, 15, 15, OUT)
+    return img
+
+
+def tile_shop_counter_end_left():
+    """Square end of the counter on its right side (faces the open floor)."""
+    img = tile_concrete()
+    d = img.load()
+    body = tile_shop_counter().load()
+    for y in range(T):
+        for x in range(14):
+            d[x, y] = body[x, y]
+    fill(d, 14, 0, 14, 15, OUT)
+    fill(d, 12, 9, 13, 14, (140, 38, 32))                # end panel in shade
+    return img
+
+
+def draw_office_glass(px, door):
+    fill(px, 0, 0, 15, 15, ALU)                          # aluminium frame
+    fill(px, 1, 1, 14, 11, (150, 178, 192))              # glass
+    for y in (3, 5, 7, 9):
+        fill(px, 1, y, 14, y, (196, 206, 212))           # blinds inside
+    fill(px, 2, 1, 3, 4, (210, 228, 234))                # glare
+    fill(px, 0, 12, 15, 15, ALU_DK)                      # kick panel
+    fill(px, 0, 12, 15, 12, ALU_HI)
+    if door:
+        fill(px, 0, 0, 0, 15, ALU_DK)
+        fill(px, 15, 0, 15, 15, ALU_DK)
+        fill(px, 12, 6, 12, 9, (226, 228, 232))          # handle
+
+
+def tile_office_corner():
+    """The office's front face ending: an aluminium post, open shop floor to its right."""
+    img = tile_concrete()
+    d = img.load()
+    fill(d, 0, 0, 3, 15, ALU)
+    fill(d, 0, 0, 3, 0, ALU_HI)
+    fill(d, 3, 0, 3, 15, ALU_DK)
+    fill(d, 4, 0, 4, 15, OUT)
+    return img
+
+
+def tile_office_side():
+    """The office's glass side wall seen from above: a thin aluminium cap, shop floor to its right."""
+    img = tile_concrete()
+    d = img.load()
+    fill(d, 0, 0, 3, 15, (160, 186, 198))
+    fill(d, 0, 0, 0, 15, ALU)
+    fill(d, 3, 0, 3, 15, ALU_DK)
+    fill(d, 4, 0, 4, 15, OUT)
+    return img
+
+
+def tile_office_floor():
+    img = solid((116, 122, 136))
+    d = img.load()
+    for _ in range(26):
+        d[mrng.randrange(T), mrng.randrange(T)] = mrng.choice([(104, 110, 124), (130, 136, 150)]) + (255,)
+    return img
+
+
+def tile_garage_open(side):
+    """The roll-up door, rolled up: the drum along the top, bright street light below.
+    side: 'left' / 'right' (track on that edge) or None for a middle piece."""
+    img = solid((232, 226, 206))
+    d = img.load()
+    fill(d, 0, 0, 15, 3, (124, 128, 134))                # rolled-up door
+    fill(d, 0, 1, 15, 1, (150, 154, 160))
+    fill(d, 0, 3, 15, 3, (96, 100, 106))
+    fill(d, 0, 4, 15, 4, (196, 190, 172))
+    fill(d, 0, 12, 15, 15, (210, 204, 186))              # sidewalk outside
+    fill(d, 0, 12, 15, 12, (188, 182, 166))
+    if side:
+        x = 0 if side == "left" else 15
+        fill(d, x, 0, x, 15, (90, 94, 100))              # door track
+    return img
+
+
+def tile_garage_closed():
+    img = solid((150, 154, 160))
+    d = img.load()
+    for y in range(1, 16, 2):
+        fill(d, 0, y, 15, y, (124, 128, 134))            # corrugation
+    fill(d, 0, 0, 15, 0, (96, 100, 106))
+    fill(d, 0, 15, 15, 15, (90, 94, 100))
+    return img
+
+
+def tile_shop_window():
+    """Front window with a cardboard sign taped inside: HELP WANTED / SE BUSCA AYUDANTE."""
+    img = shop_face()
+    d = img.load()
+    fill(d, 1, 1, 14, 11, ALU_DK)
+    fill(d, 2, 2, 13, 10, (176, 204, 214))               # glass, daylight
+    fill(d, 2, 2, 4, 3, (220, 236, 240))
+    fill(d, 4, 3, 11, 8, (178, 142, 98))                 # cardboard
+    fill(d, 5, 4, 10, 4, (70, 50, 36))                   # two lines of marker
+    fill(d, 5, 6, 9, 6, (70, 50, 36))
+    dots(d, [(4, 3), (11, 3), (4, 8), (11, 8)], (224, 218, 196))   # tape
+    return img
+
+
+def tile_tool_wall():
+    """Pegboard on the wall face, with tools hanging on it."""
+    img = shop_face()
+    d = img.load()
+    fill(d, 1, 0, 14, 10, (196, 164, 116))
+    for y in range(1, 10, 2):
+        for x in range(2, 14, 2):
+            d[x, y] = (160, 128, 88, 255)
+    fill(d, 3, 2, 3, 7, (170, 174, 180))                 # wrench
+    fill(d, 2, 2, 4, 2, (170, 174, 180))
+    fill(d, 7, 2, 9, 3, (120, 124, 130))                 # hammer head
+    fill(d, 8, 4, 8, 8, (180, 50, 40))                   # handle
+    fill(d, 12, 2, 12, 5, (200, 200, 206))               # screwdriver
+    fill(d, 12, 6, 12, 8, (220, 180, 50))
+    fill(d, 1, 10, 14, 10, (150, 120, 84))
+    return img
+
+
+TIRESHOP_ORDER = ["concrete", "concrete_oil", "wall",
+                  "wall_side_left", "wall_side_right", "wall_corner_top_left", "wall_corner_top_right",
+                  "wall_corner_bottom_left", "wall_corner_bottom_right",
+                  "tire_stack", "compressor", "workbench", "workbench_drawer",
+                  "counter", "counter_end_left", "counter_end_right",
+                  "office_glass", "office_door", "office_corner", "office_side", "office_floor",
+                  "garage_open_left", "garage_open", "garage_open_right", "garage_closed",
+                  "shop_window", "tool_wall"]
+
+
+def make_tireshop_tiles():
+    conc = tile_concrete()
+    shades = [SHOP_PAINT, SHOP_PAINT_DK, (166, 160, 146), (150, 144, 132), (134, 128, 118)]
+    counter_end = tile_shop_counter_end_left()
+    tiles = {
+        "concrete": conc, "concrete_oil": tile_concrete(oil=True), "wall": shop_face(speckles=6),
+        **wall_set(shop_face(), SHOP_PAINT_HI, shades),
+        "tire_stack": prop_on(conc, draw_tire_stack), "compressor": prop_on(conc, draw_compressor),
+        "workbench": prop_on(conc, lambda p: draw_workbench(p, False)),
+        "workbench_drawer": prop_on(conc, lambda p: draw_workbench(p, True)),
+        "counter": tile_shop_counter(), "counter_end_left": counter_end, "counter_end_right": flip(counter_end),
+        "office_glass": on_face(shop_face(), lambda p: draw_office_glass(p, False)),
+        "office_door": on_face(shop_face(), lambda p: draw_office_glass(p, True)),
+        "office_corner": tile_office_corner(), "office_side": tile_office_side(),
+        "office_floor": tile_office_floor(),
+        "garage_open_left": tile_garage_open("left"), "garage_open": tile_garage_open(None),
+        "garage_open_right": tile_garage_open("right"), "garage_closed": tile_garage_closed(),
+        "shop_window": tile_shop_window(), "tool_wall": tile_tool_wall(),
+    }
+    sheet = Image.new("RGBA", (T * len(TIRESHOP_ORDER), T))
+    for i, k in enumerate(TIRESHOP_ORDER):
+        sheet.paste(tiles[k], (i * T, 0))
+    return sheet, tiles
+
+
+TRUCK_W, TRUCK_H = 48, 24
+
+
+def make_pickup_truck():
+    """An old pickup from the side (3/4 top-down), facing right: faded blue paint with rust, the bed
+    behind the cab, plain steel wheels. Same construction as the sedan."""
+    img = Image.new("RGBA", (TRUCK_W, TRUCK_H), (0, 0, 0, 0))
+    px = img.load()
+    body, body_dk, body_hi = (118, 148, 166), (88, 114, 132), (152, 180, 194)
+    rust = (150, 92, 60)
+    glass, glass_hi = (54, 66, 84), (110, 128, 150)
+    fill(px, 28, 2, 40, 4, body_hi)                      # cab roof
+    fill(px, 27, 5, 41, 9, glass)                        # cab window
+    fill(px, 28, 5, 30, 6, glass_hi)
+    fill(px, 34, 5, 34, 9, body_dk)                      # door pillar
+    fill(px, 1, 8, 25, 9, body_hi)                       # bed rail (top edge of the bed)
+    fill(px, 2, 6, 24, 7, (60, 62, 66))                  # inside of the bed, seen from above
+    fill(px, 1, 10, 46, 17, body)                        # body side
+    fill(px, 26, 10, 46, 10, body_hi)
+    fill(px, 1, 17, 46, 17, body_dk)
+    fill(px, 26, 6, 26, 16, body_dk)                     # gap between bed and cab
+    fill(px, 35, 11, 35, 16, body_dk)                    # door seam
+    fill(px, 37, 12, 39, 12, (200, 200, 196))            # door handle
+    fill(px, 0, 14, 2, 16, (170, 172, 168))              # rear bumper
+    fill(px, 45, 14, 47, 16, (170, 172, 168))            # front bumper
+    fill(px, 0, 11, 1, 12, (190, 30, 30))                # tail light
+    fill(px, 45, 11, 47, 12, (214, 210, 186))            # headlight
+    dots(px, [(4, 15), (5, 16), (19, 16), (40, 16), (41, 15), (12, 11)], rust)
+    for wx in (6, 34):                                   # wheels: plain steel rims
+        fill(px, wx, 16, wx + 7, 22, (24, 22, 24))
+        fill(px, wx + 2, 18, wx + 5, 20, (190, 190, 184))
+        fill(px, wx + 3, 19, wx + 4, 19, (120, 120, 116))
+    outline(img)
+    return img
+
+
+def make_creeper():
+    """16x32 mechanic's creeper (wheeled board), lengthwise up the screen, padded headrest at the top.
+    Lines up with Nando's lying frames (same frame size, same feet row); it shows around him, so he
+    reads as lying on it."""
+    img = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+    px = img.load()
+    fill(px, 1, 3, 14, 27, (88, 52, 44))                 # board, a little wider than him
+    fill(px, 2, 2, 13, 2, (118, 76, 64))                 # top edge, catching the light
+    fill(px, 1, 3, 1, 27, (118, 76, 64))
+    fill(px, 4, 4, 11, 7, (40, 36, 36))                  # headrest pad
+    for x, y in ((0, 5), (15, 5), (0, 25), (15, 25)):    # casters
+        fill(px, x, y, x, y + 1, (24, 22, 24))
+    outline(img)
+    return img
+
+
+# ---------------- Mission 1 previews ----------------
+def paste_layout(layout, key, tiles):
+    img = Image.new("RGBA", (len(layout[0]) * T, len(layout) * T))
+    for y, row in enumerate(layout):
+        assert len(row) == len(layout[0]), (y, row)
+        for x, ch in enumerate(row):
+            img.paste(tiles[key[ch]], (x * T, y * T))
+    return img
+
+
+def feet(img, frame, x, y):
+    """Put a 16x32 (or 32x32) frame on img with its feet (bottom centre) at x, y."""
+    img.alpha_composite(frame, (x - frame.width // 2, y - frame.height))
+
+
+def cell(sheet, col, row, w=FW, h=FH):
+    return sheet.crop((col * w, row * h, col * w + w, row * h + h))
+
+
+def make_apartment_preview(tiles, props, mateo_extra, abuela, tomi, mateo_frames):
+    # < > top corners, [ ] bottom corners, l r side walls, w wall, n window, P photo, H hallway,
+    # F fridge top, f fridge, c counter, s stove, k linoleum, K worn linoleum, e ceramic,
+    # ^ v table (top, bottom), h chair, b chair (back to us), { } couch, D front door
+    layout = [
+        "<wnwwFwwwwPwwnwwwwHww>",
+        "lccscfkkkkeeeee{}eeeer",
+        "lkkKkkkkkkeeeeeeeeeeer",
+        "lkkkkkkkkkeeeeeeeeeeer",
+        "lkkkhkkkkkeeeeeeeeeeer",
+        "lkkk^kkkkkeeeeeeeeeeer",
+        "lkkkvkkkkkeeeeeeeeeeer",
+        "lkkkbkkkkkeeeeeeeeeeer",
+        "lkkkkkkkkkeeeeeeeeheer",
+        "lkkkkkkkkkeeeeeeeeeeer",
+        "[wwwwwwwwwwwwwwwDwwww]",
+    ]
+    key = {"<": "wall_corner_top_left", ">": "wall_corner_top_right", "[": "wall_corner_bottom_left",
+           "]": "wall_corner_bottom_right", "l": "wall_side_left", "r": "wall_side_right", "w": "wall",
+           "n": "wall_window", "P": "photo", "H": "hallway", "F": "fridge_top", "f": "fridge",
+           "c": "counter", "s": "stove", "k": "linoleum", "K": "linoleum_worn", "e": "ceramic",
+           "^": "table_top", "v": "table_bottom", "h": "chair", "b": "chair_back",
+           "{": "couch_left", "}": "couch_right", "D": "front_door"}
+    img = paste_layout(layout, key, tiles)
+    prop = lambda i: props.crop((i * T, 0, i * T + T, T))  # noqa: E731
+    img.alpha_composite(prop(3), (18 * T, 8 * T))                    # jacket over the chair by the door
+    img.alpha_composite(prop(2), (17 * T, 9 * T))                    # Tomi's backpack
+    img.alpha_composite(prop(1), (4 * T, 6 * T - 10))                # plate, in front of Mateo
+    img.alpha_composite(prop(0), (4 * T, 5 * T - 2))                 # pill bottle, between them
+    feet(img, cell(mateo_extra, 0, 0, 32, 32), 16 * T, 2 * T + 2)    # Mateo asleep on the couch
+    feet(img, cell(abuela, 0, 1), 3 * T + 8, 3 * T)                  # Abuela at the stove, back to us
+    feet(img, cell(abuela, 0, 4), 4 * T + 8, 5 * T + 3)              # ...and sitting at the table
+    feet(img, cell(mateo_extra, 1, 0, 32, 32), 4 * T + 8, 8 * T)     # Mateo at the table
+    feet(img, cell(tomi, 0, 5), 4 * T + 8, 9 * T)                    # Tomi behind him, one shoe off
+    feet(img, cell(tomi, 0, 4), 18 * T + 8, 2 * T)                   # Tomi in the hallway doorway
+    feet(img, cell(tomi, 1, 0), 12 * T, 6 * T)                       # Tomi walking (shoes on)
+    feet(img, mateo_frames[("down", 0)], 14 * T, 6 * T)              # Mateo standing, for scale
+    return img
+
+
+def make_tireshop_preview(tiles, truck, creeper, ruiz, nando, mateo_frames):
+    # o office floor, g office glass, d office door, C office corner, S office side, x concrete,
+    # X oil stain, t tires, a compressor, B workbench, Y workbench with drawer, T tool wall,
+    # c counter, ) counter end, L M R open garage door, Q closed garage door, n window with sign
+    layout = [
+        "<wwwwwwwwwwwwwwTTTwwww>",
+        "looooSxxxxxxxxxBYxxxxar",
+        "looooSxxxxxxxxxxxxxxxxr",
+        "lgggdCxxxxxXxxxxxxxxttr",
+        "lxxxxxxxxxxxxxxxxxxxxtr",
+        "lxxxxxxxxxxxxxxxxxxxxxr",
+        "lxxxxxxxxXxxxxxxxxxxxxr",
+        "lxxxxxxxxxxxxxxxxxxxttr",
+        "lxxxcc)xxxxxxxxxxxxxxxr",
+        "lxxxxxxxxxxxxxxxxxxxxxr",
+        "[wwnwwwwLMRwwwwwQQQwww]",
+    ]
+    key = {"<": "wall_corner_top_left", ">": "wall_corner_top_right", "[": "wall_corner_bottom_left",
+           "]": "wall_corner_bottom_right", "l": "wall_side_left", "r": "wall_side_right", "w": "wall",
+           "o": "office_floor", "g": "office_glass", "d": "office_door", "C": "office_corner",
+           "S": "office_side", "x": "concrete", "X": "concrete_oil", "t": "tire_stack", "a": "compressor",
+           "B": "workbench", "Y": "workbench_drawer", "T": "tool_wall", "c": "counter",
+           ")": "counter_end_left", "L": "garage_open_left", "M": "garage_open",
+           "R": "garage_open_right", "Q": "garage_closed", "n": "shop_window"}
+    img = paste_layout(layout, key, tiles)
+    # Nando under the truck: creeper and legs first, the truck over them.
+    tx, ty = 9 * T, 3 * T + 4                                        # truck's top-left
+    feet(img, creeper, tx + 24, ty + 32)
+    feet(img, cell(nando, 0, 4), tx + 24, ty + 32)
+    img.alpha_composite(truck, (tx, ty))
+    feet(img, cell(nando, 2, 4), 13 * T, 6 * T)                      # Nando standing, wiping his hands
+    feet(img, creeper, 15 * T, 6 * T + 2)
+    feet(img, cell(nando, 1, 4), 15 * T, 6 * T + 2)                  # rolling out on the creeper
+    feet(img, cell(ruiz, 0, 4), 4 * T + 8, 8 * T + 3)                # Sr. Ruiz writing at the counter
+    feet(img, cell(ruiz, 0, 0), 7 * T + 8, 6 * T)                    # Sr. Ruiz walking
+    feet(img, mateo_frames[("up", 0)], 9 * T + 8, 10 * T)                # Mateo coming in from the street
+    return img
+
+
+def make_lineup(sheets):
+    """Everyone side by side at 1x, standing down/up/right, for checking they read as different people."""
+    strip = Image.new("RGBA", (len(sheets) * (FW * 3 + 6) + 4, FH + 4), (150, 140, 124, 255))
+    for i, sh in enumerate(sheets):
+        for j, row in enumerate((0, 1, 2)):
+            strip.alpha_composite(cell(sh, 0, row), (4 + i * (FW * 3 + 6) + j * FW, 2))
+    return strip
+
+
+def save_mission1(frames):
+    apt_sheet, apt_tiles = make_apartment_tiles()
+    apt_sheet.save(ASSET_DIR / "apartment_tiles.png")
+    props = make_apartment_props()
+    props.save(ASSET_DIR / "apartment_props.png")
+    shop_sheet, shop_tiles = make_tireshop_tiles()
+    shop_sheet.save(ASSET_DIR / "tireshop_tiles.png")
+    truck = make_pickup_truck()
+    truck.save(ASSET_DIR / "pickup_truck.png")
+    creeper = make_creeper()
+    creeper.save(ASSET_DIR / "creeper.png")
+    abuela, _ = make_abuela()
+    abuela.save(ASSET_DIR / "abuela_walk.png")
+    tomi, _ = make_tomi()
+    tomi.save(ASSET_DIR / "tomi_walk.png")
+    ruiz, _ = make_ruiz()
+    ruiz.save(ASSET_DIR / "ruiz_walk.png")
+    nando, _ = make_nando()
+    nando.save(ASSET_DIR / "nando_walk.png")
+    mateo_extra = make_mateo_extra()
+    mateo_extra.save(ASSET_DIR / "mateo_extra.png")
+
+    for name, im in (("apartment_tiles", apt_sheet), ("tireshop_tiles", shop_sheet)):
+        im.resize((im.width * 6, im.height * 6), Image.NEAREST).save(PREVIEW_DIR / f"{name}_6x.png")
+    for name, im in (("apartment_props", props), ("pickup_truck", truck), ("creeper", creeper),
+                     ("abuela_walk", abuela), ("tomi_walk", tomi), ("ruiz_walk", ruiz),
+                     ("nando_walk", nando), ("mateo_extra", mateo_extra)):
+        bg = Image.new("RGBA", im.size, (150, 140, 124, 255))
+        bg.alpha_composite(im)
+        bg.resize((im.width * 6, im.height * 6), Image.NEAREST).save(PREVIEW_DIR / f"{name}_6x.png")
+    mateo_sheet = Image.open(ASSET_DIR / "mateo_walk.png")
+    lineup = make_lineup([mateo_sheet, abuela, tomi, ruiz, nando])
+    lineup.save(PREVIEW_DIR / "m1_lineup_1x.png")
+    lineup.resize((lineup.width * 6, lineup.height * 6), Image.NEAREST).save(PREVIEW_DIR / "m1_lineup_6x.png")
+    apt = make_apartment_preview(apt_tiles, props, mateo_extra, abuela, tomi, frames)
+    apt.resize((apt.width * 4, apt.height * 4), Image.NEAREST).save(PREVIEW_DIR / "apartment_scene.png")
+    shop = make_tireshop_preview(shop_tiles, truck, creeper, ruiz, nando, frames)
+    shop.resize((shop.width * 4, shop.height * 4), Image.NEAREST).save(PREVIEW_DIR / "tireshop_scene.png")
+
+
 def main():
     ASSET_DIR.mkdir(parents=True, exist_ok=True)
     PREVIEW_DIR.mkdir(parents=True, exist_ok=True)
@@ -1529,6 +2909,9 @@ def main():
     # also a 6x preview of the sprite sheet and tiles for inspection
     sheet.resize((sheet.width * 6, sheet.height * 6), Image.NEAREST).save(PREVIEW_DIR / "sheet_6x.png")
     tiles_sheet.resize((tiles_sheet.width * 6, tiles_sheet.height * 6), Image.NEAREST).save(PREVIEW_DIR / "tiles_6x.png")
+
+    # Mission 1 (last: its own random stream and builders, so it never changes the outputs above)
+    save_mission1(frames)
 
 
 if __name__ == "__main__":
