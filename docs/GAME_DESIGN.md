@@ -12,6 +12,7 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 - Dialogue choices: W/S or up/down arrows to highlight, Space to confirm, 1-3 as shortcuts.
 - E is never used inside dialogue; it's reserved for interacting with the world.
 - Phone: Q opens and closes the expanded phone (texts).
+- Sprint: Shift. Faster, but makes noise guards can hear.
 
 ## Phone
 - The phone sits as a small icon in the bottom-right corner. Incoming calls and texts appear there while the game keeps running. Unread texts show a badge.
@@ -28,6 +29,9 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 - Choices can change meters, add to flags, and set remembered answers that later scenes quote back.
 - Character voice blips play as text appears (planned).
 - During the prologue, control hints show ("SPACE" to advance; "W/S: choose · SPACE: confirm" for choices) until the player has used each control a few times.
+- Narration lines have no speaker, appear in a muted color, and type slower than speech. They describe only what can be seen or heard, never thoughts.
+- Lines can set their own typing speed and include held pauses.
+- All writing follows docs/STYLE_GUIDE.md.
 
 ## Setting
 - Present day.
@@ -124,6 +128,26 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 - Mateo meets Marisol on the US side during a mission.
 - Don Aurelio is warm and fatherly. Rafael is introduced: cold, watching.
 - **Act ends:** the extension is never stated outright. It arrives as routine texts ("Good work. Tomorrow, same place."), and Mateo slowly realizes there was never an end point. If he pushes back, Don Aurelio can truthfully say he never said it was one job. Don Aurelio learns about Marisol, and she becomes leverage.
+
+#### Mission 1: The Envelope
+- Home, morning: Mateo with Abuela and Tomi. Abuela's pills have already been filled. The address arrives by text from Don Aurelio.
+- The pickup: the address is Beto's uncle's tire shop (the place Tomi wanted to work), which turns out to be connected to Don Aurelio. A mechanic gives Mateo a sealed envelope: don't open it; take it to Walt at the laundromat in Three Hills.
+- The crossing: the pedestrian port of entry. Mateo carries his passport, his border crossing card ("la mica"), and the envelope. He picks a cover story, then faces an officer interview. The failure chain applies.
+- Three Hills: the laundromat is closed, and a text says to use the back. Nobody can see him go in: the first stealth section.
+- The envelope: the player can choose to open it. Its contents and the consequences are not yet final.
+- Return home, the payout, and the end-of-mission summary.
+
+#### Mission 1 Encounter
+- Cover stories: shopping, visiting family, or a medical appointment. Each brings follow-up questions Mateo must answer consistently.
+- The border crossing card allows shopping, tourism, business visits, and visiting family, but not work. Anything that sounds like work raises suspicion.
+- "What's in the envelope?" is the key timed question. Mateo doesn't know. "I don't know" is suspicious; a lie works only if it fits his cover story. A player who opened the envelope can answer honestly.
+
+#### Mission 1 Stealth
+- The alley behind the laundromat: a guard on a fixed patrol, a sweeping wall camera, and cover (dumpsters, pallets, parked cars).
+- Guards and cameras show vision cones on the ground. Detection builds gradually: a "?" fills over the guard, faster at close range; full means spotted ("!"). Cover blocks sight lines. No crouch yet.
+- Sprint is faster but makes a noise ring guards can hear.
+- Spotted by the guard: he approaches and a short encounter starts ("Hey. What are you doing back here?"). The border cover story still applies. Talking his way out lets Mateo continue; failing makes him leave, restarts the alley, and raises Heat.
+- Spotted by the camera: no confrontation, but Heat rises and the guard turns toward the camera's area.
 
 ### Act 2: The Family Business
 - Missions escalate as Rafael's faction undercuts Don Aurelio. Mateo is caught between them.
@@ -241,7 +265,7 @@ Each mission alternates between two modes that can flow into each other:
 - Save system.
 - Music and sound direction.
 - Remaining key bindings (pause, menu).
-- Sprint key: likely added with traversal; sprinting should be louder (noise tradeoff for stealth).
+- Mission 1: what the envelope contains, and the consequences of opening it.
 
 ## Future Polish (deferred)
 - Shaders, lighting, and ambiance effects. Decide on these once most of the game is built, based on the full look.

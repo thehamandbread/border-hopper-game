@@ -3,10 +3,12 @@
 Collected during development. Fixed in a dedicated polish pass after all missions are built. Nothing here blocks new work.
 
 ## Writing
-- Curb conversation: several lines exist to deliver plot rather than because a person would say them. Rewrite so everything flows naturally. Worst offenders:
-  - "The back room's always locked. I've never been in there." (Mateo volunteers information nobody asked for.)
-  - "What do you want, Mateo? In your life." (Too big a question from a stranger, asked cold. Needs a lead-in or a different form.)
-  - "Your father would have stayed too. On this curb." (Reads as planted foreshadowing.)
+- Curb conversation: fix what the player doesn't know at that point.
+  - "Esperanza's prescription": the player has only ever heard "Abuela." Change to "Your abuela's pills. Chuy will have them ready in the morning. Tell him I said hello."
+  - The scene never says why Mateo is on the curb, and Lupe's name only appears if the player examined the front door. Add a line for Mateo when the stranger approaches: "I'm waiting for Doña Lupe. The firemen said she has to come sign something."
+  - "I'll pay her back" (choice 1) depends on Lupe being established first.
+  - The back room line: Mateo's reply should explain it: "The back room? Lupe never lets anyone in there."
+- Rewrite all prologue dialogue to docs/STYLE_GUIDE.md: narration lines, pacing, choices at the emotional peaks, and the character voices.
 - Standard for all dialogue: no line exists only to deliver exposition. Every line must be something that character would actually say in that moment.
 
 ## Curb scene

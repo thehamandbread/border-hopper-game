@@ -55,3 +55,4 @@ tools/audio/         Python scripts that generate placeholder sound effects into
 - Every new mission or major scene must register dev checkpoints in src/dev/checkpoints.js.
 - When you notice polish issues that are out of scope for the current task, add them to docs/POLISH.md instead of fixing them.
 - Keep performance reasonable for low-end Chromebooks: avoid huge textures, and cap particle counts.
+- All dialogue, narration, hints, and text messages follow docs/STYLE_GUIDE.md. Claude Code never writes or rewrites story text; it only converts approved scripts into data.
