@@ -134,8 +134,11 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 - The pickup: the address is Beto's uncle's tire shop (the place Tomi wanted to work), which turns out to be connected to Don Aurelio. A mechanic gives Mateo a sealed envelope: don't open it; take it to Walt at the laundromat in Three Hills.
 - The crossing: the pedestrian port of entry. Mateo carries his passport, his border crossing card ("la mica"), and the envelope. He picks a cover story, then faces an officer interview. The failure chain applies.
 - Three Hills: the laundromat is closed, and a text says to use the back. Nobody can see him go in: the first stealth section.
-- The envelope: the player can choose to open it. Its contents and the consequences are not yet final.
+- The envelope holds three blank sheets: a test of discretion. The player can open it while waiting in line. Walt checks the signature on the flap. Unopened: loyalty +1 and a "Thank you, Mateo." text. Opened: loyalty −1, no text, and Don Aurelio raises it later in his own courteous way. Players who never open it never learn what it held.
 - Return home, the payout, and the end-of-mission summary.
+- Secondary inspection: Officer Carr re-tests the cover story against the booth answers and opens the envelope. Lies about its contents are exposed by the blank pages.
+- Rafael does not appear in Mission 1. He is introduced in Mission 2, somewhere he has a reason to be.
+- Approved dialogue is in docs/script/mission1.md.
 
 #### Mission 1 Encounter
 - Cover stories: shopping, visiting family, or a medical appointment. Each brings follow-up questions Mateo must answer consistently.
@@ -175,9 +178,10 @@ Each mission alternates between two modes that can flow into each other:
 - The system tracks what Mateo has claimed. Data-driven (JSON).
 - **Failure chain:**
   1. Suspicion maxes out, and Mateo is sent to secondary inspection: a tougher second interview.
-  2. Failing secondary inspection triggers an escape: a traversal section evading agents on foot.
-  3. Getting caught during the escape is the real failure.
+  2. At official crossings, failing secondary inspection means being refused entry: Heat +2, the border crossing card is flagged (future crossings start more suspicious), and the mission restarts from the line.
+  3. Escapes on foot happen only where running makes sense, such as being caught mid-traversal at an unofficial crossing or a desert checkpoint. Getting caught during an escape is the real failure.
 - Each step in the chain adds Heat. Failing secondary inspection can also cost cargo and the handler's approval.
+- Suspicion is never shown as a meter. The officer's behavior shows it through consistent tells in dialogue and narration. The end-of-mission summary shows which answers raised suspicion.
 
 ## Traversal & Combat
 - Stealth first: patrols, sightlines, hiding, cameras, drones.
@@ -265,7 +269,6 @@ Each mission alternates between two modes that can flow into each other:
 - Save system.
 - Music and sound direction.
 - Remaining key bindings (pause, menu).
-- Mission 1: what the envelope contains, and the consequences of opening it.
 
 ## Future Polish (deferred)
 - Shaders, lighting, and ambiance effects. Decide on these once most of the game is built, based on the full look.

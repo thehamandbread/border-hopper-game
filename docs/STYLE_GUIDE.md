@@ -15,6 +15,7 @@ How Border Hopper is written. Applies to every line of dialogue, narration, hint
 3. Subtext over statement. Characters rarely say what they feel. Emotion lives in what they avoid, what they change the subject to, and what they do.
 4. Ordinary life keeps going. Mundane details (breakfast, being late, the news) carry scenes; the important thing sits underneath.
 5. Beats before lines. Every scene starts as a beat sheet: what each character wants, hides, and feels; the turn; and what the player should feel at the end. Lines are written only after the beats are approved.
+6. Every character in a scene needs a reason to be there, at that moment. Don't place a character just because the outline says they should appear.
 
 ## Avoiding corny writing
 - No punchlines. Don't end exchanges on a clever line.
@@ -95,3 +96,9 @@ How Border Hopper is written. Applies to every line of dialogue, narration, hint
 ### Minor characters
 - Doña Lupe: the restaurant's owner. Offscreen in the prologue.
 - Don Chuy: the pharmacist. Keeps the family's fiado notebook.
+- Sr. Ruiz: owner of Llantera Ruiz, Beto's uncle. Friendly, knows everyone, notices family resemblances.
+- Nando: mechanic at Llantera Ruiz. Says as little as possible and never stops working.
+- Walt: owner of the laundromat on Fourth Street in Three Hills. Quiet; checks the seal before anything else.
+- Officer at the booth: procedural and terse. The narration does the acting.
+- Officer Carr: secondary inspection. Calm, sharp, asks open questions, takes notes.
+- The alley guard: bored, unhurried, firm.

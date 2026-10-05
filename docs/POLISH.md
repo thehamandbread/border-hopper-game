@@ -19,6 +19,7 @@ Collected during development. Fixed in a dedicated polish pass after all mission
 - The "pause" event does nothing. It should hold about 1 second.
 - The "aurelio_looks" event does nothing. Needs a sitting frame of Don Aurelio turned toward Mateo.
 - "Unknown number" wraps onto two lines in the texting phone.
+- Phone-call narration sits over the restaurant's top wall and reads a little busy. Consider a subtle backing or a different position.
 
 ## Art
 - Hand-to-ear walk cycle for calls (normal walk at 60% is used until then).
