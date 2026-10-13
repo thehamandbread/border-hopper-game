@@ -159,8 +159,8 @@ Two 32x32 frames: 0 lying on the couch (head on the left, eyes closed; body in t
 | 23 | photo | framed photo on the wall: his parents at a wedding, the baby |
 | 24 | fridge_bare | the lower fridge after the notices are taken down (magnets only) |
 
-### `apartment_props.png` (112x16)
-16x16 props with transparency: 0 pill bottle, 1 plate of eggs, 2 Tomi's backpack (one strap taped), 3 work jacket hung over a chair back (draw it exactly over a `chair` tile), 4 a low wicker basket of mending, 5 Walt's thick envelope (plain manila, flap closed; no writing, nothing showing), 6 the two electric notices laid flat (the red stamp has no letters).
+### `apartment_props.png` (160x16)
+16x16 props with transparency: 0 pill bottle, 1 plate of eggs, 2 Tomi's backpack (one strap taped), 3 work jacket hung over a chair back (draw it exactly over a `chair` tile), 4 a low wicker basket of mending, 5 Walt's thick envelope (plain manila, flap closed; no writing, nothing showing), 6 the two electric notices laid flat (the red stamp has no letters); Mission 2: 7 Tomi's new sneakers (on the floor by the door), 8 the shoe box (on the couch; blank label), 9 the mending basket with Tomi's old shoes on top, a sole half off.
 
 ### `lamp.png` (16x32)
 A floor lamp, switched on: warm-lit shade, thin pole, weighted base; feet line on row 28. For the light on the floor use `light_pool.png`.
@@ -246,8 +246,8 @@ Faint glass tint and two glare streaks, partially transparent. Draw it over the 
 ### `port_props.png` (48x16)
 16x16 props in line, with transparency: 0 a cooler, 1 a stroller, 2 a full plastic shopping bag (a red logo, no lettering).
 
-### `booth_officer.png` (32x32)
-The booth officer, waist-up behind the glass, 16x32 frames: 0 idle, looking out; 1 head down, typing. The frame's bottom row is the counter's top edge: stand him on the bottom of the `booth_window` row.
+### `booth_officer.png` (64x32)
+The booth officer, waist-up behind the glass, 16x32 frames: 0 idle, looking out; 1 head down, typing. Frames 2-3: the night officer (Mission 2; 50s, gray crew cut, glasses, a mustache), the same two poses. The frame's bottom row is the counter's top edge: stand him on the bottom of the `booth_window` row.
 
 ### `handler_walk.png` (64x128)
 The K-9 handler, `mateo_walk.png` layout: the agency uniform (steel-blue shirt, gold badge, navy trousers) under a black vest, a navy ball cap.
@@ -255,8 +255,8 @@ The K-9 handler, `mateo_walk.png` layout: the agency uniform (steel-blue shirt, 
 ### `dog_walk.png` (64x80)
 The handler's dog, a German shepherd (tan, black saddle). 16x16 frames; rows 0 down, 1 up, 2 right, 3 left (4-frame walk, frame 0 standing), row 4: 0-1 sniffing, facing right (nose to the ground; alternate them), 2-3 the same facing left. Feet on row 12, so it stands on the characters' ground line (3 px above the frame's bottom).
 
-### `queue_npcs.png` (64x160)
-People in line ahead of Mateo, 16x32 frames, all facing right (toward the booth). Row 0: the woman with the flyer (50s, curly hair, mustard blouse, brown skirt) walking, frame 0 standing. Row 1: 0-1 her fanning herself with the flyer (alternate). Row 2: the man holding a sleeping boy against his shoulder (gray T-shirt; the boy in yellow), walking. Row 3: the teenage girl (ponytail, teal hoodie), walking. Row 4: the teenage boy (maroon T-shirt), walking. The teenagers share earbuds: a white earbud and thin cord each; she holds the phone.
+### `queue_npcs.png` (64x224)
+People in line ahead of Mateo, 16x32 frames, all facing right (toward the booth). Row 0: the woman with the flyer (50s, curly hair, mustard blouse, brown skirt) walking, frame 0 standing. Row 1: 0-1 her fanning herself with the flyer (alternate). Row 2: the man holding a sleeping boy against his shoulder (gray T-shirt; the boy in yellow), walking. Row 3: the teenage girl (ponytail, teal hoodie), walking. Row 4: the teenage boy (maroon T-shirt), walking. The teenagers share earbuds: a white earbud and thin cord each; she holds the phone. Mission 2, a longer line: row 5 a man in a work jacket and an olive cap, walking; row 6 an older woman (gray hair, blue blouse) with a shopping bag, walking.
 
 ### `secondary_tiles.png` (288x16, 16x16 tiles, one row)
 
@@ -383,6 +383,70 @@ A taco truck from the side, facing right: cream body, red stripe, the serving wi
 ### `bus_bench.png` (32x16)
 A bus-stop bench facing down: wooden slats and backrest, steel ends.
 
+## Mission 2
+
+### `warehouse_tiles.png` (448x16, 16x16 tiles, one row)
+
+The loading dock (corrugated steel walls, concrete floor) and the cold room (white insulated panels, a pale floor). The wall sets follow the restaurant's side-wall and corner rules.
+
+| Index | Name | Notes |
+|---|---|---|
+| 0 | dock_floor | concrete |
+| 1 | dock_floor_stripe | with a yellow safety line along the bottom |
+| 2 | dock_wall | corrugated steel wall face |
+| 3-8 | dock_wall_side_left, _side_right, _corner_top_left, _corner_top_right, _corner_bottom_left, _corner_bottom_right | |
+| 9 | cold_floor | the cold room's sealed floor |
+| 10 | cold_wall | insulated panel wall face |
+| 11-16 | cold_wall_side_left ... cold_wall_corner_bottom_right | as for the dock wall |
+| 17 | snowflake_door | the cold room's door in the dock wall, a blue snowflake symbol (no words) |
+| 18 | snowflake_door_open | swung in, the lit cold room beyond |
+| 19 | crates_top | lime crates stacked to the ceiling, 2 tiles tall: top |
+| 20 | crates_bottom | |
+| 21 | table_left | steel table, 2 wide |
+| 22 | table_right | |
+| 23 | cabinet | steel cabinet against the wall, closed |
+| 24 | cabinet_open | its door swung out, shelves inside |
+| 25 | crate_seat | a single crate of limes on the floor (to sit on) |
+| 26 | pallet_produce | a pallet of produce boxes under plastic |
+| 27 | dock_opening | the open bay in a dock wall: roll-up door up, daylight |
+
+### `forklift.png` (32x32)
+A parked forklift, side view facing left, forks down; static. Feet line on row 28.
+
+### `rafael_walk.png` (64x160)
+Rafael: 30s, slim, dark hair combed back, a pressed pale shirt, dark slacks, a watch; no name tag or text. `mateo_walk.png` layout, plus row 4: 0 phone at his ear, back half turned; 1 phone at his ear, facing down; 2 reading the lit phone in his hands, facing down.
+
+### `warehouse_worker.png` (64x224)
+The warehouse worker: a white hairnet, white smock, dark pants, green rubber boots. `mateo_walk.png` layout, plus row 4: carrying a crate of limes, walking right (4 frames); row 5: the same walking left; row 6: 0 facing down, holding a door open (his arm out to our right).
+
+### `case_props.png` (80x16)
+16x16 props: 0 the gray hard-shell case carried by its handle (side view, both padlocks; draw it at Mateo's hand); 1 the case lying on a table (both padlocks on the latches); 2 the case on Carr's desk (from the visitor's side); 3 a phone face down; 4 a phone, lit.
+
+### `clock_plate.png` (32x16)
+A wall clock's plate: a digital display with a dark face and no digits. Draw the time on it in the bitmap font at runtime; the face is x 3-28, y 3-12.
+
+### `industrial_tiles.png` (192x16, 16x16 tiles, one row)
+
+Tres Cerros' industrial streets, for the walk to the port.
+
+| Index | Name | Notes |
+|---|---|---|
+| 0 | sidewalk | worn concrete |
+| 1 | sidewalk_crack | with a crack |
+| 2 | curb | sidewalk meeting the street |
+| 3 | street | copied unchanged from `border_tiles.png` (asphalt) |
+| 4 | street_line | copied unchanged (asphalt_line) |
+| 5 | wall | a warehouse wall face: dusty tan block, dark base |
+| 6 | wall_upper | the same without the base |
+| 7 | rollup_door | a closed roll-up door in the wall |
+| 8 | roof | a flat roof edge (goes above the wall rows) |
+| 9 | dirt_lot | an empty dirt lot |
+| 10 | fence | chain-link fence, the lot behind it |
+| 11 | fence_post | the same with a steel post |
+
+### `street_props.png` (48x16)
+16x16 props: 0 a rusty oil drum, 1 two black trash bags, 2 a short stack of empty pallets.
+
 ## Previews (`tools/art/previews/`, git-ignored)
 
-`preview_scene.png`, `preview_walk.gif`, `sheet_6x.png`, `tiles_6x.png`, `restaurant_tiles_6x.png`, `fire_6x.png`, `smoke_6x.png`, `restaurant_scene.png` (mock restaurant with Mateo, fire and smoke), `kitchen_door_6x.png`, `task_marker_6x.png`, `restaurant_walls_preview.png` (mock room: walls, corners, counter ends, cafe doors, task markers), `phone_ledge_6x.png` (over the wall tile), `phone_ui_4x.png`, `phone_icon_6x.png`, `curb_scene.png` (mock curb scene at 4x), and 6x previews of each curb image. Mission 1: `apartment_scene.png` and `tireshop_scene.png` (mock scenes at 4x with every character placed), `m1_lineup_1x.png` / `m1_lineup_6x.png` (everyone side by side, for checking they read as different people), and 6x previews of each Mission 1 image. The crossing: `port_scene.png` (mock line and booth at 4x, everyone placed) and `secondary_scene.png` (mock waiting room and office at 4x), `crossing_lineup_1x.png` / `crossing_lineup_6x.png`, and 6x previews of each crossing image. Three Hills: `alley_scene.png` (the sandbox alley mocked up at 4x, with cover, the camera, the guard and Walt), `threehills_scene.png` (Fourth Street at 4x), `threehills_lineup_1x.png` / `threehills_lineup_6x.png`, and 6x previews of each Three Hills image. Mission 1 evening: `evening_scene.png` (the apartment at evening, mocked up at 4x: overlay, lamp and pool, everyone placed) and `lamp_6x.png`.
+`preview_scene.png`, `preview_walk.gif`, `sheet_6x.png`, `tiles_6x.png`, `restaurant_tiles_6x.png`, `fire_6x.png`, `smoke_6x.png`, `restaurant_scene.png` (mock restaurant with Mateo, fire and smoke), `kitchen_door_6x.png`, `task_marker_6x.png`, `restaurant_walls_preview.png` (mock room: walls, corners, counter ends, cafe doors, task markers), `phone_ledge_6x.png` (over the wall tile), `phone_ui_4x.png`, `phone_icon_6x.png`, `curb_scene.png` (mock curb scene at 4x), and 6x previews of each curb image. Mission 1: `apartment_scene.png` and `tireshop_scene.png` (mock scenes at 4x with every character placed), `m1_lineup_1x.png` / `m1_lineup_6x.png` (everyone side by side, for checking they read as different people), and 6x previews of each Mission 1 image. The crossing: `port_scene.png` (mock line and booth at 4x, everyone placed) and `secondary_scene.png` (mock waiting room and office at 4x), `crossing_lineup_1x.png` / `crossing_lineup_6x.png`, and 6x previews of each crossing image. Three Hills: `alley_scene.png` (the sandbox alley mocked up at 4x, with cover, the camera, the guard and Walt), `threehills_scene.png` (Fourth Street at 4x), `threehills_lineup_1x.png` / `threehills_lineup_6x.png`, and 6x previews of each Three Hills image. Mission 1 evening: `evening_scene.png` (the apartment at evening, mocked up at 4x: overlay, lamp and pool, everyone placed) and `lamp_6x.png`. Mission 2: `warehouse_scene.png` (the dock and the cold room mocked up at 4x), `mission2_lineup_6x.png` (Rafael, the worker, both officers, the two new people in line), and 6x previews of each Mission 2 image.
