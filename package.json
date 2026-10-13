@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node tools/test_encounter.mjs"
+    "test": "node tools/test_encounter.mjs",
+    "test:stealth": "node tools/test_stealth.mjs"
   },
   "devDependencies": {
     "vite": "^8.3.0"
