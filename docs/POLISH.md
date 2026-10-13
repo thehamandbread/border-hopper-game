@@ -32,6 +32,7 @@ Collected during development. Fixed in a dedicated polish pass after all mission
 - Secondary inspection: the waiting room and Carr's office are drawn side by side, with a fade between them; the camera could cut to one room at a time. On refusal nobody walks him back; the scene fades straight to the line.
 - Carr's bun only shows from the side; from the front her hair reads as short.
 - Mission 1: no home scene after the drop; the script ends at the summary.
+- Evening (Scene 5), missing in-between poses, using the closest frames: Mateo taking the notices off the fridge (he stands facing the fridge; the notices just leave it), taking the envelope out of his jacket (seated frame; the envelope just appears), Mateo standing up from the table (the seated frame swaps for standing); Abuela threading the needle, her hands stopping, putting the mending down and picking the needle up again (one seated frame throughout); Tomi counting in twos (his standing frame at the table) and getting up from or sitting back down on the couch (the frames swap).
 - Walt: the door opens and closes by swapping frames (no in-between), and Mateo hands over the envelope with no animation.
 - The summary lists an answer each time it was given (no merging across attempts), and secondary's "exposed" suspicion (the blank pages against a lie) has no answer text, so it isn't listed (the dev panel shows it as unresolved).
 - In a shipped build, Space on the summary starts the game over from the prologue (there's no Mission 2 yet).

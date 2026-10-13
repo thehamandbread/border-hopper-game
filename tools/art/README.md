@@ -117,8 +117,8 @@ Character sheets use the `mateo_walk.png` layout (16x32 frames; rows 0 down, 1 u
 ### `abuela_walk.png` (64x160)
 Abuela Esperanza: small and upright (3 px shorter than Mateo), gray hair in a bun, plum cardigan over a pale floral housedress. Row 4: frame 0 sitting at a table, facing down (waist-up; the frame's bottom row is the table's far edge).
 
-### `tomi_walk.png` (64x256)
-Tomi: 3 px shorter than Mateo, messy black hair, white school polo, navy pants. Rows 4-7: the same walk (down, up, right, left) with his left shoe off (white sock). Frame 0 of each row is standing.
+### `tomi_walk.png` (64x288)
+Tomi: 3 px shorter than Mateo, messy black hair, white school polo, navy pants. Rows 4-7: the same walk (down, up, right, left) with his left shoe off (white sock). Frame 0 of each row is standing. Row 8: frame 0 sitting on the couch facing down, shoes off (socks), an open workbook on his knees (feet on row 28, about 3 px shorter than standing).
 
 ### `ruiz_walk.png` (64x160)
 Sr. Ruiz: 60s, mustard work cap, glasses, gray mustache, a little heavyset, light blue work shirt. Row 4: frames 0-1 standing behind the counter writing in a receipt book (waist-up, looking down; the frame's bottom row is the counter's front edge). Alternate them for the pen moving.
@@ -129,7 +129,7 @@ Nando: 40s, navy coveralls, red bandana, dark mustache. Row 4: 0 only his legs, 
 ### `mateo_extra.png` (64x32)
 Two 32x32 frames: 0 lying on the couch (head on the left, eyes closed; body in the lower half); 1 sitting at a table facing up, his back to us over the back of his chair (the frame's bottom is the chair's feet; it covers a `chair_back` tile exactly).
 
-### `apartment_tiles.png` (384x16, 16x16 tiles, one row)
+### `apartment_tiles.png` (400x16, 16x16 tiles, one row)
 
 | Index | Name | Notes |
 |---|---|---|
@@ -157,9 +157,13 @@ Two 32x32 frames: 0 lying on the couch (head on the left, eyes closed; body in t
 | 21 | hallway | open doorway to the bedrooms (wall row) |
 | 22 | front_door | apartment front door (wall row) |
 | 23 | photo | framed photo on the wall: his parents at a wedding, the baby |
+| 24 | fridge_bare | the lower fridge after the notices are taken down (magnets only) |
 
-### `apartment_props.png` (64x16)
-16x16 props with transparency: 0 pill bottle, 1 plate of eggs, 2 Tomi's backpack (one strap taped), 3 work jacket hung over a chair back (draw it exactly over a `chair` tile).
+### `apartment_props.png` (112x16)
+16x16 props with transparency: 0 pill bottle, 1 plate of eggs, 2 Tomi's backpack (one strap taped), 3 work jacket hung over a chair back (draw it exactly over a `chair` tile), 4 a low wicker basket of mending, 5 Walt's thick envelope (plain manila, flap closed; no writing, nothing showing), 6 the two electric notices laid flat (the red stamp has no letters).
+
+### `lamp.png` (16x32)
+A floor lamp, switched on: warm-lit shade, thin pole, weighted base; feet line on row 28. For the light on the floor use `light_pool.png`.
 
 ### `tireshop_tiles.png` (432x16, 16x16 tiles, one row)
 
@@ -381,4 +385,4 @@ A bus-stop bench facing down: wooden slats and backrest, steel ends.
 
 ## Previews (`tools/art/previews/`, git-ignored)
 
-`preview_scene.png`, `preview_walk.gif`, `sheet_6x.png`, `tiles_6x.png`, `restaurant_tiles_6x.png`, `fire_6x.png`, `smoke_6x.png`, `restaurant_scene.png` (mock restaurant with Mateo, fire and smoke), `kitchen_door_6x.png`, `task_marker_6x.png`, `restaurant_walls_preview.png` (mock room: walls, corners, counter ends, cafe doors, task markers), `phone_ledge_6x.png` (over the wall tile), `phone_ui_4x.png`, `phone_icon_6x.png`, `curb_scene.png` (mock curb scene at 4x), and 6x previews of each curb image. Mission 1: `apartment_scene.png` and `tireshop_scene.png` (mock scenes at 4x with every character placed), `m1_lineup_1x.png` / `m1_lineup_6x.png` (everyone side by side, for checking they read as different people), and 6x previews of each Mission 1 image. The crossing: `port_scene.png` (mock line and booth at 4x, everyone placed) and `secondary_scene.png` (mock waiting room and office at 4x), `crossing_lineup_1x.png` / `crossing_lineup_6x.png`, and 6x previews of each crossing image. Three Hills: `alley_scene.png` (the sandbox alley mocked up at 4x, with cover, the camera, the guard and Walt), `threehills_scene.png` (Fourth Street at 4x), `threehills_lineup_1x.png` / `threehills_lineup_6x.png`, and 6x previews of each Three Hills image.
+`preview_scene.png`, `preview_walk.gif`, `sheet_6x.png`, `tiles_6x.png`, `restaurant_tiles_6x.png`, `fire_6x.png`, `smoke_6x.png`, `restaurant_scene.png` (mock restaurant with Mateo, fire and smoke), `kitchen_door_6x.png`, `task_marker_6x.png`, `restaurant_walls_preview.png` (mock room: walls, corners, counter ends, cafe doors, task markers), `phone_ledge_6x.png` (over the wall tile), `phone_ui_4x.png`, `phone_icon_6x.png`, `curb_scene.png` (mock curb scene at 4x), and 6x previews of each curb image. Mission 1: `apartment_scene.png` and `tireshop_scene.png` (mock scenes at 4x with every character placed), `m1_lineup_1x.png` / `m1_lineup_6x.png` (everyone side by side, for checking they read as different people), and 6x previews of each Mission 1 image. The crossing: `port_scene.png` (mock line and booth at 4x, everyone placed) and `secondary_scene.png` (mock waiting room and office at 4x), `crossing_lineup_1x.png` / `crossing_lineup_6x.png`, and 6x previews of each crossing image. Three Hills: `alley_scene.png` (the sandbox alley mocked up at 4x, with cover, the camera, the guard and Walt), `threehills_scene.png` (Fourth Street at 4x), `threehills_lineup_1x.png` / `threehills_lineup_6x.png`, and 6x previews of each Three Hills image. Mission 1 evening: `evening_scene.png` (the apartment at evening, mocked up at 4x: overlay, lamp and pool, everyone placed) and `lamp_6x.png`.

@@ -323,4 +323,39 @@ Opened:
 
 ### Going home
 Unopened only: [His phone buzzes.] **Text from: Unknown number** Thank you, Mateo.
-(Fade.) Card: "Back in Tres Cerros." Then the end-of-mission summary: times spotted, Heat change, and which answers raised suspicion.
+(Fade.) Card: "Back in Tres Cerros." Then Scene 5, then the end-of-mission summary: times spotted, Heat change, and which answers raised suspicion.
+
+## Scene 5: Evening
+
+*(The apartment, same day, lamp on. Scripted: no free walking. No examinables.)*
+
+[Evening. A lamp on. Abuela sits at the table with a basket of mending. Tomi is on the couch with his homework open and his shoes off.]
+[Mateo comes in and shuts the door. He keeps his jacket on.]
+**TOMI:** There's rice.
+**MATEO:** I ate.
+**TOMI:** Did you go to the shop? Did Nando show you the balancer?
+**MATEO:** It was an errand.
+**TOMI:** For who?
+**MATEO:** Do your homework.
+[Abuela threads a needle. She doesn't look up.]
+[Mateo takes the electric notices off the fridge. He sits at the table and takes a thick envelope out of his jacket. He puts it down next to the notices.]
+**TOMI:** That's more than the restaurant paid in a month.
+**MATEO:** It's handled.
+**TOMI:** Teo.
+[Abuela's hands stop.]
+
+**Choice:**
+- "It covers the electric. And the one under it."
+  - [Abuela nods once.]
+- "Tomi, count it for me." (tomi_involved +1)
+  - **TOMI:** All of it?
+  - [Tomi crosses the room and counts in twos, fast. He doesn't say the number.]
+- (Say nothing.)
+  - [The lamp hums. Tomi looks from the envelope to Mateo.]
+
+[Abuela puts the mending down. She looks at Mateo's hands, then at his jacket.]
+**ABUELA:** Take that off. Dinner is on the stove.
+[Mateo stands. The envelope stays where it is.]
+[Abuela picks up the needle again. She doesn't touch the money.]
+
+*(Fade. End of mission.)*

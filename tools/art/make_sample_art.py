@@ -31,10 +31,12 @@ Outputs:
   secondary_scene.png, crossing_lineup_1x/6x.png
   Three Hills and stealth: alley_tiles.png, threehills_tiles.png, dumpster.png, pallets.png, parked_car.png,
   wall_camera.png, stealth_icons.png, guard_walk.png, walt_door.png, food_truck.png, bus_bench.png,
-  closed_sign.png, notice.png (see the README), and previews alley_scene.png, threehills_scene.png,
+  closed_sign.png, notice.png (see the README)
+  Mission 1 evening: lamp.png (and new frames in apartment_tiles, apartment_props, tomi_walk), preview evening_scene.png, and previews alley_scene.png, threehills_scene.png,
   threehills_lineup_1x/6x.png
 Paths are resolved relative to this file, so it runs from any working directory.
 """
+import json
 import random
 from pathlib import Path
 from PIL import Image, ImageDraw
@@ -1946,13 +1948,32 @@ def make_abuela():
 
 
 def make_tomi():
-    """Rows 4-7: the walk again with his left shoe off (sock showing). Frame 0 of each row is standing."""
+    """Rows 4-7: the walk again with his left shoe off (sock showing). Frame 0 of each row is standing.
+    Row 8: frame 0 sitting on the couch facing down, shoes off, homework open on his lap."""
     rows = []
     bare = {d: [char_frame(d, f, TOMI, bare=True) for f in range(4)] for d in ("down", "up", "right")}
     bare["left"] = [fr.transpose(Image.FLIP_LEFT_RIGHT) for fr in bare["right"]]
     for d in ("down", "up", "right", "left"):
         rows.append(bare[d])
+
+    def homework(px, y):
+        top = y + len(TOMI["head_down"]) + len(TOMI_SEAT_TORSO)
+        fill(px, 4, top - 1, 11, top + 1, (240, 238, 228))   # an open workbook on his knees
+        fill(px, 7, top - 1, 8, top + 1, (200, 196, 186))    # its spine
+        fill(px, 5, top, 6, top, (150, 150, 160))            # writing (lines only)
+        fill(px, 9, top, 10, top, (150, 150, 160))
+    sitting = seated_down_frame(TOMI, TOMI["head_down"], TOMI_SEAT_TORSO, ["...JJJJJJJJJ....", "...JjJJJJJjJ...."],
+                                (5, 9), "K", shoe_w=2, extra=homework)
+    rows.append([sitting])
     return char_sheet(TOMI, rows)
+
+
+TOMI_SEAT_TORSO = [
+    "....TTtTTtTT....",
+    "...TTTTtTTTT....",
+    "...TtTTTTTTtT...",
+    "...StttttttSt...",
+]
 
 
 def make_ruiz():
@@ -2196,6 +2217,16 @@ def draw_fridge_bottom(px):
     dots(px, [(9, 10)], (230, 190, 60))
 
 
+def draw_fridge_bottom_bare(px):
+    """The same lower door after the notices are taken down: just the magnets left."""
+    fill(px, 1, 0, 14, 13, FRIDGE)
+    fill(px, 14, 0, 14, 13, FRIDGE_DK)
+    fill(px, 12, 1, 12, 6, (170, 170, 166))              # handle
+    fill(px, 1, 13, 14, 14, (90, 90, 92))                # kick plate
+    dots(px, [(5, 2)], (60, 140, 200))                   # magnet
+    dots(px, [(9, 10)], (230, 190, 60))
+
+
 def tile_apt_counter():
     img = solid((96, 128, 150))
     d = img.load()
@@ -2293,7 +2324,8 @@ APARTMENT_ORDER = ["linoleum", "linoleum_worn", "ceramic", "wall", "wall_window"
                    "wall_side_left", "wall_side_right", "wall_corner_top_left", "wall_corner_top_right",
                    "wall_corner_bottom_left", "wall_corner_bottom_right",
                    "counter", "stove", "fridge_top", "fridge", "table_top", "table_bottom",
-                   "chair", "chair_back", "couch_left", "couch_right", "hallway", "front_door", "photo"]
+                   "chair", "chair_back", "couch_left", "couch_right", "hallway", "front_door", "photo",
+                   "fridge_bare"]
 
 
 def make_apartment_tiles():
@@ -2312,6 +2344,7 @@ def make_apartment_tiles():
         "couch_left": couch_l, "couch_right": couch_r,
         "hallway": on_face(apt_face(), draw_hallway), "front_door": on_face(apt_face(), draw_apt_door),
         "photo": tile_apt_photo(),
+        "fridge_bare": prop_on(lino, draw_fridge_bottom_bare),
     }
     sheet = Image.new("RGBA", (T * len(APARTMENT_ORDER), T))
     for i, k in enumerate(APARTMENT_ORDER):
@@ -2319,7 +2352,7 @@ def make_apartment_tiles():
     return sheet, tiles
 
 
-PROP_ORDER = ["pill_bottle", "plate_eggs", "backpack", "jacket_on_chair"]
+PROP_ORDER = ["pill_bottle", "plate_eggs", "backpack", "jacket_on_chair", "mending_basket", "thick_envelope", "notices"]
 
 
 def draw_pill_bottle(px):
@@ -2361,9 +2394,43 @@ def draw_jacket_on_chair(px):
     dots(px, [(5, 4), (10, 3), (4, 8)], (52, 46, 44))    # soot
 
 
+def draw_mending_basket(px):
+    """A low wicker basket of mending on the table: folded cloth, a spool of thread."""
+    wick, wick_dk, wick_hi = (176, 132, 78), (136, 98, 56), (202, 160, 102)
+    fill(px, 3, 9, 12, 13, wick)                         # basket side
+    for x in range(4, 12, 2):
+        fill(px, x, 10, x, 12, wick_dk)
+    fill(px, 3, 8, 12, 8, wick_hi)                       # rim
+    fill(px, 4, 6, 9, 8, (96, 120, 160))                 # a folded shirt
+    fill(px, 4, 6, 9, 6, (124, 148, 186))
+    fill(px, 8, 5, 11, 7, (180, 70, 66))                 # a red cloth on top
+    fill(px, 10, 6, 11, 7, (232, 228, 214))              # spool
+    dots(px, [(10, 5), (11, 5)], (140, 100, 60))
+
+
+def draw_thick_envelope(px):
+    """Walt's envelope on the table: plain manila, thick, the flap closed. No writing, nothing showing."""
+    fill(px, 3, 7, 12, 12, (204, 172, 112))
+    fill(px, 3, 7, 12, 7, (222, 194, 136))
+    fill(px, 3, 12, 12, 12, (164, 132, 82))              # its thickness, seen from the front
+    fill(px, 3, 13, 12, 13, (138, 108, 66))
+    for x, y in ((4, 8), (5, 9), (6, 10), (7, 10), (8, 10), (9, 9), (10, 8), (11, 8)):
+        px[x, y] = (176, 144, 92, 255)                   # the flap's edge
+
+
+def draw_notices(px):
+    """The electric notices from the fridge, laid flat: two sheets, the top one stamped in red."""
+    fill(px, 5, 7, 12, 13, (214, 212, 200))              # the one underneath
+    fill(px, 3, 6, 10, 12, (244, 242, 232))              # the top notice
+    fill(px, 4, 8, 8, 8, (170, 168, 160))                # print lines
+    fill(px, 4, 11, 7, 11, (170, 168, 160))
+    fill(px, 5, 9, 8, 10, (196, 44, 40))                 # PAST DUE, stamped in red (no letters)
+
+
 def make_apartment_props():
     sheet = Image.new("RGBA", (T * len(PROP_ORDER), T), (0, 0, 0, 0))
-    for i, fn in enumerate((draw_pill_bottle, draw_plate_eggs, draw_backpack, draw_jacket_on_chair)):
+    for i, fn in enumerate((draw_pill_bottle, draw_plate_eggs, draw_backpack, draw_jacket_on_chair,
+                            draw_mending_basket, draw_thick_envelope, draw_notices)):
         layer = Image.new("RGBA", (T, T), (0, 0, 0, 0))
         fn(layer.load())
         outline(layer)
@@ -4931,6 +4998,61 @@ def save_three_hills(frames):
     street.resize((street.width * 4, street.height * 4), Image.NEAREST).save(PREVIEW_DIR / "threehills_scene.png")
 
 
+# ---------------- Mission 1: the evening (Scene 5) ----------------
+# No random numbers; runs last.
+def make_lamp():
+    """16x32 floor lamp, switched on: a weighted base, a thin pole, a warm-lit fabric shade. Feet line on
+    row 28 like the characters. (The light on the floor is light_pool.png.)"""
+    img = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+    px = img.load()
+    fill(px, 5, 26, 10, 28, (70, 60, 54))                # base
+    fill(px, 5, 26, 10, 26, (100, 88, 78))
+    fill(px, 7, 10, 8, 25, (96, 86, 78))                 # pole
+    fill(px, 7, 10, 7, 25, (128, 116, 104))
+    fill(px, 4, 3, 11, 9, (236, 204, 132))               # shade, lit from inside
+    fill(px, 3, 8, 12, 9, (220, 180, 108))               # its flared lower edge
+    fill(px, 5, 3, 10, 3, (248, 228, 170))
+    fill(px, 6, 10, 9, 10, (255, 236, 176))              # the bulb's glow under the shade
+    outline(img)
+    return img
+
+
+def make_evening_preview(apt_tiles, props, mateo_extra, abuela, tomi, lamp, pool):
+    """The apartment at evening, mocked up: the dark overlay, the lamp and its pool, Abuela mending,
+    Tomi on the couch, Mateo at the table with the envelope next to the notices."""
+    mp = json.loads((HERE.parent.parent / "public" / "assets" / "data" / "apartment_map.json").read_text())
+    names = APARTMENT_ORDER
+    img = Image.new("RGBA", (mp["width"] * T, mp["height"] * T))
+    for y, row in enumerate(mp["tiles"]):
+        for x, i in enumerate(row):
+            img.paste(apt_tiles[names[i]] if names[i] != "fridge" else apt_tiles["fridge_bare"], (x * T, y * T))
+    feet(img, cell(abuela, 0, 4), 72, 83)                                         # Abuela at the table
+    img.alpha_composite(props.crop((4 * T, 0, 5 * T, T)), (64, 80))               # mending basket
+    img.alpha_composite(props.crop((6 * T, 0, 7 * T, T)), (60, 92))               # notices
+    img.alpha_composite(props.crop((5 * T, 0, 6 * T, T)), (70, 94))               # the envelope
+    img.alpha_composite(mateo_extra.crop((32, 0, 64, 32)), (72 - 16, 128 - 32))   # Mateo, back to us
+    feet(img, cell(tomi, 0, 8), 256, 35)                                          # Tomi on the couch
+    dark = Image.new("RGBA", img.size, (14, 16, 40, 120))
+    img.alpha_composite(dark)
+    img.alpha_composite(pool, (232 - pool.width // 2, 44 - pool.height // 2))
+    feet(img, lamp, 232, 44)
+    return img
+
+
+def save_evening(frames):
+    lamp = make_lamp()
+    lamp.save(ASSET_DIR / "lamp.png")
+    bg = Image.new("RGBA", lamp.size, (150, 140, 124, 255))
+    bg.alpha_composite(lamp)
+    bg.resize((lamp.width * 6, lamp.height * 6), Image.NEAREST).save(PREVIEW_DIR / "lamp_6x.png")
+    apt_sheet = Image.open(ASSET_DIR / "apartment_tiles.png")
+    apt_tiles = {n: apt_sheet.crop((i * T, 0, i * T + T, T)) for i, n in enumerate(APARTMENT_ORDER)}
+    ev = make_evening_preview(apt_tiles, Image.open(ASSET_DIR / "apartment_props.png"), Image.open(ASSET_DIR / "mateo_extra.png"),
+                              Image.open(ASSET_DIR / "abuela_walk.png"), Image.open(ASSET_DIR / "tomi_walk.png"), lamp,
+                              Image.open(ASSET_DIR / "light_pool.png"))
+    ev.resize((ev.width * 4, ev.height * 4), Image.NEAREST).save(PREVIEW_DIR / "evening_scene.png")
+
+
 def main():
     ASSET_DIR.mkdir(parents=True, exist_ok=True)
     PREVIEW_DIR.mkdir(parents=True, exist_ok=True)
@@ -5026,6 +5148,8 @@ def main():
     save_crossing(frames)
     # Three Hills and the stealth art (last: its own random stream, so it never changes anything above)
     save_three_hills(frames)
+    # Mission 1's evening (last: no random numbers, nothing above changes)
+    save_evening(frames)
 
 
 if __name__ == "__main__":
