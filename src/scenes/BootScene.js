@@ -113,6 +113,8 @@ export default class BootScene extends Phaser.Scene {
     this.load.json('dialogue_m1_alley', assetUrl('assets/data/dialogue/m1_alley.json'));
     this.load.image('walt_door', assetUrl('assets/images/walt_door.png'));
     this.load.json('dialogue_m1_walt', assetUrl('assets/data/dialogue/m1_walt.json'));
+    // Mission 1: the evening
+    this.load.image('lamp', assetUrl('assets/images/lamp.png'));
     this.load.json('stealth_config', assetUrl('assets/data/stealth_config.json'));
   }
 

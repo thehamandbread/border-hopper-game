@@ -21,8 +21,8 @@ const FRAME = { MATEO_ASLEEP: 0, MATEO_SITTING: 1, PLATE: 1, BOTTLE: 0, ABUELA_U
  * data (checkpoints): { awake: true } skips waking up.
  */
 export default class ApartmentScene extends StoryScene {
-  constructor() {
-    super('ApartmentScene');
+  constructor(key = 'ApartmentScene') {
+    super(key); // EveningScene (Scene 5) is this apartment too
   }
 
   create(data = {}) {

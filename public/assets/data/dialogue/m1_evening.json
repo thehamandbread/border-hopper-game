@@ -1,0 +1,201 @@
+{
+ "_comment": "Mission 1, Scene 5: Evening (docs/script/mission1.md). Scripted, movement locked throughout. Wait events stage the beats (cutscenes/m1_evening.json): mateo_enters, to_fridge (the notices come off), to_table (he sits; the notices on the table), envelope_down, tomi_counts / tomi_back (option 2 only), mateo_stands. Only option 2 changes state (tomi_involved +1). No Loyalty, Heat or mission log changes.",
+ "id": "m1_evening",
+ "presenter": "box",
+ "lockMovement": true,
+ "start": "evening",
+ "nodes": {
+  "evening": {
+   "type": "narration",
+   "text": "Evening. A lamp on. Abuela sits at the table with a basket of mending. Tomi is on the couch with his homework open and his shoes off.",
+   "next": "enters"
+  },
+  "enters": {
+   "type": "event",
+   "name": "mateo_enters",
+   "wait": true,
+   "next": "comes_in"
+  },
+  "comes_in": {
+   "type": "narration",
+   "text": "Mateo comes in and shuts the door. He keeps his jacket on.",
+   "next": "rice"
+  },
+  "rice": {
+   "type": "line",
+   "speaker": "TOMI",
+   "text": "There's rice.",
+   "next": "ate"
+  },
+  "ate": {
+   "type": "line",
+   "speaker": "MATEO",
+   "text": "I ate.",
+   "next": "shop"
+  },
+  "shop": {
+   "type": "line",
+   "speaker": "TOMI",
+   "text": "Did you go to the shop? Did Nando show you the balancer?",
+   "next": "errand"
+  },
+  "errand": {
+   "type": "line",
+   "speaker": "MATEO",
+   "text": "It was an errand.",
+   "next": "for_who"
+  },
+  "for_who": {
+   "type": "line",
+   "speaker": "TOMI",
+   "text": "For who?",
+   "next": "homework"
+  },
+  "homework": {
+   "type": "line",
+   "speaker": "MATEO",
+   "text": "Do your homework.",
+   "next": "needle"
+  },
+  "needle": {
+   "type": "narration",
+   "text": "Abuela threads a needle. She doesn't look up.",
+   "next": "to_fridge"
+  },
+  "to_fridge": {
+   "type": "event",
+   "name": "to_fridge",
+   "wait": true,
+   "next": "to_table"
+  },
+  "to_table": {
+   "type": "event",
+   "name": "to_table",
+   "wait": true,
+   "next": "notices"
+  },
+  "notices": {
+   "type": "narration",
+   "text": "Mateo takes the electric notices off the fridge. He sits at the table and takes a thick envelope out of his jacket. He puts it down next to the notices.",
+   "next": "envelope_down"
+  },
+  "envelope_down": {
+   "type": "event",
+   "name": "envelope_down",
+   "wait": true,
+   "next": "more"
+  },
+  "more": {
+   "type": "line",
+   "speaker": "TOMI",
+   "text": "That's more than the restaurant paid in a month.",
+   "next": "handled"
+  },
+  "handled": {
+   "type": "line",
+   "speaker": "MATEO",
+   "text": "It's handled.",
+   "next": "teo"
+  },
+  "teo": {
+   "type": "line",
+   "speaker": "TOMI",
+   "text": "Teo.",
+   "next": "hands_stop"
+  },
+  "hands_stop": {
+   "type": "narration",
+   "text": "Abuela's hands stop.",
+   "next": "choice"
+  },
+  "choice": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "covers",
+     "text": "It covers the electric. And the one under it.",
+     "next": "nods"
+    },
+    {
+     "id": "count",
+     "text": "Tomi, count it for me.",
+     "effects": [
+      {
+       "flag": "tomi_involved",
+       "add": 1
+      }
+     ],
+     "next": "all_of_it"
+    },
+    {
+     "id": "silent",
+     "text": "(Say nothing.)",
+     "next": "hums"
+    }
+   ]
+  },
+  "nods": {
+   "type": "narration",
+   "text": "Abuela nods once.",
+   "next": "mending_down"
+  },
+  "all_of_it": {
+   "type": "line",
+   "speaker": "TOMI",
+   "text": "All of it?",
+   "next": "tomi_counts"
+  },
+  "tomi_counts": {
+   "type": "event",
+   "name": "tomi_counts",
+   "wait": true,
+   "next": "counts"
+  },
+  "counts": {
+   "type": "narration",
+   "text": "Tomi crosses the room and counts in twos, fast. He doesn't say the number.",
+   "next": "tomi_back"
+  },
+  "tomi_back": {
+   "type": "event",
+   "name": "tomi_back",
+   "wait": true,
+   "next": "mending_down"
+  },
+  "hums": {
+   "type": "narration",
+   "text": "The lamp hums. Tomi looks from the envelope to Mateo.",
+   "next": "mending_down"
+  },
+  "mending_down": {
+   "type": "narration",
+   "text": "Abuela puts the mending down. She looks at Mateo's hands, then at his jacket.",
+   "next": "take_off"
+  },
+  "take_off": {
+   "type": "line",
+   "speaker": "ABUELA",
+   "text": "Take that off. Dinner is on the stove.",
+   "next": "stands"
+  },
+  "stands": {
+   "type": "event",
+   "name": "mateo_stands",
+   "wait": true,
+   "next": "stays"
+  },
+  "stays": {
+   "type": "narration",
+   "text": "Mateo stands. The envelope stays where it is.",
+   "next": "needle_again"
+  },
+  "needle_again": {
+   "type": "narration",
+   "text": "Abuela picks up the needle again. She doesn't touch the money.",
+   "next": "end"
+  },
+  "end": {
+   "type": "end"
+  }
+ }
+}

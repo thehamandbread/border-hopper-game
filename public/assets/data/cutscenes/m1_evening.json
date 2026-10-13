@@ -1,0 +1,255 @@
+{
+ "_comment": "Mission 1, Scene 5: Evening. EveningScene passes its sprites in: player (Mateo walking), mateoSit (at the table, back to us), abuela (sitting, frame 16), tomi (walking, the one-shoe rows: frameOffset 16), tomiSit (on the couch), notices and envelope (props on the table). Frames: player down 0, up 4, right 8, left 12; tomi's standing frames from 16 (+0 down, +4 up, +8 right, +12 left). evening: the overlay and the lamp (EveningScene).",
+ "evening": {
+  "overlay": {
+   "color": "0x0e1028",
+   "alpha": 0.45
+  },
+  "lamp": [
+   232,
+   44
+  ],
+  "lightPool": [
+   232,
+   44
+  ]
+ },
+ "steps": [
+  {
+   "type": "dialogue",
+   "id": "m1_evening",
+   "label": "conversation"
+  }
+ ],
+ "events": {
+  "mateo_enters": [
+   {
+    "type": "show",
+    "actor": "player",
+    "visible": true
+   },
+   {
+    "type": "moveActor",
+    "actor": "player",
+    "path": [
+     [
+      16,
+      9
+     ],
+     [
+      16,
+      8
+     ]
+    ],
+    "speed": 50
+   },
+   {
+    "type": "setFrame",
+    "actor": "player",
+    "frame": 4
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   }
+  ],
+  "to_fridge": [
+   {
+    "type": "moveActor",
+    "actor": "player",
+    "path": [
+     [
+      12,
+      8
+     ],
+     [
+      12,
+      2
+     ],
+     [
+      5,
+      2
+     ]
+    ],
+    "speed": 60
+   },
+   {
+    "type": "setFrame",
+    "actor": "player",
+    "frame": 4
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   },
+   {
+    "type": "notify",
+    "name": "notices_off"
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   }
+  ],
+  "to_table": [
+   {
+    "type": "moveActor",
+    "actor": "player",
+    "path": [
+     [
+      6,
+      2
+     ],
+     [
+      6,
+      8
+     ],
+     [
+      4,
+      8
+     ]
+    ],
+    "speed": 60
+   },
+   {
+    "type": "setFrame",
+    "actor": "player",
+    "frame": 4
+   },
+   {
+    "type": "wait",
+    "ms": 200
+   },
+   {
+    "type": "show",
+    "actor": "player",
+    "visible": false
+   },
+   {
+    "type": "show",
+    "object": "mateoSit",
+    "visible": true
+   },
+   {
+    "type": "show",
+    "object": "notices",
+    "visible": true
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   }
+  ],
+  "envelope_down": [
+   {
+    "type": "show",
+    "object": "envelope",
+    "visible": true
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   }
+  ],
+  "tomi_counts": [
+   {
+    "type": "show",
+    "object": "tomiSit",
+    "visible": false
+   },
+   {
+    "type": "show",
+    "actor": "tomi",
+    "visible": true
+   },
+   {
+    "type": "moveActor",
+    "actor": "tomi",
+    "path": [
+     [
+      16,
+      2
+     ],
+     [
+      6,
+      2
+     ],
+     [
+      6,
+      6
+     ],
+     [
+      5,
+      6
+     ]
+    ],
+    "speed": 60
+   },
+   {
+    "type": "setFrame",
+    "actor": "tomi",
+    "frame": 28
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   }
+  ],
+  "tomi_back": [
+   {
+    "type": "moveActor",
+    "actor": "tomi",
+    "path": [
+     [
+      6,
+      6
+     ],
+     [
+      6,
+      2
+     ],
+     [
+      16,
+      2
+     ]
+    ],
+    "speed": 60
+   },
+   {
+    "type": "show",
+    "actor": "tomi",
+    "visible": false
+   },
+   {
+    "type": "show",
+    "object": "tomiSit",
+    "visible": true
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   }
+  ],
+  "mateo_stands": [
+   {
+    "type": "show",
+    "object": "mateoSit",
+    "visible": false
+   },
+   {
+    "type": "show",
+    "actor": "player",
+    "visible": true
+   },
+   {
+    "type": "setFrame",
+    "actor": "player",
+    "frame": 4
+   },
+   {
+    "type": "wait",
+    "ms": 400
+   }
+  ]
+ }
+}

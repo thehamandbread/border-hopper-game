@@ -369,6 +369,21 @@ export const CHECKPOINTS = [
     setup: (scene) => atBackDoor(scene, { opened: true }),
   },
   {
+    id: 'm1_evening',
+    label: 'M1: evening at home (after Walt)',
+    scene: 'EveningScene',
+    // After Walt (unopened) with a camera spot in the alley: the summary afterwards shows 1 / +1 / None.
+    setup: () => {
+      alleyState({ cover_story: 'family', cover_detail: 'tia', booth_address: 'fourth_street', key_answer: 'tia_letter' });
+      gameState.applyEffects([{ meter: 'loyalty', add: 1, once: 'm1_walt_loyalty' }]);
+      gameState.mission.log.push(
+        { encounter: 'alley', type: 'spotted', source: 'camera' },
+        { type: 'heat', encounter: 'alley', question_id: 'camera', answer_id: 'spotted', delta: 1 },
+      );
+      gameState.setMeter('heat', 1);
+    },
+  },
+  {
     id: 'm1_summary_clean',
     label: 'M1: summary (a clean run)',
     scene: 'SummaryScene',

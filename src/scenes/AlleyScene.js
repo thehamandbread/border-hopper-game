@@ -17,7 +17,7 @@ const WALT_DEPTH = 2;    // over the door tiles, behind Mateo standing in front 
  * (StealthStage, numbers from stealth_config.json). Shift sprints here. The phone store's door is
  * examinable (the printed notice). Stealth hints show once each, one at a time. E at the back door
  * ends the stealth (nothing watches or moves any more, the cones go) and plays m1_walt: the door
- * opens, Walt, and the envelope (by envelope_opened), then going home: the card and the summary.
+ * opens, Walt, and the envelope (by envelope_opened), then going home: the card and the evening.
  *
  * Being spotted (AlleyEncounter): by the guard, everything freezes, he walks over and the m1_alley
  * conversation runs (pass: back to stealth; fail: Heat +1, he walks Mateo to the left end and the
@@ -139,9 +139,9 @@ export default class AlleyScene extends StoryScene {
     runner.on('end', () => this.leave());
   }
 
-  /** Going home: the card, then the end-of-mission summary. */
+  /** Going home: the card, then the evening at the apartment (and after it the summary). */
   leave() {
-    this.goToScene('SummaryScene', { card: 'Back in Tres Cerros.' });
+    this.goToScene('EveningScene', { card: 'Back in Tres Cerros.' });
   }
 
   update(_time, delta) {
