@@ -1,0 +1,63 @@
+{
+ "_comment": "Mission 1, Scene 4 (docs/script/mission1.md): Fourth Street. 'fourth' plays when Mateo reaches the laundromat; 'door' is the laundromat's front door: Locked., and the first time the back-door text from Unknown number and the hint (sets m1_back_door_text, which opens the alley mouth).",
+ "id": "m1_threehills",
+ "presenter": "box",
+ "lockMovement": true,
+ "start": "fourth",
+ "nodes": {
+  "fourth": {
+   "type": "narration",
+   "text": "The laundromat's front window. A piece of cardboard taped inside: CLOSED FOR REPAIRS.",
+   "next": "end"
+  },
+  "door": {
+   "type": "narration",
+   "text": "Locked.",
+   "next": "door_branch"
+  },
+  "door_branch": {
+   "type": "branch",
+   "cases": [
+    {
+     "if": {
+      "flag": "m1_back_door_text"
+     },
+     "next": "end"
+    }
+   ],
+   "else": "buzz"
+  },
+  "buzz": {
+   "type": "narration",
+   "text": "Mateo's phone buzzes.",
+   "next": "text"
+  },
+  "text": {
+   "type": "event",
+   "name": "text_message",
+   "data": {
+    "from": "Unknown number",
+    "text": "Please use the back door, and see that no one watches you go in."
+   },
+   "wait": true,
+   "effects": [
+    {
+     "flag": "m1_back_door_text",
+     "set": true
+    }
+   ],
+   "next": "hint"
+  },
+  "hint": {
+   "type": "event",
+   "name": "show_hint",
+   "data": {
+    "text": "Reach the back door without being seen."
+   },
+   "next": "end"
+  },
+  "end": {
+   "type": "end"
+  }
+ }
+}

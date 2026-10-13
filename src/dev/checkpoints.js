@@ -95,6 +95,13 @@ function sentToSecondary(gs, answers) {
   gs.mission.suspicion.booth = 4;
 }
 
+/** Booth answers as if he'd just been passed through the gate. */
+function passedBooth(gs, answers) {
+  for (const [name, value] of Object.entries(answers)) gs.setAnswer(name, value);
+  gs.mission.encounter = 'booth';
+  gs.mission.suspicion.booth = 0;
+}
+
 function placeAtTile(scene, tileX, tileY) {
   const { x, y } = scene.tileFeet(tileX, tileY);
   scene.player.setPosition(x, y);
@@ -256,6 +263,16 @@ export const CHECKPOINTS = [
     setup: () => {
       crossingState(gameState);
       sentToSecondary(gameState, { cover_story: 'shopping', cover_detail: 'shoes', key_answer: 'cash' });
+    },
+  },
+  {
+    id: 'm1_threehills',
+    label: 'M1: Three Hills, the walk',
+    scene: 'ThreeHillsScene',
+    // Through the booth on the first try: family, "My tía.", "Fourth Street.", "A letter for my tía.".
+    setup: () => {
+      crossingState(gameState);
+      passedBooth(gameState, { cover_story: 'family', cover_detail: 'tia', booth_address: 'fourth_street', key_answer: 'tia_letter' });
     },
   },
   {

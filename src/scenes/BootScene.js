@@ -93,6 +93,13 @@ export default class BootScene extends Phaser.Scene {
     for (const id of ['m1_line', 'm1_booth', 'm1_secondary']) {
       this.load.json(`dialogue_${id}`, assetUrl(`assets/data/dialogue/${id}.json`));
     }
+    // Mission 1: Three Hills
+    this.load.image('threehills_tiles', assetUrl('assets/images/threehills_tiles.png'));
+    this.load.image('food_truck', assetUrl('assets/images/food_truck.png'));
+    this.load.image('bus_bench', assetUrl('assets/images/bus_bench.png'));
+    this.load.image('closed_sign', assetUrl('assets/images/closed_sign.png'));
+    this.load.json('threehills_map', assetUrl('assets/data/threehills_map.json'));
+    this.load.json('dialogue_m1_threehills', assetUrl('assets/data/dialogue/m1_threehills.json'));
   }
 
   create() {

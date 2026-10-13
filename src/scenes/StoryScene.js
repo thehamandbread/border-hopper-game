@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import DialogueBox from '../objects/DialogueBox.js';
+import HintQueue from '../objects/HintQueue.js';
 import PhoneUI from '../objects/PhoneUI.js';
 import Player from '../objects/Player.js';
 import { fadeInFromBlack, fadeToBlack, showCard } from '../systems/cards.js';
@@ -22,6 +23,8 @@ const FADE_IN_MS = 800;
  *    if that returns a promise, a wait event resumes when it settles.
  *  - cutscenes: playCutscene(id) (CutsceneRunner, input locked throughout)
  *  - cards: goToScene(key, { card }) fades to a location card, then starts the next scene
+ *  - hints: showHint(text) shows a hint over Mateo's head, one at a time in order of arrival; the
+ *    story event "show_hint" ({ text }) does the same from dialogue data
  *
  * Map JSON: { tileWidth, tileHeight, width, height, tileset: { key, blocking: [indexes] },
  *             start: { tileX, tileY, facing? }, tiles: [[...]], examinables?: [{ tileX, tileY, text }] }
@@ -48,7 +51,10 @@ export default class StoryScene extends Phaser.Scene {
     if (mapW <= cam.width && mapH <= cam.height) {
       cam.setScroll(Math.round((mapW - cam.width) / 2), Math.round((mapH - cam.height) / 2));
     } else {
-      cam.setBounds(0, 0, mapW, mapH);
+      // Wider than the view but not as tall (or the reverse): follow along it, centred across it.
+      const bx = Math.min(0, Math.round((mapW - cam.width) / 2));
+      const by = Math.min(0, Math.round((mapH - cam.height) / 2));
+      cam.setBounds(bx, by, Math.max(mapW, cam.width), Math.max(mapH, cam.height));
       cam.startFollow(this.player, true);
     }
 
@@ -57,6 +63,7 @@ export default class StoryScene extends Phaser.Scene {
     this.interactions = new InteractionSystem(this, this.player, { tileSize: tileWidth });
     this.dialogueBox = new DialogueBox(this);
     this.dialogueRunner = null;
+    this.hints = new HintQueue(this, this.player);
     this.phone = new PhoneUI(this, { canOpen: () => this.locks.size === 0 });
     this.phone.on('opened', () => this.setLock('phone', true));
     this.phone.on('closed', () => this.setLock('phone', false));
@@ -127,9 +134,17 @@ export default class StoryScene extends Phaser.Scene {
     return runner;
   }
 
-  /** Story events from conversations: texts are handled here, everything else by onStoryEvent. */
+  /** A hint over Mateo's head (queued behind any hint already showing). */
+  showHint(text) {
+    this.hints.show(text);
+  }
+
+  /** Story events from conversations: texts and hints are handled here, everything else by onStoryEvent. */
   handleStoryEvent(name, payload, runner, node) {
-    const done = name === 'text_message' ? this.deliverText(payload) : this.onStoryEvent(name, payload);
+    let done;
+    if (name === 'text_message') done = this.deliverText(payload);
+    else if (name === 'show_hint') done = this.showHint(payload.text);
+    else done = this.onStoryEvent(name, payload);
     if (node?.wait) Promise.resolve(done).then(() => runner.resume());
   }
 
@@ -186,5 +201,6 @@ export default class StoryScene extends Phaser.Scene {
     this.player.update();
     this.player.setDepth(this.player.y);
     this.interactions.update();
+    this.hints.update();
   }
 }

@@ -17,7 +17,7 @@ const FRAME = { OFFICER_TYPING: 1, GATE_OPEN: 19 };
  * play the line's narration in script order (the queue at the start, the sign, his pocket). At the
  * last trigger the line stops and the cutscene takes over: the handler walks the dog down the line,
  * the envelope choice, the line moves, the booth. The booth passes him through the gate to Three Hills
- * (a stub for now) or sends him to the door on his left: secondary inspection.
+ * or sends him to the door on his left: secondary inspection.
  *
  * data: { atBooth: true } starts at the booth (checkpoints); anything kept between attempts lives in
  * GameState (attempt, card_flagged, envelope_opened).
@@ -158,7 +158,7 @@ export default class PortScene extends StoryScene {
   async throughTheGate() {
     this.ground.putTileAt(FRAME.GATE_OPEN, ...this.mapData.gate);
     await this.playCutscene({ steps: [{ type: 'moveActor', actor: 'player', path: [[28, 5], [31, 5]], speed: 50 }] });
-    this.goToScene('ThreeHillsStubScene', { fade: true });
+    this.goToScene('ThreeHillsScene', { fade: true });
   }
 
   /** "The door on your left": to the door, then secondary inspection. */

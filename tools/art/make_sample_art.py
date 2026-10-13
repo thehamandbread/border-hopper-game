@@ -4286,7 +4286,24 @@ def draw_sign_band(px, color, color_dk):
 THREEHILLS_ORDER = ["sidewalk", "curb", "street", "street_line", "crosswalk", "laundry_wall", "laundry_wall_plain",
                     "laundry_window", "laundry_door", "laundry_sign_left", "laundry_sign_right", "phone_wall",
                     "phone_wall_plain", "phone_window", "phone_door", "phone_sign_left", "phone_sign_right",
-                    "storefront_roof"]
+                    "storefront_roof", "block_wall", "block_wall_plain", "alley_mouth"]
+GSTUCCO, GSTUCCO_DK, GSTUCCO_HI = (176, 170, 154), (156, 150, 136), (194, 188, 174)   # other buildings: tan-gray
+
+
+def tile_alley_mouth(asphalt):
+    """The gap between two buildings where the alley meets the sidewalk: asphalt in shade, the
+    buildings' side edges along the left and right. Stacks in all three storefront rows."""
+    img = asphalt.copy()
+    d = img.load()
+    for y in range(T):
+        for x in range(T):
+            r, g, b, a = d[x, y]
+            d[x, y] = (r * 2 // 3, g * 2 // 3, b * 2 // 3 + 4, a)
+    fill(d, 0, 0, 1, 15, GSTUCCO_DK)                    # the buildings' side walls, edge-on
+    fill(d, 14, 0, 15, 15, PSTUCCO_DK)
+    fill(d, 2, 0, 2, 15, OUT)
+    fill(d, 13, 0, 13, 15, OUT)
+    return img
 
 
 def make_threehills_tiles(border_tiles):
@@ -4310,6 +4327,10 @@ def make_threehills_tiles(border_tiles):
         "phone_sign_left": psign_l, "phone_sign_right": psign_r,
         "storefront_roof": tile_alley_roof(),
     }
+    # Added later: made after the others so they draw nothing from the random stream before them.
+    tiles["block_wall"] = stucco_face(GSTUCCO, GSTUCCO_DK, GSTUCCO_HI)
+    tiles["block_wall_plain"] = stucco_face(GSTUCCO, GSTUCCO_DK, GSTUCCO_HI, base=False)
+    tiles["alley_mouth"] = tile_alley_mouth(border_tiles["asphalt"])
     sheet = Image.new("RGBA", (T * len(THREEHILLS_ORDER), T))
     for i, k in enumerate(THREEHILLS_ORDER):
         sheet.paste(tiles[k], (i * T, 0))
@@ -4809,9 +4830,9 @@ def make_alley_preview(tiles, dumpsters, pallets, car, camera, guard, walt, icon
 def make_street_preview(tiles, alley_tiles, truck, bench, sign, mateo_frames):
     # R roof, < > sign bands, u plain upper, w window, D door, W wall; laundromat uses l*, phone store p*
     layout = [
-        "RRRRRRRRRRRRRRRRRRRR",
-        "uu<>uuqq[]qquuuuuuuu",
-        "WwwDwwXyyZyyXWWWWWWW",
+        "RRRRRRRRRRRRRMRRRRRR",
+        "uu<>uuqq[]qqBMGGGGGG",
+        "WwwDwwXyyZyyXMHHHHHH",
         "ssssssssssssssssssss",
         "ssssssssssssssssssss",
         "cccccccccccccccccccc",
@@ -4822,7 +4843,8 @@ def make_street_preview(tiles, alley_tiles, truck, bench, sign, mateo_frames):
     key = {"R": "storefront_roof", "u": "laundry_wall_plain", "<": "laundry_sign_left", ">": "laundry_sign_right",
            "W": "laundry_wall", "w": "laundry_window", "D": "laundry_door", "q": "phone_wall_plain",
            "[": "phone_sign_left", "]": "phone_sign_right", "X": "phone_wall", "y": "phone_window",
-           "Z": "phone_door", "s": "sidewalk", "c": "curb", "a": "street", "l": "street_line", "k": "crosswalk"}
+           "Z": "phone_door", "s": "sidewalk", "c": "curb", "a": "street", "l": "street_line", "k": "crosswalk",
+           "B": "phone_wall_plain", "M": "alley_mouth", "G": "block_wall_plain", "H": "block_wall"}
     img = paste_layout(layout, key, tiles)
     img.alpha_composite(sign, (4 * T + 2, 2 * T + 3))                       # closed sign in the window
     img.alpha_composite(truck, (13 * T, 6 * T + 6 - truck.height + 8))      # the taco truck at the curb

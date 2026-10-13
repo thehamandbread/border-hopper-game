@@ -338,7 +338,7 @@ The alley guard: 40s, a little heavy, buzz cut and mustache, pale gray security 
 ### `walt_door.png` (16x32)
 Walt in the laundromat's back doorway: the door pushed open a few inches, Walt (50s, thinning gray hair, glasses pushed up, faded green work shirt with the sleeves rolled up) in the gap, a wrench hanging from the hand on the door's edge. Draw it exactly over `laundry_door_top` + `laundry_door_bottom`.
 
-### `threehills_tiles.png` (288x16, 16x16 tiles, one row)
+### `threehills_tiles.png` (336x16, 16x16 tiles, one row)
 
 Storefronts are three rows: `storefront_roof`, then the sign row (plain wall and the 2-tile sign band), then the window row.
 
@@ -362,6 +362,9 @@ Storefronts are three rows: `storefront_roof`, then the sign row (plain wall and
 | 15 | phone_sign_left | blank sign band (red frame; no text) |
 | 16 | phone_sign_right | |
 | 17 | storefront_roof | same as the alley's `roof` |
+| 18 | block_wall | other buildings: tan-gray stucco with a dark base |
+| 19 | block_wall_plain | without the base (sign row) |
+| 20 | alley_mouth | the gap between two buildings where the alley meets the sidewalk: asphalt in shade, side edges left and right; use it in all three storefront rows |
 
 ### `closed_sign.png` (12x10)
 The cardboard sign taped inside the laundromat's window: marker strokes where the words go (no text baked in; CLOSED FOR REPAIRS is game text).

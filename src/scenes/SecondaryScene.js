@@ -10,7 +10,7 @@ const MATEO_DESK_Y = 4 * 16 + 6;  // his chair in front of the desk
  * Mission 1, Scene 3b: secondary inspection (secondary_map.json, dialogue m1_secondary,
  * cutscenes/m1_secondary.json). The waiting room, then Officer Carr's office: her follow-ups compare
  * against the booth answers (questions with nothing to compare are skipped), the envelope, and the
- * outcome. Under the refusal threshold: on to Three Hills (a stub for now). At or over it: refused
+ * outcome. Under the refusal threshold: on to Three Hills. At or over it: refused
  * entry; the data has already raised Heat, flagged the card, counted the attempt and cleared the
  * booth answers, and the mission restarts from the line.
  */
@@ -54,7 +54,7 @@ export default class SecondaryScene extends StoryScene {
     };
     await this.playCutscene('m1_secondary', { things });
     if (this.result === 'refused') this.goToScene('PortScene', { fade: true });
-    else this.goToScene('ThreeHillsStubScene', { fade: true });
+    else this.goToScene('ThreeHillsScene', { fade: true });
   }
 
   onStoryEvent(name) {
