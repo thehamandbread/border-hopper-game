@@ -34,10 +34,17 @@ Collected during development. Fixed in a dedicated polish pass after all mission
 - Carr's bun only shows from the side; from the front her hair reads as short.
 - Secondary inspection asks "What's the doctor's name?" even when the booth answer was picking up a prescription; consider a pharmacy variant.
 
+## Stealth
+- The guard has no physics body: Mateo can walk straight through him (seen in the stealth sandbox).
+- Guards walk in straight lines between path cells and ignore their own width, so a path can graze the corner of cover.
+- The guard's sprite only switches between four facings; while he turns on the spot (noise, route ends) it snaps from one to the next.
+- No sound yet for the noise ring, the "?" filling, or being spotted.
+
 ## Art
 - Hand-to-ear walk cycle for calls (normal walk at 60% is used until then).
 - Arm swing in walk cycles; side-profile polish.
 - Dirt path transition tiles. Slightly speckled smoke at 1x.
+- Alley: the dumpsters' lids sit above their footprint, so a drain or stain on the tile above shows between the lids and the wall. Walt's frame shows only half of him in the door gap; no frame for him handing over the envelope.
 
 ## Audio
 - Tire shop ambience: the air compressor and the radio the narration mentions.

@@ -3,7 +3,9 @@ import { gameState } from '../systems/GameState.js';
 // Dev-only: F1 toggles a small live panel (top-right) with GameState's meters, flags, answers,
 // control-hint use counts, and the mission's encounter state: attempt, the hidden suspicion counts,
 // card_flagged and the envelope flags, the mission log (every suspicion and Heat change) and skipped
-// questions. A DOM overlay, so it never touches game input or scenes.
+// questions. In the stealth sandbox it also shows each watcher's detection and state, sprint, frame
+// times and the stealth config (from window.__stealthDebug). A DOM overlay, so it never touches game
+// input or scenes.
 export default class StatePanel {
   constructor() {
     this.el = document.createElement('div');
@@ -49,6 +51,28 @@ export default class StatePanel {
       `  envelope_opened: ${flag('envelope_opened')}   envelope_inspected: ${flag('envelope_inspected')}`,
       'mission log', m.log.length ? m.log.map(entry).join('\n') : '  (none)',
       'skipped', m.skips.length ? m.skips.map((k) => `  ${k.encounter ?? '-'} ${k.question_id}`).join('\n') : '  (none)',
+      ...this.stealthLines(),
     ].join('\n');
+  }
+
+  stealthLines() {
+    const dbg = window.__stealthDebug;
+    if (!dbg) return [];
+    const p = dbg.player;
+    const perf = dbg.perf;
+    const c = dbg.config;
+    const src = (s) =>
+      `  ${s.id.padEnd(6)} ${s.state.padEnd(11)} ? ${s.detection.toFixed(2)} ${s.alert}${s.inView ? ' in-view' : ''}${s.hearing ? ' hears' : ''}`;
+    return [
+      'stealth',
+      ...dbg.sources.map(src),
+      `  sprint: ${p.sprinting ? 'on' : 'off'}   speed: ${p.speed.toFixed(0)} px/s   spotted: ${dbg.spotted.length}`,
+      `  frame ${perf.frameMs.toFixed(1)} ms (${perf.fps.toFixed(0)} fps)   stealth ${perf.stealthMs.toFixed(2)} ms`,
+      'stealth config',
+      `  guard cone ${c.guard.cone.widthDeg}deg x ${c.guard.cone.lengthTiles}t  walk ${c.guard.walkSpeedTilesPerSec}t/s  pause ${c.guard.patrol.pauseSeconds}s  turn ${c.guard.patrol.turnRateDegPerSec}deg/s`,
+      `  camera cone ${c.camera.cone.widthDeg}deg x ${c.camera.cone.lengthTiles}t  sweep ${c.camera.sweep.fromDeg}..${c.camera.sweep.toDeg} in ${c.camera.sweep.secondsOneWay}s`,
+      `  fill ${c.detection.fillSecondsNear}s near .. ${c.detection.fillSecondsFar}s far  decay ${c.detection.decaySeconds}s`,
+      `  sprint x${c.player.sprintMultiplier}  ring ${c.noise.sprintRingTiles}t  walk noise ${c.noise.walkNoise}`,
+    ];
   }
 }

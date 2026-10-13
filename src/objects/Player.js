@@ -46,6 +46,9 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.carrying = null;
     this.locked = false;
     this.speedScale = 1; // e.g. 0.6 while on a phone call
+    // Sprint (Shift): off unless a scene turns it on (setSprintMultiplier, e.g. from stealth_config.json).
+    this.sprintMultiplier = 1;
+    this.sprinting = false; // true while Shift is held, he's moving, and sprint is on
     this.keys = scene.input.keyboard.addKeys({
       up: 'W',
       down: 'S',
@@ -55,6 +58,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       downArrow: 'DOWN',
       leftArrow: 'LEFT',
       rightArrow: 'RIGHT',
+      sprint: 'SHIFT',
     });
   }
 
@@ -84,13 +88,24 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     this.speedScale = scale;
   }
 
+  /** Shift multiplies walk speed by this while moving (1 = no sprint, the default). */
+  setSprintMultiplier(multiplier) {
+    this.sprintMultiplier = multiplier;
+  }
+
   update() {
-    if (this.locked) return;
+    if (this.locked) {
+      this.sprinting = false;
+      this.anims.timeScale = 1;
+      return;
+    }
     const k = this.keys;
     const dx = (k.right.isDown || k.rightArrow.isDown ? 1 : 0) - (k.left.isDown || k.leftArrow.isDown ? 1 : 0);
     const dy = (k.down.isDown || k.downArrow.isDown ? 1 : 0) - (k.up.isDown || k.upArrow.isDown ? 1 : 0);
 
     if (dx === 0 && dy === 0) {
+      this.sprinting = false;
+      this.anims.timeScale = 1;
       this.setVelocity(0, 0);
       this.anims.stop();
       this.setFrame(DIRECTIONS.indexOf(this.facing) * FRAMES_PER_DIR);
@@ -104,8 +119,11 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
       this.facing = dy > 0 ? 'down' : 'up';
     }
 
+    this.sprinting = this.sprintMultiplier > 1 && k.sprint.isDown;
+    const sprint = this.sprinting ? this.sprintMultiplier : 1;
     // Normalize so diagonals aren't faster.
-    this.body.velocity.set(dx, dy).normalize().scale(PLAYER_SPEED * this.speedScale);
+    this.body.velocity.set(dx, dy).normalize().scale(PLAYER_SPEED * this.speedScale * sprint);
     this.anims.play(`walk-${this.facing}`, true);
+    this.anims.timeScale = sprint; // legs keep up with the ground
   }
 }

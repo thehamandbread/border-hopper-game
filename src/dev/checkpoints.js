@@ -258,6 +258,12 @@ export const CHECKPOINTS = [
       sentToSecondary(gameState, { cover_story: 'shopping', cover_detail: 'shoes', key_answer: 'cash' });
     },
   },
+  {
+    id: 'stealth_sandbox',
+    label: 'Dev: stealth sandbox (guard, camera, cover)',
+    scene: 'StealthSandboxScene',
+    setup: () => {},
+  },
 ];
 
 export const getCheckpoint = (id) => CHECKPOINTS.find((c) => c.id === id);
