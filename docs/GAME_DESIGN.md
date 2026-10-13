@@ -138,6 +138,7 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 - Three Hills: the laundromat is closed, and a text says to use the back. Nobody can see him go in: the first stealth section.
 - The envelope holds three blank sheets: a test of discretion. The player can open it while waiting in line. Walt checks the signature on the flap. Unopened: loyalty +1 and a "Thank you, Mateo." text. Opened: loyalty −1, no text, and Don Aurelio raises it later in his own courteous way. Players who never open it never learn what it held.
 - Return home, the payout, and the end-of-mission summary.
+- Walt's thicker envelope is Mateo's cut of the job. The amount is never shown or stated. Mateo brings it home and puts it on the table next to the electric notices; Abuela does not touch it. This evening scene plays before the end-of-mission summary.
 - Secondary inspection: Officer Carr re-tests the cover story against the booth answers and opens the envelope. Lies about its contents are exposed by the blank pages.
 - Rafael does not appear in Mission 1. He is introduced in Mission 2, somewhere he has a reason to be.
 - Approved dialogue is in docs/script/mission1.md.
