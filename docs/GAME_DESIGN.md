@@ -147,6 +147,7 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 - The border crossing card allows shopping, tourism, business visits, and visiting family, but not work. Anything that sounds like work raises suspicion.
 - "What's in your jacket?" is the key timed question (6 seconds). Mateo doesn't know what's in the envelope. "I don't know" is suspicious; a lie works only if it fits his cover story. A player who opened the envelope can answer honestly.
 - Walt's reaction depends only on whether the player chose to open the envelope. Officer Carr opening it in secondary inspection does not count.
+- The Mission 1 summary lists times spotted (guard and camera, across all attempts), the total Heat change, and the answers that raised suspicion, grouped as booth and secondary inspection. Suspicion values and Loyalty are never shown.
 
 #### Mission 1 Stealth
 - The alley behind the laundromat: a guard on a fixed patrol, a sweeping wall camera, and cover (dumpsters, pallets, parked cars).

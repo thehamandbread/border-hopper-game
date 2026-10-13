@@ -11,7 +11,6 @@ import SecondaryScene from './scenes/SecondaryScene.js';
 import AlleyScene from './scenes/AlleyScene.js';
 import SummaryScene from './scenes/SummaryScene.js';
 import ThreeHillsScene from './scenes/ThreeHillsScene.js';
-import ThreeHillsStubScene from './scenes/ThreeHillsStubScene.js';
 
 const config = {
   type: Phaser.AUTO,
@@ -28,7 +27,7 @@ const config = {
     default: 'arcade',
     arcade: { debug: false },
   },
-  scene: [BootScene, MovementTestScene, RestaurantScene, CurbScene, ApartmentScene, TireShopScene, PortScene, SecondaryScene, ThreeHillsScene, AlleyScene, SummaryScene, ThreeHillsStubScene],
+  scene: [BootScene, MovementTestScene, RestaurantScene, CurbScene, ApartmentScene, TireShopScene, PortScene, SecondaryScene, ThreeHillsScene, AlleyScene, SummaryScene],
 };
 
 if (import.meta.env.DEV) {
