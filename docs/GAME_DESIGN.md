@@ -151,9 +151,15 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 #### Mission 1 Stealth
 - The alley behind the laundromat: a guard on a fixed patrol, a sweeping wall camera, and cover (dumpsters, pallets, parked cars).
 - Guards and cameras show vision cones on the ground. Detection builds gradually: a "?" fills over the guard, faster at close range; full means spotted ("!"). Cover blocks sight lines. No crouch yet.
+- Detection decays when Mateo leaves a vision cone or breaks line of sight. The "?" drains back to empty in about 1.5 seconds, so the player can retreat into cover and try again. Later missions may tighten this.
+- Detection fills faster at close range. Sprinting makes a noise ring: a guard inside it turns toward Mateo and the "?" fills at the close-range rate even without line of sight. Walking is silent.
+- Cover is any solid object that blocks sight. Cover also blocks movement.
+- Alley layout: a long straight alley, entered from Fourth Street on the left, with the laundromat's back door at the far end. The guard patrols the middle section. The wall camera, mounted on the phone store's back wall, covers the last stretch before the door. One dumpster inside the camera's sweep gives a place to wait. The player faces the guard first, then the camera; the two never need to be beaten at the same time.
 - Sprint is faster but makes a noise ring guards can hear.
 - Spotted by the guard: he approaches and a short encounter starts ("Hey. What are you doing back here?"). The border cover story still applies. Talking his way out lets Mateo continue; failing makes him leave, restarts the alley, and raises Heat.
 - Spotted by the camera: no confrontation, but Heat rises and the guard turns toward the camera's area.
+- Spotted by the camera raises Heat once per attempt at the alley.
+- If the guard spots Mateo again after he has already talked his way past him, there is no second conversation. It counts as failing the encounter.
 
 ### Act 2: The Family Business
 - Missions escalate as Rafael's faction undercuts Don Aurelio. Mateo is caught between them.
