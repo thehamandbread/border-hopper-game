@@ -16,8 +16,8 @@ const MATEO_DESK_Y = 4 * 16 + 6;  // his chair in front of the desk
  * booth answers, and the mission restarts from the line.
  */
 export default class SecondaryScene extends StoryScene {
-  constructor() {
-    super('SecondaryScene');
+  constructor(key = 'SecondaryScene') {
+    super(key); // CaseSecondaryScene (Mission 2) is this room too
   }
 
   create() {

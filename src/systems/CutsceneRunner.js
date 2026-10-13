@@ -45,7 +45,7 @@ const tileToFeet = ([tx, ty]) => ({ x: tx * TILE + TILE / 2, y: (ty + 1) * TILE 
  *   end         {}
  *
  * Options: lockInput(bool), startDialogue(id, startNode?) -> DialogueRunner, onEnd(), onStoryEvent(name, data),
- * skipTo, preEvents, dialogueNodes (see the constructor), things: { id: sprite } the scene's own sprites to
+ * skipTo, preEvents, dialogueNodes, dialogueAliases (see the constructor), things: { id: sprite } the scene's own sprites to
  * use as actors and objects (set sprite.walk / sprite.facing on actors; sprite.frameOffset picks their
  * standing frames from later sheet rows, e.g. Tomi's one-shoe walk).
  */
@@ -61,6 +61,7 @@ export default class CutsceneRunner {
       skipTo,
       preEvents = [],
       dialogueNodes = {},
+      dialogueAliases = {},
       things = {},
     } = {},
   ) {
@@ -69,6 +70,9 @@ export default class CutsceneRunner {
     // instantly, then play continues from `skipTo`. `dialogueNodes` maps a conversation id to the node
     // its dialogue step starts at.
     this.skipTo = skipTo;
+    // dialogueAliases: { id: otherId } plays another conversation where the file says `id` (e.g. Mission 2's
+    // secondary inspection in Mission 1's staging).
+    this.dialogueAliases = dialogueAliases;
     this.preEvents = preEvents;
     this.dialogueNodes = dialogueNodes;
     this.instant = false;
@@ -367,7 +371,8 @@ export default class CutsceneRunner {
    *  conversation when its steps are done; one without is resumed by the scene (onStoryEvent gets the
    *  runner and node). The step finishes when the conversation has ended and every queued step list
    *  has finished. */
-  dialogue(id) {
+  dialogue(fileId) {
+    const id = this.dialogueAliases[fileId] ?? fileId;
     return new Promise((resolve) => {
       const runner = this.startDialogue(id, this.dialogueNodes[id]);
       const events = this.data.events ?? {};

@@ -48,6 +48,19 @@ Collected during development. Fixed in a dedicated polish pass after all mission
 - After Mateo talks his way past, the guard sees nothing until he's back on his route (otherwise he'd spot Mateo again on the spot). A short grace period might feel better than "until he's back".
 - Stealth hints sit over Mateo's head even next to the back wall, where they can cover the camera.
 
+## Mission 2
+- Pose fallbacks: Mateo sitting on the crate uses his waiting-room seated frame; Rafael typing, tapping the table, and ending the call use his phone frames (reading, phone at his ear); the worker "waits" in his standing frame; Mateo checking his phone at 10:41 has no frame.
+- The case hand-off has no in-between frames (the case on the table just disappears and appears in his hand); so does Rafael pushing it across the table (a short slide).
+- The phone's thread starts empty again in Mission 2, though it's the same sender as Mission 1.
+- The forklift "beeps somewhere" in the narration but there's no sound.
+- The waiting room's narration still says "The clock says 11:12." and "11:31." (reused from Mission 1) while the wall's digital clock shows the game clock (it moves on 19 minutes at that beat); the two disagree.
+- Mission 2's office leaves out Mission 1's "He follows her into a small office" (its line was about the envelope); the pass path leaves out "She puts the pages back in the envelope..." and goes straight to "You can go."
+- The game clock pauses while dialogue, fades and auto-walks have Mateo (only walking and the wait in line spend it), so reading speed doesn't change the officer. Worth a design decision either way.
+- Mateo can sprint up the queue lane at the port (sprint is on for the whole walk to the booth).
+- The night officer, once on shift, stays for the mission's retries even though the clock goes back to the line start each time.
+- The line has already settled when Mateo arrives (nobody steps forward as he catches up); the woman behind him just stops when he does.
+- Leaving the warehouse means walking back through the cold room door to the dock: there's no hint, and holding left inside the cold room just meets the wall.
+
 ## Art
 - Hand-to-ear walk cycle for calls (normal walk at 60% is used until then).
 - Arm swing in walk cycles; side-profile polish.

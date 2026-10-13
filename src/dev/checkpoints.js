@@ -123,6 +123,20 @@ function atLine(scene, time) {
   gameState.clock.start();
 }
 
+/** Sent to secondary from the booth (suspicion 4) with these answers, the officer and the line start set. */
+function atSecondary(answers, officer, lineStart) {
+  mission2State();
+  withCase();
+  for (const [k, v] of Object.entries(answers)) gameState.setAnswer(k, v);
+  gameState.setAnswer('m2_officer', officer);
+  gameState.setFlag('night_officer', officer === 'night');
+  gameState.clock.set(lineStart);
+  gameState.clock.saveLineStart();
+  gameState.clock.set(gameState.clock.minutes + 7); // the wait in line and the booth
+  gameState.mission.encounter = 'booth';
+  gameState.mission.suspicion.booth = 4;
+}
+
 /** In the alley: through the booth with these answers, the back-door text already read. */
 function alleyState(answers) {
   crossingState(gameState);
@@ -454,6 +468,29 @@ export const CHECKPOINTS = [
     label: 'M2: the line (11:04, the night officer)',
     scene: 'LineScene',
     setup: (scene) => atLine(scene, '11:04'),
+  },
+  {
+    id: 'm2_line_flagged',
+    label: 'M2: the line (attempt 2, card flagged, night officer)',
+    scene: 'LineScene',
+    setup: (scene) => {
+      atLine(scene, '11:04');
+      gameState.setFlag('card_flagged', true);
+      gameState.setMeter('heat', 2);
+      gameState.mission.attempt = 2;
+    },
+  },
+  {
+    id: 'm2_secondary_clothes',
+    label: 'M2: secondary (told the booth "Clothes.")',
+    scene: 'CaseSecondaryScene',
+    setup: () => atSecondary({ cover_story: 'shopping', cover_detail: 'shoes', key_answer: 'clothes' }, 'night', '11:04'),
+  },
+  {
+    id: 'm2_secondary_plain',
+    label: 'M2: secondary (Shopping > shoes, "It\'s heavy. I don\'t know.")',
+    scene: 'CaseSecondaryScene',
+    setup: () => atSecondary({ cover_story: 'shopping', cover_detail: 'shoes', key_answer: 'heavy' }, 'day', '10:55'),
   },
   {
     id: 'stealth_sandbox',

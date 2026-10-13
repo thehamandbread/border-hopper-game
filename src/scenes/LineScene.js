@@ -3,6 +3,20 @@ import { gameState } from '../systems/GameState.js';
 import PortScene from './PortScene.js';
 import StoryScene from './StoryScene.js';
 
+/**
+ * After the crossing: the yard (Mission 2, Scene 4: the next build). Until then the dev stub, and in a
+ * shipped build (no stub) the game starts over.
+ */
+export function goToYard(scene) {
+  const keys = scene.scene.manager.keys;
+  if (keys.YardScene) scene.goToScene('YardScene', { fade: true });
+  else if (keys.YardStubScene) scene.goToScene('YardStubScene', { fade: true });
+  else {
+    gameState.reset();
+    scene.goToScene('RestaurantScene', { fade: true });
+  }
+}
+
 const OFFICER_FRAMES = { day: { looks: 0, types: 1 }, night: { looks: 2, types: 3 } }; // booth_officer.png
 const ARRIVE_DELAY_MS = 900;
 
@@ -134,7 +148,7 @@ export default class LineScene extends PortScene {
   async throughTheGate() {
     this.ground.putTileAt(19, ...this.mapData.gate);
     await this.playCutscene({ steps: [{ type: 'moveActor', actor: 'player', path: [[28, 5], [31, 5]], speed: 50 }] });
-    this.goToScene(this.scene.manager.keys.YardScene ? 'YardScene' : 'YardStubScene', { fade: true });
+    goToYard(this);
   }
 
   /** "The door on your left": secondary inspection, Mission 2's. */
