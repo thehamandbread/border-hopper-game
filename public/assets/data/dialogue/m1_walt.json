@@ -1,5 +1,5 @@
 {
- "_comment": "Mission 1, Scene 4: the back door (docs/script/mission1.md). Branches on envelope_opened only (Carr opening it in secondary, envelope_inspected, doesn't count). Loyalty +1 / -1 once, on the first beat of the branch. Events: door_opens (the open door frame and Walt), door_closes (the closed frame again).",
+ "_comment": "Mission 1, Scene 4: the back door and going home (docs/script/mission1.md). Branches on envelope_opened only (Carr opening it in secondary, envelope_inspected, doesn't count). Loyalty +1 / -1 once, on the first beat of the branch. Then going home: unopened only, the phone buzzes and the text from Unknown number. Events: door_opens (the open door frame and Walt), door_closes (the closed frame again).",
  "id": "m1_walt",
  "presenter": "box",
  "lockMovement": true,
@@ -113,6 +113,33 @@
   "cash": {
    "type": "narration",
    "text": "Mateo looks inside. Cash. He counts it twice.",
+   "next": "going_home"
+  },
+  "going_home": {
+   "type": "branch",
+   "cases": [
+    {
+     "if": {
+      "flag": "envelope_opened"
+     },
+     "next": "end"
+    }
+   ],
+   "else": "buzz"
+  },
+  "buzz": {
+   "type": "narration",
+   "text": "His phone buzzes.",
+   "next": "thank_you"
+  },
+  "thank_you": {
+   "type": "event",
+   "name": "text_message",
+   "data": {
+    "from": "Unknown number",
+    "text": "Thank you, Mateo."
+   },
+   "wait": true,
    "next": "end"
   },
   "end": {

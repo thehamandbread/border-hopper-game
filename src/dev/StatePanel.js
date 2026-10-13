@@ -1,4 +1,5 @@
 import { gameState } from '../systems/GameState.js';
+import { buildMissionSummary } from '../systems/missionSummary.js';
 
 // Dev-only: F1 toggles a small live panel (top-right) with GameState's meters, flags, answers,
 // control-hint use counts, and the mission's encounter state: attempt, the hidden suspicion counts,
@@ -56,8 +57,17 @@ export default class StatePanel {
       `  alley attempt: ${flag('alley_attempt')}   passed_guard: ${flag('passed_guard')}   camera heat applied: ${flag('alley_camera_heat')}`,
       'mission log', m.log.length ? m.log.map(entry).join('\n') : '  (none)',
       'skipped', m.skips.length ? m.skips.map((k) => `  ${k.encounter ?? '-'} ${k.question_id}`).join('\n') : '  (none)',
+      `summary: answers with no text (skipped): ${this.unresolved().join(', ') || '(none)'}`,
       ...this.stealthLines(),
     ].join('\n');
+  }
+
+  /** Log entries the summary couldn't turn into answer text (it skips them). */
+  unresolved() {
+    const cache = window.__game?.cache.json;
+    if (!cache) return [];
+    const dialogues = { booth: cache.get('dialogue_m1_booth'), secondary: cache.get('dialogue_m1_secondary') };
+    return buildMissionSummary(gameState.mission.log, dialogues).unresolved;
   }
 
   stealthLines() {

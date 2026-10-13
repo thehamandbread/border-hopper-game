@@ -123,6 +123,33 @@ function atBackDoor(scene, { opened }) {
   cam.update(cam.oneWay);
 }
 
+// Mission logs as a run would leave them (the same entries the booth, secondary and alley write).
+const CLEAN_LOG = [];
+const MESSY_LOG = [
+  // Attempt 1: the booth ("I have to drop something off.", "A letter for a friend.", "I don't know."),
+  // secondary ("Just a guy I know.", "I don't know.") and refused entry.
+  { type: 'suspicion', encounter: 'booth', question_id: 'purpose', answer_id: 'dropoff', delta: 2 },
+  { type: 'suspicion', encounter: 'booth', question_id: 'jacket', answer_id: 'dont_know', delta: 2 },
+  { type: 'suspicion', encounter: 'secondary', question_id: 'friend', answer_id: 'a_guy', delta: 2 },
+  { type: 'suspicion', encounter: 'secondary', question_id: 'why', answer_id: 'dont_know', delta: 2 },
+  { type: 'heat', encounter: 'secondary', question_id: 'refused', answer_id: null, delta: 2 },
+  // Attempt 2: the booth (family, "My tía.", "Fourth Street.", no answer in time), through.
+  { type: 'suspicion', encounter: 'booth', question_id: 'jacket', answer_id: 'timeout', delta: 2 },
+  // The alley: the guard ("Just walking."), the alley again, the camera.
+  { encounter: 'alley', type: 'spotted', source: 'guard' },
+  { encounter: 'alley', question_id: 'guard', answer_id: 'just_walking' },
+  { type: 'heat', encounter: 'alley', question_id: 'guard', answer_id: 'just_walking', delta: 1 },
+  { encounter: 'alley', type: 'spotted', source: 'camera' },
+  { type: 'heat', encounter: 'alley', question_id: 'camera', answer_id: 'spotted', delta: 1 },
+];
+
+/** At the summary with this mission log (the scene builds its summary in create, so rebuild it). */
+function summaryState(scene, log) {
+  crossingState(gameState);
+  for (const e of log) gameState.mission.log.push({ ...e });
+  scene.scene.restart();
+}
+
 function placeAtTile(scene, tileX, tileY) {
   const { x, y } = scene.tileFeet(tileX, tileY);
   scene.player.setPosition(x, y);
@@ -340,6 +367,18 @@ export const CHECKPOINTS = [
     label: 'M1: the back door (envelope opened)',
     scene: 'AlleyScene',
     setup: (scene) => atBackDoor(scene, { opened: true }),
+  },
+  {
+    id: 'm1_summary_clean',
+    label: 'M1: summary (a clean run)',
+    scene: 'SummaryScene',
+    setup: (scene) => summaryState(scene, CLEAN_LOG),
+  },
+  {
+    id: 'm1_summary_messy',
+    label: 'M1: summary (a messy run)',
+    scene: 'SummaryScene',
+    setup: (scene) => summaryState(scene, MESSY_LOG),
   },
   {
     id: 'stealth_sandbox',

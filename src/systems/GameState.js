@@ -35,7 +35,16 @@ export default class GameState extends Emitter {
     this.answers = {};
     this.uses = {}; // how often the player has used a control (for control hints), e.g. advance, choose
     this.done = new Set(); // keys of "once" effects already applied
+    this.startMission();
+  }
+
+  /**
+   * A new mission: attempt 1, no encounter, and an empty log. Called when a mission begins (Mission 1:
+   * its title card). Restarts inside a mission (refused entry, the alley) keep it all.
+   */
+  startMission() {
     this.mission = { attempt: 1, encounter: null, suspicion: {}, log: [], skips: [] };
+    this.emit('change', { kind: 'mission', name: 'start', value: 1 });
   }
 
   setEncounterConfig(config) {

@@ -1,6 +1,7 @@
 import { gameState } from '../systems/GameState.js';
 import { CHECKPOINTS, getCheckpoint } from './checkpoints.js';
 import StatePanel from './StatePanel.js';
+import Mission2StubScene from './Mission2StubScene.js';
 import StealthSandboxScene from './StealthSandboxScene.js';
 
 // Dev-only tools, installed from main.js in dev builds only (never shipped):
@@ -108,5 +109,6 @@ class DevMenu {
 
 export function installDevTools(game) {
   game.scene.add('StealthSandboxScene', StealthSandboxScene, false); // dev-only scene (checkpoint stealth_sandbox)
+  game.scene.add('Mission2StubScene', Mission2StubScene, false); // dev-only: after Mission 1's summary
   game.devTools = new DevMenu(game);
 }
