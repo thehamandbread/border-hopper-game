@@ -254,7 +254,7 @@ The handler's dog, a German shepherd (tan, black saddle). 16x16 frames; rows 0 d
 ### `queue_npcs.png` (64x160)
 People in line ahead of Mateo, 16x32 frames, all facing right (toward the booth). Row 0: the woman with the flyer (50s, curly hair, mustard blouse, brown skirt) walking, frame 0 standing. Row 1: 0-1 her fanning herself with the flyer (alternate). Row 2: the man holding a sleeping boy against his shoulder (gray T-shirt; the boy in yellow), walking. Row 3: the teenage girl (ponytail, teal hoodie), walking. Row 4: the teenage boy (maroon T-shirt), walking. The teenagers share earbuds: a white earbud and thin cord each; she holds the phone.
 
-### `secondary_tiles.png` (272x16, 16x16 tiles, one row)
+### `secondary_tiles.png` (288x16, 16x16 tiles, one row)
 
 | Index | Name | Notes |
 |---|---|---|
@@ -275,6 +275,7 @@ People in line ahead of Mateo, 16x32 frames, all facing right (toward the booth)
 | 14 | office_door_open | open: the lit office beyond |
 | 15 | desk_left | steel office desk, 2 wide, seen from the visitor's side |
 | 16 | desk_right | drawers |
+| 17 | wall_clock_1131 | the wall clock later: 11:31 |
 
 Empty chairs are these tiles; occupied chairs are the seated frames in `waiting_people.png` drawn over them.
 

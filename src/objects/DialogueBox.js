@@ -181,7 +181,8 @@ export default class DialogueBox {
     });
     this.refreshChoice();
     this.spaceHint.setVisible(false);
-    this.choiceHint.setVisible(showChoiceHint());
+    // Four options (or long, wrapped ones) reach the hint's line: leave the hint out rather than overlap.
+    this.choiceHint.setVisible(showChoiceHint() && y <= this.choiceHint.y);
     const ms = this.runner.timerMs(node);
     if (ms > 0) this.startTimer(ms);
   }

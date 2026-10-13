@@ -3548,6 +3548,18 @@ def draw_wall_clock(px):
     px[3, 4] = (0, 0, 0, 0)
 
 
+def draw_wall_clock_1131(px):
+    """The same clock at 11:31: the minute hand down past the six, the hour hand between eleven and twelve."""
+    fill(px, 5, 1, 10, 8, (238, 238, 232))
+    fill(px, 4, 2, 11, 7, (238, 238, 232))
+    for x, y in ((5, 1), (10, 1), (5, 8), (10, 8), (4, 2), (11, 2), (4, 7), (11, 7)):
+        px[x, y] = (40, 40, 44, 255)
+    fill(px, 7, 4, 7, 7, (30, 30, 32))                   # minute hand
+    px[6, 3] = (30, 30, 32, 255)                         # hour hand, up and to the left
+    px[5, 3] = (30, 30, 32, 255)
+    px[3, 4] = (0, 0, 0, 0)
+
+
 def draw_chair_seat(px, left_end, right_end):
     """One seat of a row of molded plastic chairs bolted to a steel beam, facing down."""
     fill(px, 2, 2, 13, 6, PLASTIC_DK)                    # backrest
@@ -3595,7 +3607,7 @@ def draw_desk(px):
 SEC_ORDER = ["vinyl", "vinyl_scuff", "sec_wall", "wall_side_left", "wall_side_right",
              "wall_corner_top_left", "wall_corner_top_right", "wall_corner_bottom_left",
              "wall_corner_bottom_right", "wall_clock", "chair_row_left", "chair_row_mid",
-             "chair_row_right", "office_door", "office_door_open", "desk_left", "desk_right"]
+             "chair_row_right", "office_door", "office_door_open", "desk_left", "desk_right", "wall_clock_1131"]
 
 
 def make_secondary_tiles():
@@ -3613,6 +3625,7 @@ def make_secondary_tiles():
         "office_door": on_face(sec_face(), lambda p: draw_office_door(p, False)),
         "office_door_open": on_face(sec_face(), lambda p: draw_office_door(p, True)),
         "desk_left": desk_l, "desk_right": desk_r,
+        "wall_clock_1131": on_face(sec_face(), draw_wall_clock_1131),
     }
     sheet = Image.new("RGBA", (T * len(SEC_ORDER), T))
     for i, k in enumerate(SEC_ORDER):

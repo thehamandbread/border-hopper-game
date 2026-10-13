@@ -29,8 +29,7 @@ Collected during development. Fixed in a dedicated polish pass after all mission
 - The line: there's no frame for Mateo's hand going to his jacket or for him opening the envelope (he just turns to face down); the officer has no frame for holding the passport or sliding the documents back.
 - The people ahead in line walk straight through the gate when the line moves; nobody is seen at the booth before Mateo.
 - The dog's front and back views are rough at 1x; the leash is a straight 1 px line.
-- With four choices and the choice hint showing, the fourth option sits right on top of the hint line.
-- Secondary inspection: the waiting room and Carr's office are drawn side by side, with a fade between them; the camera could cut to one room at a time. The wall clock's hands don't move from 11:12 to 11:31. On refusal nobody walks him back; the scene fades straight to the line.
+- Secondary inspection: the waiting room and Carr's office are drawn side by side, with a fade between them; the camera could cut to one room at a time. On refusal nobody walks him back; the scene fades straight to the line.
 - Carr's bun only shows from the side; from the front her hair reads as short.
 - Secondary inspection asks "What's the doctor's name?" even when the booth answer was picking up a prescription; consider a pharmacy variant.
 
@@ -38,6 +37,11 @@ Collected during development. Fixed in a dedicated polish pass after all mission
 - Guards walk in straight lines between path cells and ignore their own width, so a path can graze the corner of cover.
 - The guard's sprite only switches between four facings; while he turns on the spot (noise, route ends) it snaps from one to the next.
 - No sound yet for the noise ring, the "?" filling, or being spotted.
+- Fourth Street: until the back-door text arrives, the alley mouth is blocked by an invisible wall; nothing shows why Mateo can't go in.
+- The cardboard sign's words (CLOSED FOR REPAIRS) show as a floating label when Mateo is near the window; the sign art is too small to hold them.
+- The guard snaps to face Mateo when he reaches him, and Mateo's walk out of the alley ignores the guard's body (they can overlap for a moment).
+- After Mateo talks his way past, the guard sees nothing until he's back on his route (otherwise he'd spot Mateo again on the spot). A short grace period might feel better than "until he's back".
+- Stealth hints sit over Mateo's head even next to the back wall, where they can cover the camera.
 
 ## Art
 - Hand-to-ear walk cycle for calls (normal walk at 60% is used until then).

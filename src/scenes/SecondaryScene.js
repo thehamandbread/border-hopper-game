@@ -1,6 +1,7 @@
 import StoryScene from './StoryScene.js';
 
 const FRAME = { WORKER: 0, FOLDER: 1, MATEO_SEATED: 2, MATEO_AT_DESK: 3, CARR_WRITING: 16, DOOR_OPEN: 14 };
+const TILE = { CLOCK: 9, CLOCK_1131: 17 };
 const PROP = { ENVELOPE: 0, PAGES: 1, DOCUMENTS: 2 };
 const DESK_X = 24 * 16;           // the desk spans columns 23-24 (secondary_map.json)
 const CARR_DESK_Y = 2 * 16 + 2;   // her waist-up frame's bottom row is the desk's far edge
@@ -59,6 +60,7 @@ export default class SecondaryScene extends StoryScene {
 
   onStoryEvent(name) {
     if (name === 'door_open') this.ground.putTileAt(FRAME.DOOR_OPEN, ...this.mapData.officeDoor);
+    else if (name === 'clock_1131') this.ground.replaceByIndex(TILE.CLOCK, TILE.CLOCK_1131);
     else if (name === 'office') {
       this.props.envelope.setVisible(true);
       this.props.documents.setVisible(true);
