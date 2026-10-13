@@ -1,0 +1,352 @@
+{
+ "_comment": "Mission 1, Scene 3b: secondary inspection. Actors and objects are SecondaryScene's sprites: player, carr (walking), carrDesk (carr_walk row 4: 16-17 writing, 18 stopped, 19 pen down), mateoSeat (waiting_people 2), mateoDesk (waiting_people 3), and the props envelope (in its bag), pages, documents. Story events the scene handles: door_open, office (shows the office props), secondary_pass, refused. Player frames: down 0, up 4, right 8, left 12.",
+ "steps": [
+  {
+   "type": "wait",
+   "ms": 500
+  },
+  {
+   "type": "dialogue",
+   "id": "m1_secondary",
+   "label": "waiting"
+  }
+ ],
+ "events": {
+  "mateo_sits": [
+   {
+    "type": "moveActor",
+    "actor": "player",
+    "path": [
+     [
+      8,
+      6
+     ],
+     [
+      5,
+      6
+     ]
+    ],
+    "speed": 50
+   },
+   {
+    "type": "setFrame",
+    "actor": "player",
+    "frame": 4
+   },
+   {
+    "type": "wait",
+    "ms": 200
+   },
+   {
+    "type": "show",
+    "actor": "player",
+    "visible": false
+   },
+   {
+    "type": "show",
+    "actor": "mateoSeat",
+    "visible": true
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   }
+  ],
+  "door_opens": [
+   {
+    "type": "notify",
+    "name": "door_open"
+   },
+   {
+    "type": "show",
+    "actor": "carr",
+    "visible": true
+   },
+   {
+    "type": "moveActor",
+    "actor": "carr",
+    "to": [
+     14,
+     1
+    ],
+    "speed": 40
+   },
+   {
+    "type": "setFrame",
+    "actor": "carr",
+    "frame": 0
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   }
+  ],
+  "follow_carr": [
+   {
+    "type": "show",
+    "actor": "mateoSeat",
+    "visible": false
+   },
+   {
+    "type": "moveActor",
+    "actor": "player",
+    "toPx": [
+     88,
+     112
+    ],
+    "speed": 100000,
+    "anim": false
+   },
+   {
+    "type": "show",
+    "actor": "player",
+    "visible": true
+   },
+   {
+    "type": "setFrame",
+    "actor": "carr",
+    "frame": 4
+   },
+   {
+    "type": "moveActor",
+    "actor": "carr",
+    "to": [
+     14,
+     0
+    ],
+    "speed": 40,
+    "parallel": true
+   },
+   {
+    "type": "moveActor",
+    "actor": "player",
+    "path": [
+     [
+      8,
+      6
+     ],
+     [
+      8,
+      1
+     ],
+     [
+      13,
+      1
+     ]
+    ],
+    "speed": 55
+   },
+   {
+    "type": "show",
+    "actor": "carr",
+    "visible": false
+   },
+   {
+    "type": "moveActor",
+    "actor": "player",
+    "path": [
+     [
+      14,
+      1
+     ],
+     [
+      14,
+      0
+     ]
+    ],
+    "speed": 50
+   },
+   {
+    "type": "fade",
+    "dir": "out",
+    "ms": 500
+   },
+   {
+    "type": "moveActor",
+    "actor": "player",
+    "toPx": [
+     392,
+     112
+    ],
+    "speed": 100000,
+    "anim": false
+   },
+   {
+    "type": "setFrame",
+    "actor": "player",
+    "frame": 4
+   },
+   {
+    "type": "moveActor",
+    "actor": "carr",
+    "toPx": [
+     408,
+     64
+    ],
+    "speed": 100000,
+    "anim": false
+   },
+   {
+    "type": "setFrame",
+    "actor": "carr",
+    "frame": 12
+   },
+   {
+    "type": "show",
+    "actor": "carr",
+    "visible": true
+   },
+   {
+    "type": "notify",
+    "name": "office"
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   },
+   {
+    "type": "fade",
+    "dir": "in",
+    "ms": 500
+   }
+  ],
+  "sit_at_desk": [
+   {
+    "type": "moveActor",
+    "actor": "carr",
+    "path": [
+     [
+      25,
+      2
+     ],
+     [
+      25,
+      1
+     ]
+    ],
+    "speed": 40,
+    "parallel": true
+   },
+   {
+    "type": "moveActor",
+    "actor": "player",
+    "to": [
+     24,
+     4
+    ],
+    "speed": 45
+   },
+   {
+    "type": "show",
+    "actor": "player",
+    "visible": false
+   },
+   {
+    "type": "show",
+    "actor": "mateoDesk",
+    "visible": true
+   },
+   {
+    "type": "wait",
+    "ms": 400
+   },
+   {
+    "type": "show",
+    "actor": "carr",
+    "visible": false
+   },
+   {
+    "type": "show",
+    "actor": "carrDesk",
+    "visible": true
+   },
+   {
+    "type": "playAnim",
+    "actor": "carrDesk",
+    "anim": "carr-writing"
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   }
+  ],
+  "carr_stops_writing": [
+   {
+    "type": "setFrame",
+    "actor": "carrDesk",
+    "frame": 18
+   }
+  ],
+  "carr_sets_pen_down": [
+   {
+    "type": "setFrame",
+    "actor": "carrDesk",
+    "frame": 19
+   }
+  ],
+  "carr_turns_bag": [
+   {
+    "type": "tween",
+    "object": "envelope",
+    "to": {
+     "y": "-=3"
+    },
+    "ms": 180,
+    "yoyo": true
+   }
+  ],
+  "carr_opens_envelope": [
+   {
+    "type": "setFrame",
+    "actor": "carrDesk",
+    "frame": 18
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   },
+   {
+    "type": "show",
+    "object": "envelope",
+    "visible": false
+   },
+   {
+    "type": "show",
+    "object": "pages",
+    "visible": true
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   }
+  ],
+  "carr_slides_everything_back": [
+   {
+    "type": "moveObject",
+    "object": "pages",
+    "toPx": [
+     390,
+     51
+    ],
+    "ms": 500,
+    "parallel": true
+   },
+   {
+    "type": "moveObject",
+    "object": "documents",
+    "toPx": [
+     375,
+     51
+    ],
+    "ms": 500
+   }
+  ],
+  "carr_writes_form": [
+   {
+    "type": "playAnim",
+    "actor": "carrDesk",
+    "anim": "carr-writing"
+   }
+  ]
+ }
+}

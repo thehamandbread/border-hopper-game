@@ -165,8 +165,7 @@ export default class PortScene extends StoryScene {
   async toSecondary() {
     const [dx, dy] = this.mapData.door;
     await this.playCutscene({ steps: [{ type: 'moveActor', actor: 'player', path: [[dx, 5], [dx, dy + 1]], speed: 50 }] });
-    if (this.scene.manager.keys.SecondaryScene) this.goToScene('SecondaryScene', { fade: true });
-    else this.goToScene('ThreeHillsStubScene', { fade: true, data: { label: 'Secondary inspection (next build)' } });
+    this.goToScene('SecondaryScene', { fade: true });
   }
 
   update() {

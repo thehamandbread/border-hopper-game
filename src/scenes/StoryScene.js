@@ -53,6 +53,7 @@ export default class StoryScene extends Phaser.Scene {
     }
 
     this.locks = new Set(); // reasons Mateo can't move or interact right now (dialogue, cutscene, phone...)
+    this.cutscene = null; // the last cutscene played (scenes are reused: clear the previous run's)
     this.interactions = new InteractionSystem(this, this.player, { tileSize: tileWidth });
     this.dialogueBox = new DialogueBox(this);
     this.dialogueRunner = null;

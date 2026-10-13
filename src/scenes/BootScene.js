@@ -85,6 +85,11 @@ export default class BootScene extends Phaser.Scene {
     this.load.spritesheet('dog_walk', assetUrl('assets/images/dog_walk.png'), tile);
     this.load.spritesheet('queue_npcs', assetUrl('assets/images/queue_npcs.png'), figure);
     this.load.json('port_map', assetUrl('assets/data/port_map.json'));
+    this.load.image('secondary_tiles', assetUrl('assets/images/secondary_tiles.png'));
+    this.load.spritesheet('secondary_props', assetUrl('assets/images/secondary_props.png'), tile);
+    this.load.spritesheet('carr_walk', assetUrl('assets/images/carr_walk.png'), figure);
+    this.load.spritesheet('waiting_people', assetUrl('assets/images/waiting_people.png'), figure);
+    this.load.json('secondary_map', assetUrl('assets/data/secondary_map.json'));
     for (const id of ['m1_line', 'm1_booth', 'm1_secondary']) {
       this.load.json(`dialogue_${id}`, assetUrl(`assets/data/dialogue/${id}.json`));
     }
@@ -114,6 +119,8 @@ export default class BootScene extends Phaser.Scene {
       this.anims.create({ key: `${who}-walk-right`, frames: frames('queue_npcs', first, first + 3), frameRate: 7, repeat: -1 });
     }
     this.anims.create({ key: 'woman-fan', frames: frames('queue_npcs', 4, 5), frameRate: 3, repeat: -1 });
+    createWalkAnimations(this.anims, 'carr_walk', 'carr-walk', 7);
+    this.anims.create({ key: 'carr-writing', frames: frames('carr_walk', 16, 17), frameRate: 3, repeat: -1 }); // at her desk
     // Dev-only: ?checkpoint=<id> (dev tools start the checkpoint instead of the normal first scene).
     if (import.meta.env.DEV && this.game.devTools?.handleBoot()) {
       this.scene.stop();

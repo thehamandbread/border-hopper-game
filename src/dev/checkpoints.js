@@ -88,6 +88,13 @@ function crossingState(gs, { opened = false, flagged = false } = {}) {
   }
 }
 
+/** Booth answers as if just sent to secondary inspection (booth suspicion 4). */
+function sentToSecondary(gs, answers) {
+  for (const [name, value] of Object.entries(answers)) gs.setAnswer(name, value);
+  gs.mission.encounter = 'booth';
+  gs.mission.suspicion.booth = 4;
+}
+
 function placeAtTile(scene, tileX, tileY) {
   const { x, y } = scene.tileFeet(tileX, tileY);
   scene.player.setPosition(x, y);
@@ -231,6 +238,25 @@ export const CHECKPOINTS = [
     scene: 'PortScene',
     data: { atBooth: true },
     setup: () => crossingState(gameState, { flagged: true }),
+  },
+  {
+    id: 'm1_secondary_family',
+    label: 'M1: secondary (visiting family)',
+    scene: 'SecondaryScene',
+    // Path (c): "My tía.", no address ("I'd have to check my phone."), "Paperwork.".
+    setup: () => {
+      crossingState(gameState);
+      sentToSecondary(gameState, { cover_story: 'family', cover_detail: 'tia', key_answer: 'paperwork' });
+    },
+  },
+  {
+    id: 'm1_secondary_exposed',
+    label: 'M1: secondary (told the booth it was cash)',
+    scene: 'SecondaryScene',
+    setup: () => {
+      crossingState(gameState);
+      sentToSecondary(gameState, { cover_story: 'shopping', cover_detail: 'shoes', key_answer: 'cash' });
+    },
   },
 ];
 

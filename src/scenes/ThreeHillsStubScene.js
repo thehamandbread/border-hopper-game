@@ -12,10 +12,10 @@ export default class ThreeHillsStubScene extends Phaser.Scene {
     super('ThreeHillsStubScene');
   }
 
-  create(data = {}) {
+  create() {
     const cam = this.cameras.main;
     cam.setBackgroundColor('#000000');
-    const t = pixelText(this, 0, 0, data.label ?? 'Three Hills (next build)');
+    const t = pixelText(this, 0, 0, 'Three Hills (next build)');
     t.setPosition(Math.round((cam.width - t.width) / 2), Math.round((cam.height - t.height) / 2));
     this.time.delayedCall(600, () => {
       this.input.keyboard.once('keydown', () => {

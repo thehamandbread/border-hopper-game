@@ -7,6 +7,7 @@ import CurbScene from './scenes/CurbScene.js';
 import ApartmentScene from './scenes/ApartmentScene.js';
 import TireShopScene from './scenes/TireShopScene.js';
 import PortScene from './scenes/PortScene.js';
+import SecondaryScene from './scenes/SecondaryScene.js';
 import ThreeHillsStubScene from './scenes/ThreeHillsStubScene.js';
 
 const config = {
@@ -24,7 +25,7 @@ const config = {
     default: 'arcade',
     arcade: { debug: false },
   },
-  scene: [BootScene, MovementTestScene, RestaurantScene, CurbScene, ApartmentScene, TireShopScene, PortScene, ThreeHillsStubScene],
+  scene: [BootScene, MovementTestScene, RestaurantScene, CurbScene, ApartmentScene, TireShopScene, PortScene, SecondaryScene, ThreeHillsStubScene],
 };
 
 if (import.meta.env.DEV) {
