@@ -1,0 +1,306 @@
+{
+ "_comment": "Mission 2, Scene 2: the warehouse's staging. WarehouseScene passes its sprites in: player (Mateo), worker (warehouse_worker.png: walk rows, 16-19 carrying right, 20-23 carrying left, 24 holding the door), rafael (rafael_walk.png: 4 back turned (up), 16 phone at his ear back half turned, 18 reading his phone), mateoSit (waiting_people frame 2), caseTable (case_props 1), phone (case_props 3 face down / 4 lit). notify: door_open, cabinet_open, carry_case (story events for the scene). Player frames: down 0, up 4, right 8, left 12.",
+ "steps": [
+  {
+   "type": "dialogue",
+   "id": "m2_warehouse",
+   "label": "conversation"
+  }
+ ],
+ "events": {
+  "into_cold": [
+   {
+    "type": "moveActor",
+    "actor": "worker",
+    "path": [
+     [
+      8,
+      5
+     ],
+     [
+      8,
+      3
+     ],
+     [
+      6,
+      3
+     ]
+    ],
+    "speed": 48
+   },
+   {
+    "type": "setFrame",
+    "actor": "worker",
+    "frame": 8
+   },
+   {
+    "type": "moveActor",
+    "actor": "player",
+    "path": [
+     [
+      8,
+      5
+     ],
+     [
+      8,
+      3
+     ]
+    ],
+    "speed": 52
+   },
+   {
+    "type": "setFrame",
+    "actor": "player",
+    "frame": 4
+   },
+   {
+    "type": "wait",
+    "ms": 250
+   }
+  ],
+  "phone_down": [
+   {
+    "type": "setFrame",
+    "actor": "rafael",
+    "frame": 4
+   },
+   {
+    "type": "show",
+    "object": "phone",
+    "visible": true
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   }
+  ],
+  "phone_up": [
+   {
+    "type": "show",
+    "object": "phone",
+    "visible": false
+   },
+   {
+    "type": "setFrame",
+    "actor": "rafael",
+    "frame": 18
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   }
+  ],
+  "sit": [
+   {
+    "type": "moveActor",
+    "actor": "player",
+    "path": [
+     [
+      10,
+      3
+     ],
+     [
+      11,
+      4
+     ]
+    ],
+    "speed": 52
+   },
+   {
+    "type": "show",
+    "actor": "player",
+    "visible": false
+   },
+   {
+    "type": "show",
+    "object": "mateoSit",
+    "visible": true
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   }
+  ],
+  "limes": [
+   {
+    "type": "playAnim",
+    "actor": "worker",
+    "anim": "worker-carry-right"
+   },
+   {
+    "type": "moveActor",
+    "actor": "worker",
+    "path": [
+     [
+      19,
+      3
+     ]
+    ],
+    "speed": 50,
+    "anim": false
+   },
+   {
+    "type": "playAnim",
+    "actor": "worker",
+    "anim": "worker-carry-left"
+   },
+   {
+    "type": "moveActor",
+    "actor": "worker",
+    "path": [
+     [
+      3,
+      3
+     ]
+    ],
+    "speed": 50,
+    "anim": false
+   },
+   {
+    "type": "playAnim",
+    "actor": "worker",
+    "anim": "worker-carry-right"
+   },
+   {
+    "type": "moveActor",
+    "actor": "worker",
+    "path": [
+     [
+      6,
+      3
+     ]
+    ],
+    "speed": 50,
+    "anim": false
+   },
+   {
+    "type": "setFrame",
+    "actor": "worker",
+    "frame": 8
+   },
+   {
+    "type": "wait",
+    "ms": 200
+   }
+  ],
+  "case_out": [
+   {
+    "type": "setFrame",
+    "actor": "rafael",
+    "frame": 16
+   },
+   {
+    "type": "notify",
+    "name": "cabinet_open"
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   },
+   {
+    "type": "show",
+    "object": "caseTable",
+    "visible": true
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   }
+  ],
+  "push": [
+   {
+    "type": "moveObject",
+    "object": "caseTable",
+    "toPx": [
+     140,
+     46
+    ],
+    "ms": 400
+   },
+   {
+    "type": "wait",
+    "ms": 200
+   }
+  ],
+  "door_held": [
+   {
+    "type": "moveActor",
+    "actor": "worker",
+    "path": [
+     [
+      8,
+      3
+     ],
+     [
+      8,
+      5
+     ],
+     [
+      9,
+      5
+     ]
+    ],
+    "speed": 56
+   },
+   {
+    "type": "setFrame",
+    "actor": "worker",
+    "frame": 24
+   },
+   {
+    "type": "wait",
+    "ms": 250
+   }
+  ],
+  "take_case": [
+   {
+    "type": "show",
+    "object": "mateoSit",
+    "visible": false
+   },
+   {
+    "type": "show",
+    "actor": "player",
+    "visible": true
+   },
+   {
+    "type": "setFrame",
+    "actor": "player",
+    "frame": 12
+   },
+   {
+    "type": "moveActor",
+    "actor": "player",
+    "path": [
+     [
+      9,
+      3
+     ]
+    ],
+    "speed": 52
+   },
+   {
+    "type": "setFrame",
+    "actor": "player",
+    "frame": 4
+   },
+   {
+    "type": "wait",
+    "ms": 200
+   },
+   {
+    "type": "show",
+    "object": "caseTable",
+    "visible": false
+   },
+   {
+    "type": "notify",
+    "name": "carry_case"
+   },
+   {
+    "type": "wait",
+    "ms": 300
+   }
+  ]
+ }
+}

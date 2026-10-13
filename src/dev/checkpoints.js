@@ -102,6 +102,13 @@ function passedBooth(gs, answers) {
   gs.mission.suspicion.booth = 0;
 }
 
+/** Mission 2 begun: Mission 1 done (unopened, through the booth clean), the Mission 2 title card passed. */
+function mission2State() {
+  homeState(gameState);
+  gameState.setMeter('loyalty', 1);
+  gameState.startMission(2);
+}
+
 /** In the alley: through the booth with these answers, the back-door text already read. */
 function alleyState(answers) {
   crossingState(gameState);
@@ -394,6 +401,22 @@ export const CHECKPOINTS = [
     label: 'M1: summary (a messy run)',
     scene: 'SummaryScene',
     setup: (scene) => summaryState(scene, MESSY_LOG),
+  },
+  {
+    id: 'm2_start',
+    label: 'M2: the morning at home',
+    scene: 'MorningScene',
+    setup: () => mission2State(),
+  },
+  {
+    id: 'm2_warehouse',
+    label: 'M2: the warehouse',
+    scene: 'WarehouseScene',
+    // Setup runs after the scene's create, so set the clock back to where the warehouse starts it.
+    setup: () => {
+      mission2State();
+      gameState.clock.set('10:02');
+    },
   },
   {
     id: 'stealth_sandbox',

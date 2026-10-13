@@ -199,6 +199,7 @@ export default class StoryScene extends Phaser.Scene {
   }
 
   update() {
+    gameState.clock.update(Math.min(this.game.loop.delta, 100)); // runs only while started (Mission 2's window)
     this.dialogueBox.update();
     this.phone.update();
     this.player.update();

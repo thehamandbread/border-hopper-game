@@ -1,0 +1,27 @@
+{
+ "_comment": "Mission 2, Scene 1 (docs/script/mission2.md): walking to the front door starts the text. The examinables are in MorningScene (m2_morning in the scene's map data).",
+ "id": "m2_morning",
+ "presenter": "box",
+ "lockMovement": true,
+ "start": "buzz",
+ "nodes": {
+  "buzz": {
+   "type": "narration",
+   "text": "Mateo's phone buzzes.",
+   "next": "text"
+  },
+  "text": {
+   "type": "event",
+   "name": "text_message",
+   "data": {
+    "from": "Unknown number",
+    "text": "Good morning, Mateo. My son will see you at ten o'clock at Distribuidora del Valle, Calle Industria 40. Please be on time."
+   },
+   "wait": true,
+   "next": "end"
+  },
+  "end": {
+   "type": "end"
+  }
+ }
+}

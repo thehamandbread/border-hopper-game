@@ -1,0 +1,280 @@
+{
+ "_comment": "Mission 2, Scene 2: the warehouse (docs/script/mission2.md). 'arrive' plays as Mateo walks in; the walk-over trigger by the worker starts 'worker'. Speaker notes like (to the worker) are dropped, as Mission 1 did with (from the hallway). Wait events are staged by cutscenes/m2_warehouse.json (into_cold, phone_down, phone_up, sit, limes, case_out, push, door_held, take_case); set_clock moves the wall clock to the scripted times; {p:1500} holds the line as in Mission 1's waiting room.",
+ "id": "m2_warehouse",
+ "presenter": "box",
+ "lockMovement": true,
+ "start": "arrive",
+ "nodes": {
+  "arrive": {
+   "type": "narration",
+   "text": "A loading dock. Pallets of produce under plastic. A forklift beeps somewhere. A worker in a hairnet stands by a door marked with a snowflake.",
+   "next": "end"
+  },
+  "worker": {
+   "type": "line",
+   "speaker": "WORKER",
+   "text": "You're from Don Aurelio?",
+   "next": "yes"
+  },
+  "yes": {
+   "type": "line",
+   "speaker": "MATEO",
+   "text": "Yes.",
+   "next": "this_way"
+  },
+  "this_way": {
+   "type": "line",
+   "speaker": "WORKER",
+   "text": "This way.",
+   "next": "door_opens"
+  },
+  "door_opens": {
+   "type": "event",
+   "name": "door_opens",
+   "next": "cold_air"
+  },
+  "cold_air": {
+   "type": "narration",
+   "text": "The door opens. Cold air. Crates of limes stacked to the ceiling. A man in a pressed shirt stands at a steel table with a phone at his ear. His back is half turned.",
+   "next": "into_cold"
+  },
+  "into_cold": {
+   "type": "event",
+   "name": "into_cold",
+   "wait": true,
+   "next": "thursday"
+  },
+  "thursday": {
+   "type": "line",
+   "speaker": "MAN",
+   "text": "No. Thursday. I said Thursday.",
+   "next": "waits"
+  },
+  "waits": {
+   "type": "narration",
+   "text": "The worker waits. The man doesn't turn.",
+   "next": "courier"
+  },
+  "courier": {
+   "type": "line",
+   "speaker": "MAN",
+   "text": "That's the courier?",
+   "next": "worker_yes"
+  },
+  "worker_yes": {
+   "type": "line",
+   "speaker": "WORKER",
+   "text": "Yes.",
+   "next": "listens"
+  },
+  "listens": {
+   "type": "narration",
+   "text": "The man listens to the phone. He taps the table once.",
+   "next": "call_back"
+  },
+  "call_back": {
+   "type": "line",
+   "speaker": "MAN",
+   "text": "I'll call you back.",
+   "next": "phone_down"
+  },
+  "phone_down": {
+   "type": "event",
+   "name": "phone_down",
+   "wait": true,
+   "next": "face_down"
+  },
+  "face_down": {
+   "type": "narration",
+   "text": "He puts the phone face down. He still hasn't looked at Mateo.",
+   "next": "window"
+  },
+  "window": {
+   "type": "line",
+   "speaker": "MAN",
+   "text": "Crossing window closes at eleven. Booth changes shift. Day officer doesn't care what's in a bag. The next one does.",
+   "next": "drop"
+  },
+  "drop": {
+   "type": "line",
+   "speaker": "MAN",
+   "text": "Drop is behind Delgado Auto Parts, Fourth and Mesa. There's a patrol over the fence. It clears the yard around eleven-forty, a couple of minutes.",
+   "next": "margin"
+  },
+  "margin": {
+   "type": "line",
+   "speaker": "MAN",
+   "text": "Late comes out of your margin.",
+   "next": "phone_up"
+  },
+  "phone_up": {
+   "type": "event",
+   "name": "phone_up",
+   "wait": true,
+   "next": "lights_up"
+  },
+  "lights_up": {
+   "type": "narration",
+   "text": "He picks the phone up again. It lights up. He reads it.",
+   "next": "sit"
+  },
+  "sit": {
+   "type": "line",
+   "speaker": "MAN",
+   "text": "Sit.",
+   "next": "looks_at_clock"
+  },
+  "looks_at_clock": {
+   "type": "narration",
+   "text": "Mateo looks at the clock. 10:02. There's nowhere to sit but a crate.",
+   "next": "choice"
+  },
+  "choice": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "through_by_eleven",
+     "text": "I have to be through by eleven.",
+     "next": "i_know"
+    },
+    {
+     "id": "is_it_ready",
+     "text": "Is it ready?",
+     "next": "when_ready"
+    },
+    {
+     "id": "silent",
+     "text": "(Say nothing.)",
+     "next": "ticks"
+    }
+   ]
+  },
+  "i_know": {
+   "type": "line",
+   "speaker": "MAN",
+   "text": "I know.",
+   "next": "sits"
+  },
+  "when_ready": {
+   "type": "line",
+   "speaker": "MAN",
+   "text": "When it's ready.",
+   "next": "sits"
+  },
+  "ticks": {
+   "type": "narration",
+   "text": "The clock ticks.",
+   "next": "sits"
+  },
+  "sits": {
+   "type": "event",
+   "name": "sit",
+   "wait": true,
+   "next": "breath"
+  },
+  "breath": {
+   "type": "narration",
+   "text": "Mateo sits on a crate. His breath shows. The man types with his thumb, then makes a call. A worker carries limes past them, twice.",
+   "next": "limes"
+  },
+  "limes": {
+   "type": "event",
+   "name": "limes",
+   "wait": true,
+   "next": "clock_1031"
+  },
+  "clock_1031": {
+   "type": "event",
+   "name": "set_clock",
+   "next": "says_1031",
+   "data": {
+    "time": "10:31"
+   }
+  },
+  "says_1031": {
+   "type": "narration",
+   "text": "The clock says 10:31.{p:1500}",
+   "next": "clock_1038"
+  },
+  "clock_1038": {
+   "type": "event",
+   "name": "set_clock",
+   "next": "says_1038",
+   "data": {
+    "time": "10:38"
+   }
+  },
+  "says_1038": {
+   "type": "narration",
+   "text": "10:38.",
+   "next": "case_out"
+  },
+  "case_out": {
+   "type": "event",
+   "name": "case_out",
+   "wait": true,
+   "next": "ends_call"
+  },
+  "ends_call": {
+   "type": "narration",
+   "text": "The man ends the call. He opens a cabinet and sets a gray hard-shell case on the table. Two small padlocks on the latches.",
+   "next": "dont_open"
+  },
+  "dont_open": {
+   "type": "line",
+   "speaker": "MAN",
+   "text": "Don't open it.",
+   "next": "push"
+  },
+  "push": {
+   "type": "event",
+   "name": "push",
+   "wait": true,
+   "next": "pushes"
+  },
+  "pushes": {
+   "type": "narration",
+   "text": "He pushes it across the table with two fingers.",
+   "next": "door"
+  },
+  "door": {
+   "type": "line",
+   "speaker": "MAN",
+   "text": "Door.",
+   "next": "door_held"
+  },
+  "door_held": {
+   "type": "event",
+   "name": "door_held",
+   "wait": true,
+   "next": "take_case"
+  },
+  "take_case": {
+   "type": "event",
+   "name": "take_case",
+   "wait": true,
+   "next": "holds"
+  },
+  "holds": {
+   "type": "narration",
+   "text": "The worker holds the door open. Mateo takes the case. It's heavier than it looks.",
+   "next": "clock_1041"
+  },
+  "clock_1041": {
+   "type": "event",
+   "name": "set_clock",
+   "next": "checks_phone",
+   "data": {
+    "time": "10:41"
+   }
+  },
+  "checks_phone": {
+   "type": "narration",
+   "text": "10:41. Mateo checks his phone anyway.",
+   "next": "end"
+  },
+  "end": {
+   "type": "end"
+  }
+ }
+}

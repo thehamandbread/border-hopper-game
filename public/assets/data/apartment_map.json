@@ -344,5 +344,34 @@
    3,
    10
   ]
- ]
+ ],
+ "mission2": {
+  "_comment": "Mission 2, Scene 1 (MorningScene): the examinables instead of Mission 1's, and the floor tile in front of the door that brings the text.",
+  "examinables": [
+   {
+    "tileX": 19,
+    "tileY": 9,
+    "text": "Tomi's shoes by the door. New. The box is still on the couch."
+   },
+   {
+    "tileX": 5,
+    "tileY": 1,
+    "text": "Eggs, milk, a whole chicken in a plastic bag. Nothing is stuck to the door."
+   },
+   {
+    "tileX": 4,
+    "tileY": 5,
+    "text": "Abuela's pill bottle. The label says 90 days."
+   },
+   {
+    "tileX": 4,
+    "tileY": 6,
+    "text": "Abuela's mending. A pair of Tomi's old shoes sits on top, the sole half off."
+   }
+  ],
+  "doorTrigger": [
+   16,
+   9
+  ]
+ }
 }

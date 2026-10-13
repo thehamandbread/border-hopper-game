@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { fadeInFromBlack } from '../systems/cards.js';
+import { fadeInFromBlack, showCard } from '../systems/cards.js';
 import { gameState } from '../systems/GameState.js';
 import { buildMissionSummary, signed, summaryDialogues } from '../systems/missionSummary.js';
 import { pixelText, wrapText } from '../systems/pixelText.js';
@@ -20,8 +20,7 @@ const COLORS = { title: 0xf0d080, label: 0xffffff, value: 0xffffff, head: 0xb8b0
 /**
  * The end-of-mission summary (Mission 1): times spotted, the Heat change, and the answers that raised
  * suspicion (booth, then secondary inspection), from the mission log (missionSummary.js). Never shows
- * suspicion values, Loyalty or meters. Space continues: in dev builds to the next build's stub; in a
- * shipped build, back to the start.
+ * suspicion values, Loyalty or meters. Space continues to Mission 2's title card and its first scene.
  */
 export default class SummaryScene extends Phaser.Scene {
   constructor() {
@@ -95,19 +94,13 @@ export default class SummaryScene extends Phaser.Scene {
     footer.setX(Math.round((width - footer.width) / 2));
   }
 
+  /** Space: Mission 1's summary leads to Mission 2 (its title card, then the morning). */
   continue() {
     if (this.leaving) return;
     this.leaving = true;
-    const cam = this.cameras.main;
-    cam.fadeOut(500, 0, 0, 0);
-    cam.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
-      const next = import.meta.env.DEV && this.scene.manager.keys.Mission2StubScene ? 'Mission2StubScene' : null;
-      if (next) {
-        this.scene.start(next);
-      } else {
-        gameState.reset();
-        this.scene.start('RestaurantScene');
-      }
+    showCard(this, 'MISSION 2: THE WINDOW', { size: 16, holdMs: 2500 }).then(() => {
+      gameState.startMission(2);
+      this.scene.start('MorningScene', {});
     });
   }
 }

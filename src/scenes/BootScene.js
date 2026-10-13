@@ -117,9 +117,16 @@ export default class BootScene extends Phaser.Scene {
     // Mission 1: the evening
     this.load.image('lamp', assetUrl('assets/images/lamp.png'));
     // Mission 2
-    for (const id of ['m2_booth', 'm2_secondary']) {
+    for (const id of ['m2_booth', 'm2_secondary', 'm2_morning', 'm2_warehouse']) {
       this.load.json(`dialogue_${id}`, assetUrl(`assets/data/dialogue/${id}.json`));
     }
+    this.load.json('warehouse_map', assetUrl('assets/data/warehouse_map.json'));
+    this.load.image('warehouse_tiles', assetUrl('assets/images/warehouse_tiles.png'));
+    this.load.image('forklift', assetUrl('assets/images/forklift.png'));
+    this.load.image('clock_plate', assetUrl('assets/images/clock_plate.png'));
+    this.load.spritesheet('rafael_walk', assetUrl('assets/images/rafael_walk.png'), figure);
+    this.load.spritesheet('warehouse_worker', assetUrl('assets/images/warehouse_worker.png'), figure);
+    this.load.spritesheet('case_props', assetUrl('assets/images/case_props.png'), tile);
     this.load.json('stealth_config', assetUrl('assets/data/stealth_config.json'));
   }
 
@@ -150,6 +157,10 @@ export default class BootScene extends Phaser.Scene {
     this.anims.create({ key: 'woman-fan', frames: frames('queue_npcs', 4, 5), frameRate: 3, repeat: -1 });
     createWalkAnimations(this.anims, 'carr_walk', 'carr-walk', 7);
     createWalkAnimations(this.anims, 'guard_walk', 'guard-walk', 6);
+    // Mission 2: the warehouse worker (rows 4-5 carrying a crate of limes)
+    createWalkAnimations(this.anims, 'warehouse_worker', 'worker-walk', 7);
+    this.anims.create({ key: 'worker-carry-right', frames: frames('warehouse_worker', 16, 19), frameRate: 7, repeat: -1 });
+    this.anims.create({ key: 'worker-carry-left', frames: frames('warehouse_worker', 20, 23), frameRate: 7, repeat: -1 });
     this.anims.create({ key: 'carr-writing', frames: frames('carr_walk', 16, 17), frameRate: 3, repeat: -1 }); // at her desk
     // Dev-only: ?checkpoint=<id> (dev tools start the checkpoint instead of the normal first scene).
     if (import.meta.env.DEV && this.game.devTools?.handleBoot()) {

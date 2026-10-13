@@ -10,6 +10,8 @@ import PortScene from './scenes/PortScene.js';
 import SecondaryScene from './scenes/SecondaryScene.js';
 import AlleyScene from './scenes/AlleyScene.js';
 import EveningScene from './scenes/EveningScene.js';
+import MorningScene from './scenes/MorningScene.js';
+import WarehouseScene from './scenes/WarehouseScene.js';
 import SummaryScene from './scenes/SummaryScene.js';
 import ThreeHillsScene from './scenes/ThreeHillsScene.js';
 
@@ -28,7 +30,7 @@ const config = {
     default: 'arcade',
     arcade: { debug: false },
   },
-  scene: [BootScene, MovementTestScene, RestaurantScene, CurbScene, ApartmentScene, TireShopScene, PortScene, SecondaryScene, ThreeHillsScene, AlleyScene, EveningScene, SummaryScene],
+  scene: [BootScene, MovementTestScene, RestaurantScene, CurbScene, ApartmentScene, TireShopScene, PortScene, SecondaryScene, ThreeHillsScene, AlleyScene, EveningScene, SummaryScene, MorningScene, WarehouseScene],
 };
 
 if (import.meta.env.DEV) {
