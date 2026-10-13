@@ -602,5 +602,106 @@
    0,
    0
   ]
- ]
+ ],
+ "mission2": {
+  "_comment": "Mission 2's line (LineScene): the same port, a longer line, settled where it stops (nobody steps forward). queue: ahead of Mateo; behind: the woman who follows him in and stands a tile behind him. Mateo stops at stopXPx; triggers: walk-over x positions (px) for the line's narration, in script order; 'stop' starts the wait in line.",
+  "queue": [
+   {
+    "id": "father",
+    "frame": 8,
+    "walk": "father-walk",
+    "tile": [
+     22,
+     5
+    ]
+   },
+   {
+    "id": "teenGirl",
+    "frame": 12,
+    "walk": "teen-girl-walk",
+    "tile": [
+     19,
+     5
+    ]
+   },
+   {
+    "id": "teenBoy",
+    "frame": 16,
+    "walk": "teen-boy-walk",
+    "tile": [
+     18,
+     5
+    ]
+   },
+   {
+    "id": "woman",
+    "frame": 0,
+    "walk": "woman-walk",
+    "tile": [
+     15,
+     5
+    ],
+    "idle": "woman-fan"
+   },
+   {
+    "id": "workMan",
+    "frame": 20,
+    "walk": "work-man-walk",
+    "tile": [
+     12,
+     5
+    ]
+   }
+  ],
+  "props": [
+   {
+    "id": "cooler",
+    "frame": 0,
+    "tile": [
+     23,
+     5
+    ],
+    "owner": "father"
+   },
+   {
+    "id": "stroller",
+    "frame": 1,
+    "tile": [
+     20,
+     5
+    ],
+    "owner": "teenGirl"
+   },
+   {
+    "id": "bag",
+    "frame": 2,
+    "tile": [
+     14,
+     5
+    ],
+    "owner": "woman"
+   }
+  ],
+  "behind": {
+   "id": "bagWoman",
+   "frame": 24,
+   "walk": "bag-woman-walk",
+   "startTile": [
+    0,
+    5
+   ],
+   "gapPx": 24
+  },
+  "triggers": [
+   {
+    "node": "case_hand",
+    "xPx": 104
+   },
+   {
+    "node": "stop",
+    "xPx": 168
+   }
+  ],
+  "stopXPx": 168
+ }
 }

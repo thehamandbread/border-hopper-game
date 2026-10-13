@@ -117,7 +117,7 @@ export default class BootScene extends Phaser.Scene {
     // Mission 1: the evening
     this.load.image('lamp', assetUrl('assets/images/lamp.png'));
     // Mission 2
-    for (const id of ['m2_booth', 'm2_secondary', 'm2_morning', 'm2_warehouse']) {
+    for (const id of ['m2_booth', 'm2_secondary', 'm2_morning', 'm2_warehouse', 'm2_line']) {
       this.load.json(`dialogue_${id}`, assetUrl(`assets/data/dialogue/${id}.json`));
     }
     this.load.json('warehouse_map', assetUrl('assets/data/warehouse_map.json'));
@@ -127,6 +127,9 @@ export default class BootScene extends Phaser.Scene {
     this.load.spritesheet('rafael_walk', assetUrl('assets/images/rafael_walk.png'), figure);
     this.load.spritesheet('warehouse_worker', assetUrl('assets/images/warehouse_worker.png'), figure);
     this.load.spritesheet('case_props', assetUrl('assets/images/case_props.png'), tile);
+    this.load.json('street_map', assetUrl('assets/data/street_map.json'));
+    this.load.image('industrial_tiles', assetUrl('assets/images/industrial_tiles.png'));
+    this.load.spritesheet('street_props', assetUrl('assets/images/street_props.png'), tile);
     this.load.json('stealth_config', assetUrl('assets/data/stealth_config.json'));
   }
 
@@ -151,7 +154,7 @@ export default class BootScene extends Phaser.Scene {
     const frames = (key, start, end) => this.anims.generateFrameNumbers(key, { start, end });
     this.anims.create({ key: 'dog-sniff-right', frames: frames('dog_walk', 16, 17), frameRate: 4, repeat: -1 });
     this.anims.create({ key: 'dog-sniff-left', frames: frames('dog_walk', 18, 19), frameRate: 4, repeat: -1 });
-    for (const [who, first] of [['woman', 0], ['father', 8], ['teen-girl', 12], ['teen-boy', 16]]) {
+    for (const [who, first] of [['woman', 0], ['father', 8], ['teen-girl', 12], ['teen-boy', 16], ['work-man', 20], ['bag-woman', 24]]) {
       this.anims.create({ key: `${who}-walk-right`, frames: frames('queue_npcs', first, first + 3), frameRate: 7, repeat: -1 });
     }
     this.anims.create({ key: 'woman-fan', frames: frames('queue_npcs', 4, 5), frameRate: 3, repeat: -1 });

@@ -3,6 +3,7 @@ import CutsceneRunner from '../systems/CutsceneRunner.js';
 import { gameState } from '../systems/GameState.js';
 import { pixelText } from '../systems/pixelText.js';
 import StoryScene from './StoryScene.js';
+import { SPRINT_HINT, SPRINT_HINT_ONCE } from './WalkScene.js';
 
 const TILE = { DOOR_OPEN: 18, CABINET_OPEN: 24 };          // warehouse_tiles.png
 const FRAME = { WORKER_DOWN: 0, RAFAEL_PHONE_BACK: 16, MATEO_SITTING: 2, CASE_ON_TABLE: 1, PHONE_DOWN: 3 };
@@ -17,7 +18,8 @@ const ARRIVE_DELAY_MS = 700;
  * plays as he arrives. Walking up to the worker by the snowflake door starts the conversation: the cold
  * room, Rafael on the phone, the wait on the crate, the case. The wall clock shows the game clock (the
  * plate, with bitmap digits): 10:02 until the scripted beats move it; at 10:41 Mateo has the case and
- * control, and the clock starts running. Walking back out of the dock leaves for the walk to the port.
+ * control, and the clock starts running; from then on Shift sprints (with the hint, once per mission).
+ * Walking back out of the dock leaves for the walk to the port.
  */
 export default class WarehouseScene extends StoryScene {
   constructor() {
@@ -95,6 +97,8 @@ export default class WarehouseScene extends StoryScene {
       gameState.giveItem('case');
       this.player.setCarrying('case');
       this.carried.carrying = true;
+      // He leaves on foot from here: sprint is on (Scene 3), and its hint on his first step.
+      this.player.setSprintMultiplier(this.cache.json.get('stealth_config').player.sprintMultiplier);
     }
   }
 
@@ -105,8 +109,7 @@ export default class WarehouseScene extends StoryScene {
   }
 
   nextScene() {
-    // The walk to the port; until it's built (dev), the stub.
-    return this.scene.manager.keys.WalkScene ? 'WalkScene' : 'YardStubScene';
+    return 'WalkScene';
   }
 
   update(time, delta) {
@@ -117,5 +120,9 @@ export default class WarehouseScene extends StoryScene {
     const p = this.player;
     if (!this.talked && p.x >= this.mapData.workerTriggerX) this.talk();
     else if (this.hasCase && p.x <= this.mapData.exitX) this.leave();
+    if (this.hasCase && p.body.speed > 0 && !gameState.done.has(SPRINT_HINT_ONCE)) {
+      gameState.done.add(SPRINT_HINT_ONCE);
+      this.showHint(SPRINT_HINT);
+    }
   }
 }

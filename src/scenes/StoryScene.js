@@ -119,7 +119,7 @@ export default class StoryScene extends Phaser.Scene {
     const raw = typeof idOrData === 'string' ? this.cache.json.get(`dialogue_${idOrData}`) : idOrData;
     const data = resolveDialogue(raw, (id) => this.cache.json.get(`dialogue_${id}`)); // "extends": reuse by reference
     if (!data) throw new Error(`Unknown dialogue "${idOrData}"`);
-    const runner = new DialogueRunner(data, gameState);
+    const runner = new DialogueRunner(data, gameState, { scene: () => this.dialogueValues() });
     this.dialogueRunner = runner;
     if (runner.lockMovement) this.setLock('dialogue', true);
     runner.on('end', () => {
@@ -149,6 +149,11 @@ export default class StoryScene extends Phaser.Scene {
     else if (name === 'show_hint') done = this.showHint(payload.text);
     else done = this.onStoryEvent(name, payload);
     if (node?.wait) Promise.resolve(done).then(() => runner.resume());
+  }
+
+  /** Values dialogue text and conditions can read ({$name}, { scene: name }): the game clock, H:MM. */
+  dialogueValues() {
+    return { clock: gameState.clock.format() };
   }
 
   /** Subclasses: handle a story event. Return a promise to hold a wait event until it settles. */
@@ -199,7 +204,9 @@ export default class StoryScene extends Phaser.Scene {
   }
 
   update() {
-    gameState.clock.update(Math.min(this.game.loop.delta, 100)); // runs only while started (Mission 2's window)
+    // The game clock (Mission 2's window) runs only while it's started, and only while Mateo has
+    // control (or a scene says so, e.g. the wait in line): reading a line or a fade doesn't spend time.
+    if (this.locks.size === 0 || this.clockAlways) gameState.clock.update(Math.min(this.game.loop.delta, 100));
     this.dialogueBox.update();
     this.phone.update();
     this.player.update();

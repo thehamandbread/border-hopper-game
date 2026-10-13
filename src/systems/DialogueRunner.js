@@ -28,12 +28,19 @@ import Emitter from './Emitter.js';
  * Effects: see GameState.applyEffects. Choice and timeout effects are logged with the choice node's id
  * as the question and the option's id (or "timeout") as the answer.
  * speed: typing speed multiplier. pauseAfter: ms held after the line is typed, before the advance
- * indicator. Inside text, {p:600} holds the typewriter 600 ms at that point (never displayed).
+ * indicator. Inside text, {p:600} holds the typewriter 600 ms at that point (never displayed), and
+ * {$name} is replaced by the scene value `name` (e.g. {$clock}: the game clock, H:MM).
  *
  * Events: 'start' (data), 'line' (line or narration node), 'choice' (node, with only the options on offer),
  *         'choice-made' (option, index), 'timeout' (node), 'skip' (node id), 'event' (name, data, node),
  *         'waiting' (node) when a wait event pauses it, 'end' (data).
  */
+/** {$name} in a line's text, replaced by the scene's value (a copy of the node; the data is untouched). */
+function fillValues(node, scene) {
+  if (typeof node.text !== 'string' || !node.text.includes('{$')) return node;
+  return { ...node, text: node.text.replace(/\{\$(\w+)\}/g, (_, name) => String(scene?.[name] ?? '')) };
+}
+
 export default class DialogueRunner extends Emitter {
   /** scene: values for { "scene": name } conditions (an object, or a function returning one). */
   constructor(data, state, { scene = {} } = {}) {
@@ -131,7 +138,7 @@ export default class DialogueRunner extends Emitter {
       switch (node.type) {
         case 'line':
         case 'narration':
-          this.current = resolveVariant(node, this.state, scene);
+          this.current = fillValues(resolveVariant(node, this.state, scene), scene);
           this.emit('line', this.current);
           return;
         case 'choice':

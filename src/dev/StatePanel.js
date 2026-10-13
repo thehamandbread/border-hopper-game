@@ -71,7 +71,7 @@ export default class StatePanel {
     const start = parts ? `${parts.base + parts.bonus} (card ${parts.flagged ? `+${parts.base}` : '0'}, officer +${parts.bonus})` : '-';
     return [
       `  mission: ${m.id ?? 1}   clock: ${c.format()} ${c.running ? 'running' : 'stopped'}   officer: ${c.officerAt()}   line start: ${c.lineStart === null ? '-' : c.format(c.lineStart)}`,
-      `  booth start: ${start}   told_officer_warehouse: ${JSON.stringify(gameState.getFlag('told_officer_warehouse'))}`,
+      `  booth reached at: ${m.boothReachedAt ?? '-'}   booth start: ${start}   told_officer_warehouse: ${JSON.stringify(gameState.getFlag('told_officer_warehouse'))}`,
     ];
   }
 

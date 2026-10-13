@@ -1,0 +1,27 @@
+{
+ "_comment": "Mission 2, Scene 3: the line (docs/script/mission2.md). 'arrive' as he gets in line; 'case_hand' at the walk-over trigger; 'clock' after the wait in line, once the line has moved (cutscenes/m2_crossing.json): the clock over the booths says the game clock's time ({$clock}, H:MM: the only text made at runtime).",
+ "id": "m2_line",
+ "presenter": "box",
+ "lockMovement": true,
+ "start": "arrive",
+ "nodes": {
+  "arrive": {
+   "type": "narration",
+   "text": "The pedestrian line runs under the awning. Longer than last time.",
+   "next": "end"
+  },
+  "case_hand": {
+   "type": "narration",
+   "text": "Mateo moves the case to his other hand. A woman behind him looks at it, then looks away.",
+   "next": "end"
+  },
+  "clock": {
+   "type": "narration",
+   "text": "The line moves. The clock over the booths says {$clock}.",
+   "next": "end"
+  },
+  "end": {
+   "type": "end"
+  }
+ }
+}

@@ -109,6 +109,20 @@ function mission2State() {
   gameState.startMission(2);
 }
 
+/** Carrying the case (after the warehouse). */
+function withCase() {
+  gameState.giveItem('case');
+}
+
+/** At the line with the clock at this time (the line start is saved from it). */
+function atLine(scene, time) {
+  mission2State();
+  withCase();
+  gameState.clock.set(time);
+  gameState.clock.saveLineStart();
+  gameState.clock.start();
+}
+
 /** In the alley: through the booth with these answers, the back-door text already read. */
 function alleyState(answers) {
   crossingState(gameState);
@@ -417,6 +431,29 @@ export const CHECKPOINTS = [
       mission2State();
       gameState.clock.set('10:02');
     },
+  },
+  {
+    id: 'm2_walk',
+    label: 'M2: the walk to the port (10:41)',
+    scene: 'WalkScene',
+    setup: () => {
+      mission2State();
+      withCase();
+      gameState.clock.set('10:41');
+      gameState.clock.start();
+    },
+  },
+  {
+    id: 'm2_line_early',
+    label: 'M2: the line (10:52, the day officer)',
+    scene: 'LineScene',
+    setup: (scene) => atLine(scene, '10:52'),
+  },
+  {
+    id: 'm2_line_late',
+    label: 'M2: the line (11:04, the night officer)',
+    scene: 'LineScene',
+    setup: (scene) => atLine(scene, '11:04'),
   },
   {
     id: 'stealth_sandbox',

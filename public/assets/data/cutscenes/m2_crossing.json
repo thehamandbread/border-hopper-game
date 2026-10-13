@@ -1,0 +1,191 @@
+{
+ "_comment": "Mission 2, Scene 3: from the line moving to the end of the booth. Actors and objects are LineScene's sprites: player, officer, father, teenGirl, teenBoy, woman, workMan, bagWoman, and the props cooler, stroller, bag. First the line moves (everyone ahead walks through the gate), then the clock line (m2_line from 'clock'), then the booth (m2_booth). The officer's frames depend on who's on shift: the notify events officer_looks and officer_types let the scene set them. Labels: 'line', 'booth'. Player frames: down 0, up 4, right 8, left 12.",
+ "steps": [
+  {
+   "type": "notify",
+   "name": "open_gate",
+   "label": "line"
+  },
+  {
+   "type": "moveActor",
+   "actor": "father",
+   "path": [
+    [
+     28,
+     5
+    ],
+    [
+     31,
+     5
+    ]
+   ],
+   "speed": 45,
+   "parallel": true
+  },
+  {
+   "type": "moveObject",
+   "object": "cooler",
+   "toPx": [
+    520,
+    96
+   ],
+   "ms": 3778,
+   "parallel": true
+  },
+  {
+   "type": "wait",
+   "ms": 600
+  },
+  {
+   "type": "moveActor",
+   "actor": "teenGirl",
+   "path": [
+    [
+     28,
+     5
+    ],
+    [
+     31,
+     5
+    ]
+   ],
+   "speed": 45,
+   "parallel": true
+  },
+  {
+   "type": "moveObject",
+   "object": "stroller",
+   "toPx": [
+    520,
+    96
+   ],
+   "ms": 5200,
+   "parallel": true
+  },
+  {
+   "type": "moveActor",
+   "actor": "teenBoy",
+   "path": [
+    [
+     28,
+     5
+    ],
+    [
+     31,
+     5
+    ]
+   ],
+   "speed": 45,
+   "parallel": true
+  },
+  {
+   "type": "wait",
+   "ms": 600
+  },
+  {
+   "type": "moveActor",
+   "actor": "woman",
+   "path": [
+    [
+     28,
+     5
+    ],
+    [
+     31,
+     5
+    ]
+   ],
+   "speed": 45,
+   "parallel": true
+  },
+  {
+   "type": "moveObject",
+   "object": "bag",
+   "toPx": [
+    520,
+    96
+   ],
+   "ms": 6100,
+   "parallel": true
+  },
+  {
+   "type": "wait",
+   "ms": 600
+  },
+  {
+   "type": "moveActor",
+   "actor": "workMan",
+   "path": [
+    [
+     28,
+     5
+    ],
+    [
+     31,
+     5
+    ]
+   ],
+   "speed": 45,
+   "parallel": true
+  },
+  {
+   "type": "wait",
+   "ms": 1500
+  },
+  {
+   "type": "dialogue",
+   "id": "m2_line"
+  },
+  {
+   "type": "moveActor",
+   "actor": "player",
+   "path": [
+    [
+     26,
+     5
+    ]
+   ],
+   "speed": 50
+  },
+  {
+   "type": "setFrame",
+   "actor": "player",
+   "frame": 4
+  },
+  {
+   "type": "wait",
+   "ms": 400
+  },
+  {
+   "type": "dialogue",
+   "id": "m2_booth",
+   "label": "booth"
+  }
+ ],
+ "events": {
+  "documents_under_glass": [
+   {
+    "type": "notify",
+    "name": "officer_types"
+   }
+  ],
+  "officer_stops_typing": [
+   {
+    "type": "notify",
+    "name": "officer_looks"
+   }
+  ],
+  "officer_looks_at_photo": [
+   {
+    "type": "notify",
+    "name": "officer_looks"
+   }
+  ],
+  "officer_looks_at_case": [
+   {
+    "type": "notify",
+    "name": "officer_looks"
+   }
+  ]
+ }
+}

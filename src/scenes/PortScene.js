@@ -23,8 +23,8 @@ const FRAME = { OFFICER_TYPING: 1, GATE_OPEN: 19 };
  * GameState (attempt, card_flagged, envelope_opened).
  */
 export default class PortScene extends StoryScene {
-  constructor() {
-    super('PortScene');
+  constructor(key = 'PortScene') {
+    super(key); // LineScene (Mission 2) is this port too
   }
 
   create(data = {}) {
