@@ -90,6 +90,11 @@ export default class StealthStage {
     this.coverRects.push({ x: c.x * TS, y: c.y * TS, w: c.w * TS, h: c.h * TS });
   }
 
+  /** Hides the cones, the "?" icons and the noise ring (e.g. once the stealth is over). */
+  hide() {
+    this.renderer.setVisible(false);
+  }
+
   /** Distance (px) from a point to the nearest cover footprint. */
   distanceToCover(x, y) {
     let best = Infinity;

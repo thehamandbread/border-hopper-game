@@ -13,7 +13,8 @@ const ESCORT_TILE_X = 1;  // the guard walks Mateo to the alley's left end and s
  *
  * Modes: 'stealth' (the engine runs), 'talk' (frozen: the guard conversation is on), 'approach' (the
  * guard walks over to Mateo, in the middle of the conversation), 'escort' (after a fail: the guard
- * walks Mateo out; the scene then restarts the alley with restart()).
+ * walks Mateo out; the scene then restarts the alley with restart()), 'done' (he's at the back door:
+ * nothing moves, and spots are ignored and not logged).
  *
  * Spotted by the guard: every spot is logged ({ encounter: 'alley', type: 'spotted', source }); mode
  * 'talk' and 'confront' is emitted with the conversation's start node: 'hey', or 'again' once Mateo
@@ -86,7 +87,13 @@ export default class AlleyEncounter extends Emitter {
     }
   }
 
+  /** Mateo is at the back door: the alley is over. */
+  finish() {
+    this.mode = 'done';
+  }
+
   onSpotted(e) {
+    if (this.mode === 'done') return;
     this.state.logEvent({ encounter: 'alley', type: 'spotted', source: e.sourceType });
     if (e.sourceType === 'guard') {
       if (this.mode !== 'stealth') return;

@@ -7,6 +7,8 @@ const MAX_DT_MS = 100;
 const NOTICE_DEPTH = 1;  // over the door tile, under everything standing in front of it
 const ESCORT_SPEED = 40; // px/s: Mateo walked out at the guard's pace
 const GONE_HOLD_MS = 700; // the guard waits at the end of the alley, then the alley restarts
+const TILE = { DOOR_TOP: 17, DOOR_BOTTOM: 18, DOOR_OPEN_TOP: 19, DOOR_OPEN_BOTTOM: 20 }; // alley_tiles.png
+const WALT_DEPTH = 2;    // over the door tiles, behind Mateo standing in front of them
 
 /**
  * Mission 1, Scene 4: the alley behind the laundromat (alley_map.json), the first stealth section. A
@@ -14,7 +16,8 @@ const GONE_HOLD_MS = 700; // the guard waits at the end of the alley, then the a
  * last stretch before the laundromat's back door, and the cover blocks sight and movement
  * (StealthStage, numbers from stealth_config.json). Shift sprints here. The phone store's door is
  * examinable (the printed notice). Stealth hints show once each, one at a time. E at the back door
- * ends the section (Walt is the next build).
+ * ends the stealth (nothing watches or moves any more, the cones go) and plays m1_walt: the door
+ * opens, Walt, and the envelope (by envelope_opened).
  *
  * Being spotted (AlleyEncounter): by the guard, everything freezes, he walks over and the m1_alley
  * conversation runs (pass: back to stealth; fail: Heat +1, he walks Mateo to the left end and the
@@ -49,7 +52,9 @@ export default class AlleyScene extends StoryScene {
     this.stepEncounter = (ms) => this.encounter.update(ms, this.stage.target());
 
     const [dx, dy] = map.backDoor;
-    this.interactions.register({ tileX: dx, tileY: dy, prompt: 'Knock', handler: () => this.reachDoor() });
+    this.atDoor = false;
+    this.walt = this.add.image(dx * 16, (dy - 1) * 16, 'walt_door').setOrigin(0, 0).setDepth(WALT_DEPTH).setVisible(false);
+    this.interactions.register({ tileX: dx, tileY: dy, prompt: 'Knock', enabled: () => !this.atDoor, handler: () => this.reachDoor() });
   }
 
   debugState() {
@@ -77,7 +82,17 @@ export default class AlleyScene extends StoryScene {
   }
 
   onStoryEvent(name) {
+    if (name === 'door_opens') return this.setDoorOpen(true);
+    if (name === 'door_closes') return this.setDoorOpen(false);
     return this.encounter.handleEvent(name);
+  }
+
+  /** The back door: the open frame with Walt in the gap, or closed. */
+  setDoorOpen(open) {
+    const [x, y] = this.mapData.backDoor; // the door's bottom tile
+    this.ground.putTileAt(open ? TILE.DOOR_OPEN_TOP : TILE.DOOR_TOP, x, y - 1);
+    this.ground.putTileAt(open ? TILE.DOOR_OPEN_BOTTOM : TILE.DOOR_BOTTOM, x, y);
+    this.walt.setVisible(open);
   }
 
   /** The fail path: he walks Mateo to the left end of the alley, waits, and the alley starts over. */
@@ -113,10 +128,19 @@ export default class AlleyScene extends StoryScene {
     if (this.stage.distanceToCover(c.x, c.y) <= this.mapData.coverHintTiles * 16) this.hintOnce('cover');
   }
 
-  /** The back door: Walt is the next build. */
+  /** E at the back door: the stealth is over (nothing moves or watches), and Walt. */
   reachDoor() {
-    this.leaving = true;
-    this.goToScene('ThreeHillsStubScene', { fade: true, data: { label: 'Walt (next build)' } });
+    if (this.atDoor) return;
+    this.atDoor = true;
+    this.encounter.finish();
+    this.stage.hide();
+    this.setLock('walt', true);
+    const runner = this.startDialogue('m1_walt');
+    runner.on('end', () => this.leave());
+  }
+
+  leave() {
+    this.goToScene('ThreeHillsStubScene', { fade: true, data: { label: 'Going home (next build)' } });
   }
 
   update(_time, delta) {
@@ -124,7 +148,7 @@ export default class AlleyScene extends StoryScene {
     // Stealth stops while anything else has Mateo (a look, the phone, a fade); the encounter's own
     // modes (the guard walking over, walking him out) keep running.
     const stealth = this.encounter.mode === 'stealth';
-    const frozen = this.leaving || (stealth && this.locks.size > 0);
+    const frozen = this.leaving || this.atDoor || (stealth && this.locks.size > 0);
     this.stage.update(Math.min(delta, MAX_DT_MS), {
       frozen,
       step: this.stepEncounter,

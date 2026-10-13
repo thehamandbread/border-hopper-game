@@ -1,0 +1,122 @@
+{
+ "_comment": "Mission 1, Scene 4: the back door (docs/script/mission1.md). Branches on envelope_opened only (Carr opening it in secondary, envelope_inspected, doesn't count). Loyalty +1 / -1 once, on the first beat of the branch. Events: door_opens (the open door frame and Walt), door_closes (the closed frame again).",
+ "id": "m1_walt",
+ "presenter": "box",
+ "lockMovement": true,
+ "start": "knock",
+ "nodes": {
+  "knock": {
+   "type": "narration",
+   "text": "Mateo knocks. Nothing. He knocks again.",
+   "next": "door_opens"
+  },
+  "door_opens": {
+   "type": "event",
+   "name": "door_opens",
+   "next": "opens"
+  },
+  "opens": {
+   "type": "narration",
+   "text": "The door opens a few inches. A man in his fifties, sleeves rolled up, a wrench in one hand.",
+   "next": "yeah"
+  },
+  "yeah": {
+   "type": "line",
+   "speaker": "WALT",
+   "text": "Yeah?",
+   "next": "looking"
+  },
+  "looking": {
+   "type": "line",
+   "speaker": "MATEO",
+   "text": "I'm looking for Walt.",
+   "next": "thats_me"
+  },
+  "thats_me": {
+   "type": "line",
+   "speaker": "WALT",
+   "text": "That's me.",
+   "next": "envelope"
+  },
+  "envelope": {
+   "type": "narration",
+   "text": "Mateo takes out the envelope. Walt takes it and turns it over. He looks at the signature on the flap.",
+   "next": "which"
+  },
+  "which": {
+   "type": "branch",
+   "cases": [
+    {
+     "if": {
+      "flag": "envelope_opened"
+     },
+     "next": "torn"
+    }
+   ],
+   "else": "phone"
+  },
+  "phone": {
+   "type": "narration",
+   "text": "He takes out his phone, types one word, and sends it.",
+   "effects": [
+    {
+     "meter": "loyalty",
+     "add": 1,
+     "once": "m1_walt_loyalty"
+    }
+   ],
+   "next": "thicker_unopened"
+  },
+  "thicker_unopened": {
+   "type": "narration",
+   "text": "He hands Mateo a different envelope. It's thicker.",
+   "next": "here"
+  },
+  "here": {
+   "type": "line",
+   "speaker": "WALT",
+   "text": "Here.",
+   "next": "closes"
+  },
+  "torn": {
+   "type": "narration",
+   "text": "He looks at the torn signature. Then at Mateo.",
+   "effects": [
+    {
+     "meter": "loyalty",
+     "add": -1,
+     "once": "m1_walt_loyalty"
+    }
+   ],
+   "next": "no_phone"
+  },
+  "no_phone": {
+   "type": "narration",
+   "text": "He doesn't take out his phone.",
+   "next": "thicker_opened"
+  },
+  "thicker_opened": {
+   "type": "narration",
+   "text": "He hands Mateo a different envelope. It's thicker.",
+   "next": "closes"
+  },
+  "closes": {
+   "type": "narration",
+   "text": "The door closes.",
+   "next": "door_closes"
+  },
+  "door_closes": {
+   "type": "event",
+   "name": "door_closes",
+   "next": "cash"
+  },
+  "cash": {
+   "type": "narration",
+   "text": "Mateo looks inside. Cash. He counts it twice.",
+   "next": "end"
+  },
+  "end": {
+   "type": "end"
+  }
+ }
+}

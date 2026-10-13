@@ -39,8 +39,22 @@ export default class StealthRenderer {
     this.noiseRadius = engine.sprintRing;
   }
 
+  /** Hides (or shows again) the cones, the icons and the noise ring. */
+  setVisible(visible) {
+    this.hidden = !visible;
+    for (const v of this.views) {
+      v.gfx.setVisible(visible);
+      if (!visible) {
+        v.empty.setVisible(false);
+        v.filled.setVisible(false);
+      }
+    }
+    this.noise.setVisible(visible);
+  }
+
   /** player: the Player sprite (sprinting, body.center). */
   update(player) {
+    if (this.hidden) return;
     const n = this.views.length;
     const count = Math.min(n, this.maxPerFrame);
     for (let i = 0; i < count; i++) this.drawCone(this.views[(this.next + i) % n]);

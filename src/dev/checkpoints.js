@@ -110,6 +110,19 @@ function alleyState(answers) {
   gameState.mission.encounter = 'alley';
 }
 
+/** At the laundromat's back door, unseen, the guard passed by: Walt next (E at the door). */
+function atBackDoor(scene, { opened }) {
+  alleyState({ cover_story: 'family', cover_detail: 'tia', booth_address: 'fourth_street', key_answer: opened ? 'just_paper' : 'tia_letter' });
+  if (opened) gameState.setFlag('envelope_opened', true);
+  for (const id of ['cone', 'detection', 'cover', 'sprint']) gameState.setFlag(`hint_alley_${id}`, true);
+  const [x, y] = scene.mapData.backDoor;
+  placeAtTile(scene, x, y + 1);
+  scene.player.facing = 'up';
+  // The camera turned to the far end of its sweep, away from the door (a few seconds before it's back).
+  const cam = scene.stage.cameraSource;
+  cam.update(cam.oneWay);
+}
+
 function placeAtTile(scene, tileX, tileY) {
   const { x, y } = scene.tileFeet(tileX, tileY);
   scene.player.setPosition(x, y);
@@ -315,6 +328,18 @@ export const CHECKPOINTS = [
     label: "M1: alley (doctor's appointment)",
     scene: 'AlleyScene',
     setup: () => alleyState({ cover_story: 'doctor', cover_detail: 'dentist', booth_time: 'eleven_thirty', key_answer: 'medical_papers' }),
+  },
+  {
+    id: 'm1_walt_unopened',
+    label: 'M1: the back door (envelope unopened)',
+    scene: 'AlleyScene',
+    setup: (scene) => atBackDoor(scene, { opened: false }),
+  },
+  {
+    id: 'm1_walt_opened',
+    label: 'M1: the back door (envelope opened)',
+    scene: 'AlleyScene',
+    setup: (scene) => atBackDoor(scene, { opened: true }),
   },
   {
     id: 'stealth_sandbox',
