@@ -9,7 +9,7 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 - Move: WASD or arrow keys.
 - Interact: E.
 - Advance dialogue: Space (completes the current line first if it's still appearing).
-- Dialogue choices: W/S or up/down arrows to highlight, Space to confirm, 1-3 as shortcuts.
+- Dialogue choices: W/S or up/down arrows to highlight, Space to confirm, 1-4 as shortcuts.
 - E is never used inside dialogue; it's reserved for interacting with the world.
 - Phone: Q opens and closes the expanded phone (texts).
 - Sprint: Shift. Faster, but makes noise guards can hear.
@@ -145,7 +145,8 @@ A 2D top-down pixel-art game for desktop browsers. The player is Mateo, a 20-yea
 #### Mission 1 Encounter
 - Cover stories: shopping, visiting family, or a medical appointment. Each brings follow-up questions Mateo must answer consistently.
 - The border crossing card allows shopping, tourism, business visits, and visiting family, but not work. Anything that sounds like work raises suspicion.
-- "What's in the envelope?" is the key timed question. Mateo doesn't know. "I don't know" is suspicious; a lie works only if it fits his cover story. A player who opened the envelope can answer honestly.
+- "What's in your jacket?" is the key timed question (6 seconds). Mateo doesn't know what's in the envelope. "I don't know" is suspicious; a lie works only if it fits his cover story. A player who opened the envelope can answer honestly.
+- Walt's reaction depends only on whether the player chose to open the envelope. Officer Carr opening it in secondary inspection does not count.
 
 #### Mission 1 Stealth
 - The alley behind the laundromat: a guard on a fixed patrol, a sweeping wall camera, and cover (dumpsters, pallets, parked cars).
@@ -177,6 +178,11 @@ Each mission alternates between two modes that can flow into each other:
 - The agent's questions test the story. Contradicting it, Mateo's documents, or answers from past crossings raises suspicion.
 - Agents on repeat crossings can recognize Mateo and bring up earlier answers.
 - **Timers:** only key questions are timed. Hesitation or silence counts as an answer and raises suspicion.
+- Booth and secondary inspection each keep their own hidden suspicion count. The booth count starts at 1 if the border crossing card is flagged; secondary starts at 0.
+- Follow-up questions that compare against an earlier answer are skipped if no earlier answer exists.
+- Officer behavior tells depend on the attempt number within the mission. Refused entry restarts the mission and raises the attempt number.
+- Timed questions show a thin draining bar with no numbers.
+- Every suspicion and Heat change is logged with the question and answer for the end-of-mission summary.
 - The system tracks what Mateo has claimed. Data-driven (JSON).
 - **Failure chain:**
   1. Suspicion maxes out, and Mateo is sent to secondary inspection: a tougher second interview.

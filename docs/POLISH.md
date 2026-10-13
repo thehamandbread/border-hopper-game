@@ -32,6 +32,7 @@ Collected during development. Fixed in a dedicated polish pass after all mission
 - With four choices and the choice hint showing, the fourth option sits right on top of the hint line.
 - Secondary inspection: the waiting room and Carr's office are drawn side by side, with a fade between them; the camera could cut to one room at a time. The wall clock's hands don't move from 11:12 to 11:31. On refusal nobody walks him back; the scene fades straight to the line.
 - Carr's bun only shows from the side; from the front her hair reads as short.
+- Secondary inspection asks "What's the doctor's name?" even when the booth answer was picking up a prescription; consider a pharmacy variant.
 
 ## Art
 - Hand-to-ear walk cycle for calls (normal walk at 60% is used until then).
