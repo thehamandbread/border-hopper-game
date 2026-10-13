@@ -26,6 +26,10 @@ Collected during development. Fixed in a dedicated polish pass after all mission
 - Poses switch with no in-between frames: Mateo getting up from the couch, Abuela sitting down and standing up, Nando lying down on the creeper.
 - The dialogue box covers the bottom two rows of the apartment and the tire shop, so Tomi standing behind Mateo, and Mateo at the counter, are partly hidden while it's up. Consider moving the camera or the box.
 - The phone's thread starts empty in each scene: the prologue's "Tomorrow. I'll send the address." isn't there when the Mission 1 text arrives from the same number.
+- The line: there's no frame for Mateo's hand going to his jacket or for him opening the envelope (he just turns to face down); the officer has no frame for holding the passport or sliding the documents back.
+- The people ahead in line walk straight through the gate when the line moves; nobody is seen at the booth before Mateo.
+- The dog's front and back views are rough at 1x; the leash is a straight 1 px line.
+- With four choices and the choice hint showing, the fourth option sits right on top of the hint line.
 
 ## Art
 - Hand-to-ear walk cycle for calls (normal walk at 60% is used until then).

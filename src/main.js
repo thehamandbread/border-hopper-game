@@ -6,6 +6,8 @@ import RestaurantScene from './scenes/RestaurantScene.js';
 import CurbScene from './scenes/CurbScene.js';
 import ApartmentScene from './scenes/ApartmentScene.js';
 import TireShopScene from './scenes/TireShopScene.js';
+import PortScene from './scenes/PortScene.js';
+import ThreeHillsStubScene from './scenes/ThreeHillsStubScene.js';
 
 const config = {
   type: Phaser.AUTO,
@@ -22,7 +24,7 @@ const config = {
     default: 'arcade',
     arcade: { debug: false },
   },
-  scene: [BootScene, MovementTestScene, RestaurantScene, CurbScene, ApartmentScene, TireShopScene],
+  scene: [BootScene, MovementTestScene, RestaurantScene, CurbScene, ApartmentScene, TireShopScene, PortScene, ThreeHillsStubScene],
 };
 
 if (import.meta.env.DEV) {

@@ -31,6 +31,18 @@ export function showCard(scene, text, { size = 8, holdMs = 2000, fadeMs = 600, f
   });
 }
 
+/** Fades the screen to black (e.g. between scenes with no card). Resolves when it's black. */
+export function fadeToBlack(scene, ms = 600) {
+  const cam = scene.cameras.main;
+  const black = scene.add
+    .rectangle(0, 0, cam.width, cam.height, 0x000000)
+    .setOrigin(0, 0)
+    .setScrollFactor(0)
+    .setDepth(CARD_DEPTH)
+    .setAlpha(0);
+  return new Promise((resolve) => scene.tweens.add({ targets: black, alpha: 1, duration: ms, onComplete: () => resolve() }));
+}
+
 /** Fades in from black (call at the start of a scene that follows a card). Resolves when clear. */
 export function fadeInFromBlack(scene, ms = 800) {
   const cam = scene.cameras.main;

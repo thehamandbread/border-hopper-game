@@ -75,6 +75,19 @@ function homeState(gs) {
   gs.giveItem('tortilla');
 }
 
+/** ...and of the tire shop: carrying the envelope. */
+function crossingState(gs, { opened = false, flagged = false } = {}) {
+  homeState(gs);
+  gs.giveItem('envelope');
+  if (opened) gs.setFlag('envelope_opened', true);
+  if (flagged) {
+    // As if refused entry once: Heat +2, the card flagged, the second attempt.
+    gs.setMeter('heat', 2);
+    gs.setFlag('card_flagged', true);
+    gs.mission.attempt = 2;
+  }
+}
+
 function placeAtTile(scene, tileX, tileY) {
   const { x, y } = scene.tileFeet(tileX, tileY);
   scene.player.setPosition(x, y);
@@ -191,6 +204,33 @@ export const CHECKPOINTS = [
       placeAtTile(scene, 11, 5); // just under the truck
       scene.talkToNando();
     },
+  },
+  {
+    id: 'm1_line',
+    label: 'M1: the line',
+    scene: 'PortScene',
+    setup: () => crossingState(gameState),
+  },
+  {
+    id: 'm1_booth',
+    label: 'M1: the booth (envelope unopened)',
+    scene: 'PortScene',
+    data: { atBooth: true },
+    setup: () => crossingState(gameState),
+  },
+  {
+    id: 'm1_booth_opened',
+    label: 'M1: the booth (envelope opened)',
+    scene: 'PortScene',
+    data: { atBooth: true },
+    setup: () => crossingState(gameState, { opened: true }),
+  },
+  {
+    id: 'm1_booth_flagged',
+    label: 'M1: the booth (attempt 2, card flagged)',
+    scene: 'PortScene',
+    data: { atBooth: true },
+    setup: () => crossingState(gameState, { flagged: true }),
   },
 ];
 

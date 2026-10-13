@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import DialogueBox from '../objects/DialogueBox.js';
 import PhoneUI from '../objects/PhoneUI.js';
 import Player from '../objects/Player.js';
-import { fadeInFromBlack, showCard } from '../systems/cards.js';
+import { fadeInFromBlack, fadeToBlack, showCard } from '../systems/cards.js';
 import CutsceneRunner from '../systems/CutsceneRunner.js';
 import DialogueRunner from '../systems/DialogueRunner.js';
 import { gameState } from '../systems/GameState.js';
@@ -147,12 +147,13 @@ export default class StoryScene extends Phaser.Scene {
   }
 
   /**
-   * Loads and plays cutscenes/<id>.json; options go to CutsceneRunner (e.g. skipTo, things). Mateo's
-   * player sprite is always available as the actor "player" (its physics body is off meanwhile).
+   * Loads and plays cutscenes/<id>.json (or plays cutscene data given directly, e.g. { steps: [...] } for
+   * a short walk); options go to CutsceneRunner (e.g. skipTo, things). Mateo's player sprite is always
+   * available as the actor "player" (its physics body is off meanwhile).
    * prepend: steps to run first (e.g. walking Mateo from wherever he is).
    */
-  async playCutscene(id, { prepend = [], things = {}, ...options } = {}) {
-    const loaded = await CutsceneRunner.load(this, id);
+  async playCutscene(idOrData, { prepend = [], things = {}, ...options } = {}) {
+    const loaded = typeof idOrData === 'string' ? await CutsceneRunner.load(this, idOrData) : idOrData;
     const data = prepend.length ? { ...loaded, steps: [...prepend, ...loaded.steps] } : loaded;
     this.player.walk = 'walk';
     this.player.body.enable = false;
@@ -170,10 +171,11 @@ export default class StoryScene extends Phaser.Scene {
     return cutscene;
   }
 
-  /** Fades to a location card, then starts the next scene (GameState carries over). */
-  async goToScene(key, { card, data = {} } = {}) {
+  /** Fades to a location card (or just to black with fade: true), then starts the next scene (GameState carries over). */
+  async goToScene(key, { card, fade = false, data = {} } = {}) {
     this.setLock('leaving', true);
     if (card) await showCard(this, card);
+    else if (fade) await fadeToBlack(this);
     this.scene.start(key, data); // always pass data: Phaser keeps a scene's previous data otherwise
   }
 

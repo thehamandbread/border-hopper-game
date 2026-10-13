@@ -249,7 +249,7 @@ The booth officer, waist-up behind the glass, 16x32 frames: 0 idle, looking out;
 The K-9 handler, `mateo_walk.png` layout: the agency uniform (steel-blue shirt, gold badge, navy trousers) under a black vest, a navy ball cap.
 
 ### `dog_walk.png` (64x80)
-The handler's dog, a German shepherd (tan, black saddle). 16x16 frames; rows 0 down, 1 up, 2 right, 3 left (4-frame walk, frame 0 standing), row 4: 0-1 sniffing, facing right (nose to the ground; alternate them). Feet on row 12, so it stands on the characters' ground line (3 px above the frame's bottom).
+The handler's dog, a German shepherd (tan, black saddle). 16x16 frames; rows 0 down, 1 up, 2 right, 3 left (4-frame walk, frame 0 standing), row 4: 0-1 sniffing, facing right (nose to the ground; alternate them), 2-3 the same facing left. Feet on row 12, so it stands on the characters' ground line (3 px above the frame's bottom).
 
 ### `queue_npcs.png` (64x160)
 People in line ahead of Mateo, 16x32 frames, all facing right (toward the booth). Row 0: the woman with the flyer (50s, curly hair, mustard blouse, brown skirt) walking, frame 0 standing. Row 1: 0-1 her fanning herself with the flyer (alternate). Row 2: the man holding a sleeping boy against his shoulder (gray T-shirt; the boy in yellow), walking. Row 3: the teenage girl (ponytail, teal hoodie), walking. Row 4: the teenage boy (maroon T-shirt), walking. The teenagers share earbuds: a white earbud and thin cord each; she holds the phone.

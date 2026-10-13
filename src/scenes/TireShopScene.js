@@ -1,5 +1,3 @@
-import { showCardUntilKey } from '../systems/cards.js';
-import { gameState } from '../systems/GameState.js';
 import StoryScene from './StoryScene.js';
 
 // Sprite positions (feet, bottom centre, in px). Tile positions are in tireshop_map.json.
@@ -16,8 +14,8 @@ const ARRIVE_DELAY_MS = 900;
  * Mission 1, Scene 2: Llantera Ruiz. Mateo walks in from the street. The arrival narration plays, then
  * he has control: the window sign is examinable, Sr. Ruiz is writing at the counter (talking to him
  * plays m1_ruiz, with the ruiz_secret choice), and after that the truck plays the Nando cutscene
- * (cutscenes/m1_nando.json), which gives him the envelope. Then the street exit ends the build so far
- * with a "MISSION 1 CONTINUES: THE CROSSING" card.
+ * (cutscenes/m1_nando.json), which gives him the envelope. Then the street exit leads to the crossing
+ * (PortScene), with a fade (the script names no place for a card).
  *
  * data (checkpoints): { ruizDone: true } as if he'd already talked to Sr. Ruiz; { arrived: true } skips
  * the arrival narration.
@@ -105,15 +103,8 @@ export default class TireShopScene extends StoryScene {
     this.nandoDone = true;
   }
 
-  /** The end of what's built: a placeholder card. Any key opens the checkpoint menu (dev) or starts over. */
-  async leave() {
-    this.setLock('leaving', true);
-    await showCardUntilKey(this, 'MISSION 1 CONTINUES: THE CROSSING');
-    if (import.meta.env.DEV && this.game.devTools) {
-      this.game.devTools.setOpen(true);
-    } else {
-      gameState.reset();
-      this.scene.start('RestaurantScene');
-    }
+  /** Out to the street: on to the crossing. */
+  leave() {
+    this.goToScene('PortScene', { fade: true });
   }
 }

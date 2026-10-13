@@ -1,5 +1,5 @@
 {
- "_comment": "Mission 1, Scene 3: the line. Walk-over triggers start it at 'arrive', 'sign', 'pocket' and 'stop' (in that order). Events: dog_enters (the handler and dog start down the line), dog_reaches_mateo and dog_passes (wait: the scene resumes when the dog gets there), hand_to_jacket, open_envelope and envelope_put_away (wait), line_moves (Mateo walks to the booth).",
+ "_comment": "Mission 1, Scene 3: the line. Walk-over triggers start it at 'arrive', 'sign', 'pocket' and 'stop' (in that order). Events: dog_enters (the handler and dog start down the line), dog_reaches_mateo and dog_passes (wait: the scene resumes when the dog gets there), hand_to_jacket, dog_leaves (they walk on, off the line), open_envelope and envelope_put_away (wait), line_moves (Mateo walks to the booth).",
  "id": "m1_line",
  "presenter": "box",
  "lockMovement": true,
@@ -65,6 +65,11 @@
   "passed": {
    "type": "narration",
    "text": "The dog passes him without stopping.",
+   "next": "dog_leaves"
+  },
+  "dog_leaves": {
+   "type": "event",
+   "name": "dog_leaves",
    "next": "still"
   },
   "still": {

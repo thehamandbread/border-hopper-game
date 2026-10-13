@@ -1,0 +1,382 @@
+{
+ "_comment": "Mission 1, Scene 3: from the line stopping to the end of the booth. Actors and objects are PortScene's sprites: player, officer (booth_officer: 0 looking out, 1 typing), handler, dog, father, teenGirl, teenBoy, woman, and the props cooler, stroller, bag. The line's dialogue starts at its 'stop' node (PortScene passes dialogueNodes). Labels: 'line' (the line stops), 'booth' (the booth conversation; checkpoints start here). Player frames: down 0, up 4, right 8, left 12.",
+ "steps": [
+  {
+   "type": "moveActor",
+   "actor": "player",
+   "to": [
+    10,
+    5
+   ],
+   "speed": 50
+  },
+  {
+   "type": "setFrame",
+   "actor": "player",
+   "frame": 8
+  },
+  {
+   "type": "dialogue",
+   "id": "m1_line",
+   "label": "line"
+  },
+  {
+   "type": "moveActor",
+   "actor": "player",
+   "path": [
+    [
+     26,
+     5
+    ]
+   ],
+   "speed": 50
+  },
+  {
+   "type": "setFrame",
+   "actor": "player",
+   "frame": 4
+  },
+  {
+   "type": "wait",
+   "ms": 400
+  },
+  {
+   "type": "dialogue",
+   "id": "m1_booth",
+   "label": "booth"
+  }
+ ],
+ "events": {
+  "dog_enters": [
+   {
+    "type": "show",
+    "actor": "dog",
+    "visible": true
+   },
+   {
+    "type": "show",
+    "actor": "handler",
+    "visible": true
+   },
+   {
+    "type": "moveActor",
+    "actor": "handler",
+    "toPx": [
+     381,
+     128
+    ],
+    "speed": 36,
+    "parallel": true
+   },
+   {
+    "type": "moveActor",
+    "actor": "dog",
+    "toPx": [
+     367,
+     112
+    ],
+    "speed": 36
+   },
+   {
+    "type": "playAnim",
+    "actor": "dog",
+    "anim": "dog-sniff-left"
+   },
+   {
+    "type": "wait",
+    "ms": 900
+   },
+   {
+    "type": "moveActor",
+    "actor": "handler",
+    "toPx": [
+     317,
+     128
+    ],
+    "speed": 36,
+    "parallel": true
+   },
+   {
+    "type": "moveActor",
+    "actor": "dog",
+    "toPx": [
+     303,
+     112
+    ],
+    "speed": 36
+   },
+   {
+    "type": "playAnim",
+    "actor": "dog",
+    "anim": "dog-sniff-left"
+   },
+   {
+    "type": "wait",
+    "ms": 900
+   },
+   {
+    "type": "moveActor",
+    "actor": "handler",
+    "toPx": [
+     221,
+     128
+    ],
+    "speed": 36,
+    "parallel": true
+   },
+   {
+    "type": "moveActor",
+    "actor": "dog",
+    "toPx": [
+     207,
+     112
+    ],
+    "speed": 36
+   },
+   {
+    "type": "playAnim",
+    "actor": "dog",
+    "anim": "dog-sniff-left"
+   },
+   {
+    "type": "wait",
+    "ms": 900
+   }
+  ],
+  "dog_reaches_mateo": [
+   {
+    "type": "moveActor",
+    "actor": "handler",
+    "toPx": [
+     189,
+     128
+    ],
+    "speed": 36,
+    "parallel": true
+   },
+   {
+    "type": "moveActor",
+    "actor": "dog",
+    "toPx": [
+     175,
+     112
+    ],
+    "speed": 36
+   }
+  ],
+  "dog_passes": [
+   {
+    "type": "moveActor",
+    "actor": "handler",
+    "toPx": [
+     134,
+     128
+    ],
+    "speed": 36,
+    "parallel": true
+   },
+   {
+    "type": "moveActor",
+    "actor": "dog",
+    "toPx": [
+     120,
+     112
+    ],
+    "speed": 36
+   }
+  ],
+  "dog_leaves": [
+   {
+    "type": "moveActor",
+    "actor": "handler",
+    "toPx": [
+     -10,
+     128
+    ],
+    "speed": 36,
+    "parallel": true
+   },
+   {
+    "type": "moveActor",
+    "actor": "dog",
+    "toPx": [
+     -24,
+     112
+    ],
+    "speed": 36
+   },
+   {
+    "type": "show",
+    "actor": "dog",
+    "visible": false
+   },
+   {
+    "type": "show",
+    "actor": "handler",
+    "visible": false
+   }
+  ],
+  "open_envelope": [
+   {
+    "type": "setFrame",
+    "actor": "player",
+    "frame": 0
+   },
+   {
+    "type": "wait",
+    "ms": 400
+   }
+  ],
+  "envelope_put_away": [
+   {
+    "type": "wait",
+    "ms": 200
+   },
+   {
+    "type": "setFrame",
+    "actor": "player",
+    "frame": 8
+   }
+  ],
+  "line_moves": [
+   {
+    "type": "notify",
+    "name": "open_gate"
+   },
+   {
+    "type": "moveActor",
+    "actor": "father",
+    "path": [
+     [
+      28,
+      5
+     ],
+     [
+      31,
+      5
+     ]
+    ],
+    "speed": 45,
+    "parallel": true
+   },
+   {
+    "type": "moveObject",
+    "object": "cooler",
+    "toPx": [
+     520,
+     96
+    ],
+    "ms": 3556,
+    "parallel": true
+   },
+   {
+    "type": "wait",
+    "ms": 700
+   },
+   {
+    "type": "moveActor",
+    "actor": "teenGirl",
+    "path": [
+     [
+      28,
+      5
+     ],
+     [
+      31,
+      5
+     ]
+    ],
+    "speed": 45,
+    "parallel": true
+   },
+   {
+    "type": "moveObject",
+    "object": "stroller",
+    "toPx": [
+     520,
+     96
+    ],
+    "ms": 4978,
+    "parallel": true
+   },
+   {
+    "type": "moveActor",
+    "actor": "teenBoy",
+    "path": [
+     [
+      28,
+      5
+     ],
+     [
+      31,
+      5
+     ]
+    ],
+    "speed": 45,
+    "parallel": true
+   },
+   {
+    "type": "wait",
+    "ms": 700
+   },
+   {
+    "type": "moveActor",
+    "actor": "woman",
+    "path": [
+     [
+      28,
+      5
+     ],
+     [
+      31,
+      5
+     ]
+    ],
+    "speed": 45,
+    "parallel": true
+   },
+   {
+    "type": "moveObject",
+    "object": "bag",
+    "toPx": [
+     488,
+     96
+    ],
+    "ms": 6400,
+    "parallel": true
+   },
+   {
+    "type": "wait",
+    "ms": 1500
+   }
+  ],
+  "documents_under_glass": [
+   {
+    "type": "setFrame",
+    "actor": "officer",
+    "frame": 1
+   }
+  ],
+  "officer_stops_typing": [
+   {
+    "type": "setFrame",
+    "actor": "officer",
+    "frame": 0
+   }
+  ],
+  "officer_looks_at_photo": [
+   {
+    "type": "setFrame",
+    "actor": "officer",
+    "frame": 0
+   }
+  ],
+  "officer_glances_at_jacket": [
+   {
+    "type": "setFrame",
+    "actor": "officer",
+    "frame": 0
+   }
+  ]
+ }
+}

@@ -3310,7 +3310,7 @@ def dog_frame(view, step, body=None):
 
 def make_dog():
     """64x80: rows down, up, right, left (4-frame walk, frame 0 standing), then row 4: 0-1 sniffing,
-    facing right (nose down; alternate them)."""
+    facing right (nose down; alternate them), 2-3 the same facing left."""
     sheet = Image.new("RGBA", (T * 4, T * 5), (0, 0, 0, 0))
     for r, view in enumerate(("front", "back", "side")):
         for f in range(4):
@@ -3319,8 +3319,9 @@ def make_dog():
         sheet.alpha_composite(flip(dog_frame("side", f)), (f * T, 3 * T))
     sniff = DOG_SNIFF
     sniff2 = sniff[:6] + ["...dDDDDDDDd.DNd", "..............N."]
-    sheet.alpha_composite(dog_frame("side", 0, sniff), (0, 4 * T))
-    sheet.alpha_composite(dog_frame("side", 2, sniff2), (T, 4 * T))
+    sniffing = [dog_frame("side", 0, sniff), dog_frame("side", 2, sniff2)]
+    for i, fr in enumerate(sniffing + [flip(f) for f in sniffing]):
+        sheet.alpha_composite(fr, (i * T, 4 * T))
     return sheet
 
 

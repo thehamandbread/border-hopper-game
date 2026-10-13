@@ -72,6 +72,22 @@ export default class BootScene extends Phaser.Scene {
       this.load.json(`dialogue_${id}`, assetUrl(`assets/data/dialogue/${id}.json`));
     }
     this.load.spritesheet('mateo_extra', assetUrl('assets/images/mateo_extra.png'), { frameWidth: 32, frameHeight: 32 });
+    // Mission 1: the crossing
+    const tile = { frameWidth: 16, frameHeight: 16 };
+    const figure = { frameWidth: 16, frameHeight: 32 };
+    this.load.image('port_tiles', assetUrl('assets/images/port_tiles.png'));
+    this.load.spritesheet('port_awning', assetUrl('assets/images/port_awning.png'), tile);
+    this.load.image('awning_post', assetUrl('assets/images/awning_post.png'));
+    this.load.image('booth_glass', assetUrl('assets/images/booth_glass.png'));
+    this.load.spritesheet('port_props', assetUrl('assets/images/port_props.png'), tile);
+    this.load.spritesheet('booth_officer', assetUrl('assets/images/booth_officer.png'), figure);
+    this.load.spritesheet('handler_walk', assetUrl('assets/images/handler_walk.png'), figure);
+    this.load.spritesheet('dog_walk', assetUrl('assets/images/dog_walk.png'), tile);
+    this.load.spritesheet('queue_npcs', assetUrl('assets/images/queue_npcs.png'), figure);
+    this.load.json('port_map', assetUrl('assets/data/port_map.json'));
+    for (const id of ['m1_line', 'm1_booth', 'm1_secondary']) {
+      this.load.json(`dialogue_${id}`, assetUrl(`assets/data/dialogue/${id}.json`));
+    }
   }
 
   create() {
@@ -88,6 +104,16 @@ export default class BootScene extends Phaser.Scene {
     // Row 4 extras: Sr. Ruiz's pen moving (frames 16-17), Nando wiping his hands (frames 18-19).
     this.anims.create({ key: 'ruiz-writing', frames: this.anims.generateFrameNumbers('ruiz_walk', { start: 16, end: 17 }), frameRate: 3, repeat: -1 });
     this.anims.create({ key: 'nando-wiping', frames: this.anims.generateFrameNumbers('nando_walk', { start: 18, end: 19 }), frameRate: 5, repeat: -1 });
+    // The crossing. Queue NPCs face right only (queue_npcs.png rows): '<who>-walk-right'.
+    createWalkAnimations(this.anims, 'handler_walk', 'handler-walk', 7);
+    createWalkAnimations(this.anims, 'dog_walk', 'dog-walk', 9);
+    const frames = (key, start, end) => this.anims.generateFrameNumbers(key, { start, end });
+    this.anims.create({ key: 'dog-sniff-right', frames: frames('dog_walk', 16, 17), frameRate: 4, repeat: -1 });
+    this.anims.create({ key: 'dog-sniff-left', frames: frames('dog_walk', 18, 19), frameRate: 4, repeat: -1 });
+    for (const [who, first] of [['woman', 0], ['father', 8], ['teen-girl', 12], ['teen-boy', 16]]) {
+      this.anims.create({ key: `${who}-walk-right`, frames: frames('queue_npcs', first, first + 3), frameRate: 7, repeat: -1 });
+    }
+    this.anims.create({ key: 'woman-fan', frames: frames('queue_npcs', 4, 5), frameRate: 3, repeat: -1 });
     // Dev-only: ?checkpoint=<id> (dev tools start the checkpoint instead of the normal first scene).
     if (import.meta.env.DEV && this.game.devTools?.handleBoot()) {
       this.scene.stop();
