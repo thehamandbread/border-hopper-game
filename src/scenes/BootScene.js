@@ -56,6 +56,7 @@ export default class BootScene extends Phaser.Scene {
     this.load.json('cutscene_curb', assetUrl('assets/data/cutscenes/curb.json'));
     this.load.json('closing_tasks', assetUrl('assets/data/closing_tasks.json'));
     this.load.json('encounter_config', assetUrl('assets/data/encounter_config.json'));
+    this.load.json('clock_config', assetUrl('assets/data/clock_config.json'));
     // Mission 1
     this.load.image('apartment_tiles', assetUrl('assets/images/apartment_tiles.png'));
     this.load.spritesheet('apartment_props', assetUrl('assets/images/apartment_props.png'), { frameWidth: 16, frameHeight: 16 });
@@ -115,11 +116,16 @@ export default class BootScene extends Phaser.Scene {
     this.load.json('dialogue_m1_walt', assetUrl('assets/data/dialogue/m1_walt.json'));
     // Mission 1: the evening
     this.load.image('lamp', assetUrl('assets/images/lamp.png'));
+    // Mission 2
+    for (const id of ['m2_booth', 'm2_secondary']) {
+      this.load.json(`dialogue_${id}`, assetUrl(`assets/data/dialogue/${id}.json`));
+    }
     this.load.json('stealth_config', assetUrl('assets/data/stealth_config.json'));
   }
 
   create() {
     gameState.setEncounterConfig(this.cache.json.get('encounter_config'));
+    gameState.setClockConfig(this.cache.json.get('clock_config'));
     createPlayerAnimations(this.anims);
     createKitchenDoorAnimations(this.anims);
     createFireAnimations(this.anims);

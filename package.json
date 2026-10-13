@@ -10,7 +10,8 @@
     "test": "node tools/test_encounter.mjs",
     "test:stealth": "node tools/test_stealth.mjs",
     "test:alley": "node tools/test_alley.mjs",
-    "test:summary": "node tools/test_summary.mjs"
+    "test:summary": "node tools/test_summary.mjs",
+    "test:mission2": "node tools/test_mission2.mjs"
   },
   "devDependencies": {
     "vite": "^8.3.0"

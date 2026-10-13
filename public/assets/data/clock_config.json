@@ -1,0 +1,8 @@
+{
+ "_comment": "The game clock (src/systems/GameClock.js), Mission 2's crossing window. Times are H:MM. gameMinutesPerRealSecond: how fast the clock runs while it's running. startTime: where it starts when the mission starts (the warehouse sets its own beats). cutoffTime: arriving at the booth before this gets the day officer, at or after it the night officer. lineWaitSeconds: real seconds in line, with the clock running. nightOfficerSuspicion: the night officer's booth starts this much higher (dialogue data reads it as \"@clock.nightOfficerSuspicion\").",
+ "gameMinutesPerRealSecond": 1.0,
+ "startTime": "10:41",
+ "cutoffTime": "11:00",
+ "lineWaitSeconds": 5,
+ "nightOfficerSuspicion": 1
+}

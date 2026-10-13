@@ -1,0 +1,226 @@
+{
+ "_comment": "Mission 2, Scene 3b: secondary inspection (docs/script/mission2.md). Extends m1_secondary: the waiting room, Carr, the attempt tells, the cover-story follow-ups (with the skip rule) and the outcomes are Mission 1's nodes, by reference. Replaced: the envelope lines (follows, notepad, and the pages on the pass path) and the envelope section, by the case: the exposure line only if the booth key answer was 'Clothes.' (+2), then whose, the key, and why. Carr never opens the case: nothing sets envelope_inspected. 'A guy at a warehouse.' sets told_officer_warehouse and loyalty -1 once across attempts.",
+ "id": "m2_secondary",
+ "extends": "m1_secondary",
+ "start": "sec_start",
+ "nodes": {
+  "follows": {
+   "type": "narration",
+   "text": "She has his passport, his card, and the gray case. She sets the case on the desk. Both padlocks are shut.",
+   "next": "have_seat"
+  },
+  "notepad": {
+   "type": "branch",
+   "cases": [],
+   "else": "tells"
+  },
+  "envelope": {
+   "type": "branch",
+   "cases": [
+    {
+     "if": {
+      "answer": "key_answer",
+      "eq": "clothes"
+     },
+     "next": "told_clothes"
+    }
+   ],
+   "else": "lift_ev"
+  },
+  "told_clothes": {
+   "type": "line",
+   "speaker": "OFFICER CARR",
+   "text": "You told the officer outside this was clothes.",
+   "effects": [
+    {
+     "suspicion": "secondary",
+     "add": 2
+    }
+   ],
+   "next": "lift_ev"
+  },
+  "lift_ev": {
+   "type": "event",
+   "name": "carr_lifts_case",
+   "next": "lift"
+  },
+  "lift": {
+   "type": "narration",
+   "text": "She lifts the case an inch and sets it down.",
+   "next": "whose_q"
+  },
+  "whose_q": {
+   "type": "line",
+   "speaker": "OFFICER CARR",
+   "text": "Whose is it?",
+   "next": "whose"
+  },
+  "whose": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "friends",
+     "text": "A friend's.",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 1
+      }
+     ],
+     "next": "key_q"
+    },
+    {
+     "id": "mine",
+     "text": "Mine.",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 2
+      }
+     ],
+     "next": "key_q"
+    },
+    {
+     "id": "dont_know",
+     "text": "I don't know.",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 2
+      }
+     ],
+     "next": "key_q"
+    }
+   ]
+  },
+  "key_q": {
+   "type": "line",
+   "speaker": "OFFICER CARR",
+   "text": "Do you have the key?",
+   "next": "has_key"
+  },
+  "has_key": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "no",
+     "text": "No.",
+     "next": "case_why_q"
+    },
+    {
+     "id": "at_home",
+     "text": "It's at home.",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 2
+      }
+     ],
+     "next": "case_why_q"
+    },
+    {
+     "id": "silent",
+     "text": "(Say nothing.)",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 2
+      }
+     ],
+     "next": "case_why_q"
+    }
+   ]
+  },
+  "case_why_q": {
+   "type": "line",
+   "speaker": "OFFICER CARR",
+   "text": "You're carrying a locked case you can't open. Why?",
+   "next": "case_why"
+  },
+  "case_why": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "asked_me",
+     "text": "He asked me to bring it.",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 1
+      }
+     ],
+     "next": "case_who_q"
+    },
+    {
+     "id": "dont_know",
+     "text": "I don't know.",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 2
+      }
+     ],
+     "next": "outcome"
+    }
+   ]
+  },
+  "case_who_q": {
+   "type": "line",
+   "speaker": "OFFICER CARR",
+   "text": "Who?",
+   "next": "case_who"
+  },
+  "case_who": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "warehouse",
+     "text": "A guy at a warehouse.",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 1
+      },
+      {
+       "flag": "told_officer_warehouse",
+       "set": true
+      },
+      {
+       "meter": "loyalty",
+       "add": -1,
+       "once": "told_officer_warehouse"
+      }
+     ],
+     "next": "outcome"
+    },
+    {
+     "id": "family_friend",
+     "text": "A friend of my family.",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 1
+      }
+     ],
+     "next": "outcome"
+    },
+    {
+     "id": "rather_not",
+     "text": "I'd rather not say.",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 2
+      }
+     ],
+     "next": "outcome"
+    }
+   ]
+  },
+  "slide_ev": {
+   "type": "branch",
+   "cases": [],
+   "else": "can_go"
+  }
+ }
+}

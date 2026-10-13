@@ -9,7 +9,8 @@ import { fileURLToPath } from 'node:url';
 import AlleyEncounter from '../src/systems/AlleyEncounter.js';
 import DialogueRunner from '../src/systems/DialogueRunner.js';
 import GameState from '../src/systems/GameState.js';
-import { buildMissionSummary, resolveAnswer, signed } from '../src/systems/missionSummary.js';
+import { buildMissionSummary, resolveAnswer, signed, summaryDialogues } from '../src/systems/missionSummary.js';
+import { resolveDialogue } from '../src/systems/dialogueData.js';
 import SightGrid from '../src/systems/stealth/SightGrid.js';
 import StealthEngine from '../src/systems/stealth/StealthEngine.js';
 
@@ -185,6 +186,38 @@ test('(e) no suspicion values in the output', () => {
   check('answers and ids are strings', all.every((t) => typeof t === 'string'));
   check('no "delta" or suspicion fields anywhere', !/delta|"suspicion"/.test(JSON.stringify(sum)));
   check('the only numbers are the count and the Heat', JSON.stringify(sum).match(/:\s*-?\d/g)?.length === 2);
+});
+
+test('Mission 2: the case answers resolve, through the dialogues that extend Mission 1\'s', () => {
+  const raw = (id) => json(`dialogue/${id}.json`);
+  const dialogues = summaryDialogues(raw);
+  const s = newState();
+  s.setClockConfig(json('clock_config.json'));
+  s.startMission(2);
+  s.setFlag('night_officer', true);
+  const runner = new DialogueRunner(resolveDialogue(raw('m2_booth'), raw), s);
+  let pending = null;
+  runner.on('line', () => (pending = 'line'));
+  runner.on('choice', () => (pending = 'choice'));
+  runner.on('waiting', () => (pending = 'wait'));
+  runner.start();
+  const picks = ['Shopping.', 'Some stuff for work.', 'Clothes.'];
+  while (!runner.ended) {
+    const what = pending;
+    pending = null;
+    if (what === 'line') runner.advance();
+    else if (what === 'wait') runner.resume();
+    else if (what === 'choice') runner.choose(runner.options.findIndex((o) => o.text === picks[0]) + (picks.shift(), 0));
+    else break;
+  }
+  const sum = buildMissionSummary(s.mission.log, dialogues);
+  eq('booth answers', sum.suspiciousAnswers.booth, ['Some stuff for work.', 'Clothes.']);
+  eq('the night officer\'s start is not an answer', sum.unresolved, []);
+  eq('Mission 2 secondary answers too', [
+    resolveAnswer(dialogues.secondary[1], 'whose', 'mine'),
+    resolveAnswer(dialogues.secondary[1], 'case_who', 'warehouse'),
+    resolveAnswer(dialogues.booth[1], 'case', 'timeout'),
+  ], ['Mine.', 'A guy at a warehouse.', "Mateo doesn't answer."]);
 });
 
 console.log(`\n${checks - failures}/${checks} checks passed`);

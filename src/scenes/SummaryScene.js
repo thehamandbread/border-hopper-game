@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { fadeInFromBlack } from '../systems/cards.js';
 import { gameState } from '../systems/GameState.js';
-import { buildMissionSummary, signed } from '../systems/missionSummary.js';
+import { buildMissionSummary, signed, summaryDialogues } from '../systems/missionSummary.js';
 import { pixelText, wrapText } from '../systems/pixelText.js';
 
 // Layout at the game's native 480x270.
@@ -31,7 +31,7 @@ export default class SummaryScene extends Phaser.Scene {
   create() {
     const cam = this.cameras.main;
     cam.setBackgroundColor('#000000');
-    const dialogues = { booth: this.cache.json.get('dialogue_m1_booth'), secondary: this.cache.json.get('dialogue_m1_secondary') };
+    const dialogues = summaryDialogues((id) => this.cache.json.get(`dialogue_${id}`));
     this.summary = buildMissionSummary(gameState.mission.log, dialogues);
     if (import.meta.env.DEV && this.summary.unresolved.length) {
       console.log('[summary] unresolved answers', this.summary.unresolved); // eslint-disable-line no-console

@@ -1,5 +1,6 @@
-import { test } from './conditions.js';
+import { configValue, test } from './conditions.js';
 import Emitter from './Emitter.js';
+import GameClock from './GameClock.js';
 
 const METERS = ['loyalty', 'heat', 'conscience'];
 
@@ -18,7 +19,10 @@ const METERS = ['loyalty', 'heat', 'conscience'];
  *                  and other events (logEvent), e.g. { type: 'spotted', encounter: 'alley', source }
  *                  (for the end-of-mission summary)
  *      skips       questions skipped for lack of an earlier answer: { encounter, question_id } (dev panel)
- *  - encounterConfig: public/assets/data/encounter_config.json (thresholds and start values); kept on reset
+ *      startParts  how each encounter's count started: { booth: { base, bonus } } (dev panel)
+ *  - clock: the game clock (GameClock; Mission 2's crossing window), configured by setClockConfig
+ *  - encounterConfig: public/assets/data/encounter_config.json (thresholds and start values), with the
+ *    clock config under "clock" (dialogue data reads "@clock.nightOfficerSuspicion"); kept on reset
  * Emits 'change' ({ kind, name, value }) whenever anything is modified.
  * No Phaser here: tools/test_encounter.mjs runs it in node.
  */
@@ -26,6 +30,7 @@ export default class GameState extends Emitter {
   constructor() {
     super();
     this.encounterConfig = {};
+    this.clock = new GameClock();
     this.reset();
   }
 
@@ -39,16 +44,26 @@ export default class GameState extends Emitter {
   }
 
   /**
-   * A new mission: attempt 1, no encounter, and an empty log. Called when a mission begins (Mission 1:
-   * its title card). Restarts inside a mission (refused entry, the alley) keep it all.
+   * A new mission (id 1, 2, ...): attempt 1, no encounter, an empty log, the clock back at its start,
+   * and the per-mission "once" keys (those starting "mission:") forgotten. Called at a mission's title
+   * card. Flags (card_flagged...) and game-wide once keys are kept. Restarts inside a mission (refused
+   * entry, the alley) keep it all.
    */
-  startMission() {
-    this.mission = { attempt: 1, encounter: null, suspicion: {}, log: [], skips: [] };
-    this.emit('change', { kind: 'mission', name: 'start', value: 1 });
+  startMission(id = 1) {
+    this.mission = { id, attempt: 1, encounter: null, suspicion: {}, startParts: {}, log: [], skips: [] };
+    for (const key of [...this.done]) if (key.startsWith('mission:')) this.done.delete(key);
+    this.clock.reset();
+    this.emit('change', { kind: 'mission', name: 'start', value: id });
   }
 
   setEncounterConfig(config) {
-    this.encounterConfig = config;
+    this.encounterConfig = { ...config, clock: this.encounterConfig.clock ?? config.clock };
+  }
+
+  /** The clock's numbers (clock_config.json); also readable from dialogue data as "@clock.<name>". */
+  setClockConfig(config) {
+    this.clock.configure(config);
+    this.encounterConfig = { ...this.encounterConfig, clock: config };
   }
 
   /** Counts one use of a control (e.g. 'advance', 'choose'). */
@@ -130,6 +145,15 @@ export default class GameState extends Emitter {
     const flagged = this.getFlag('card_flagged') === true && cfg.flaggedStart !== undefined;
     this.mission.encounter = name;
     this.mission.suspicion[name] = flagged ? cfg.flaggedStart : cfg.start;
+    this.mission.startParts[name] = { base: this.mission.suspicion[name], flagged, bonus: 0 };
+    this.emit('change', { kind: 'suspicion', name, value: this.mission.suspicion[name] });
+  }
+
+  /** Raises where an encounter's count starts (e.g. the night officer): not an answer, so not logged. */
+  addStartBonus(name, amount) {
+    this.mission.suspicion[name] = this.getSuspicion(name) + amount;
+    const parts = this.mission.startParts[name] ?? (this.mission.startParts[name] = { base: 0, flagged: false, bonus: 0 });
+    parts.bonus += amount;
     this.emit('change', { kind: 'suspicion', name, value: this.mission.suspicion[name] });
   }
 
@@ -164,6 +188,7 @@ export default class GameState extends Emitter {
    *   { meter: 'loyalty', add: 1 } | { flag: 'tomi_involved', add: 1 } | { flag: 'ruiz_secret', set: true }
    *   | { answer: 'prologue_want', set: 'family' } | { clearAnswers: ['cover_story', ...] }
    *   | { suspicion: 'booth', add: 2 } (hidden) | { startEncounter: 'booth' } | { attempt: 1 } (adds)
+   *   | { startBonus: 'booth', add: 1 } (raises where the count starts; not an answer, so not logged)
    * Any effect may have "if" (a condition, see conditions.js) and "once" (a key: applied the first time
    * only, across mission restarts). ctx: { question, answer } ids for the mission log.
    */
@@ -177,6 +202,7 @@ export default class GameState extends Emitter {
       if (e.meter !== undefined) this.changeMeter(e.meter, e.add, ctx);
       else if (e.suspicion !== undefined) this.addSuspicion(e.suspicion, e.add, ctx);
       else if (e.startEncounter !== undefined) this.startEncounter(e.startEncounter);
+      else if (e.startBonus !== undefined) this.addStartBonus(e.startBonus, configValue(e.add, this.encounterConfig));
       else if (e.attempt !== undefined) {
         this.mission.attempt += e.attempt;
         this.emit('change', { kind: 'mission', name: 'attempt', value: this.mission.attempt });

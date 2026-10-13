@@ -1,0 +1,133 @@
+{
+ "_comment": "Mission 2, Scene 3: the booth (docs/script/mission2.md). Extends m1_booth: the cover-story choice, its follow-ups, the attempt tells and the outcomes are Mission 1's nodes, by reference. Replaced: booth_start (the night officer's start bonus, flag night_officer, set by the scene from the clock), the opening (day or night officer), and the key question (key -> 'What's in the case?', timed, no cover-matched answer). key_answer: heavy, clothes, friend_asked, or none (no answer in time).",
+ "id": "m2_booth",
+ "extends": "m1_booth",
+ "start": "booth_start",
+ "nodes": {
+  "booth_start": {
+   "type": "event",
+   "name": "booth_start",
+   "effects": [
+    {
+     "startEncounter": "booth"
+    },
+    {
+     "startBonus": "booth",
+     "add": "@clock.nightOfficerSuspicion",
+     "if": {
+      "flag": "night_officer"
+     }
+    }
+   ],
+   "next": "officer"
+  },
+  "officer": {
+   "type": "branch",
+   "cases": [
+    {
+     "if": {
+      "flag": "night_officer"
+     },
+     "next": "night_officer"
+    }
+   ],
+   "else": "day_officer"
+  },
+  "day_officer": {
+   "type": "narration",
+   "text": "The officer doesn't look up.",
+   "next": "documents"
+  },
+  "night_officer": {
+   "type": "narration",
+   "text": "A different officer is at the booth. He looks at Mateo's passport, then at Mateo.",
+   "next": "last_week"
+  },
+  "last_week": {
+   "type": "line",
+   "speaker": "OFFICER",
+   "text": "You were through here last week.",
+   "next": "purpose_q"
+  },
+  "key": {
+   "type": "event",
+   "name": "officer_looks_at_case",
+   "next": "looks_at_case"
+  },
+  "looks_at_case": {
+   "type": "narration",
+   "text": "The officer looks at the case.",
+   "next": "case_q"
+  },
+  "case_q": {
+   "type": "line",
+   "speaker": "OFFICER",
+   "text": "What's in the case?",
+   "next": "case"
+  },
+  "case": {
+   "type": "choice",
+   "timer": {
+    "ms": "@keyQuestionMs",
+    "effects": [
+     {
+      "suspicion": "booth",
+      "add": 2
+     },
+     {
+      "answer": "key_answer",
+      "set": "none"
+     }
+    ],
+    "next": "no_answer"
+   },
+   "options": [
+    {
+     "id": "heavy",
+     "text": "It's heavy. I don't know.",
+     "effects": [
+      {
+       "suspicion": "booth",
+       "add": 1
+      },
+      {
+       "answer": "key_answer",
+       "set": "heavy"
+      }
+     ],
+     "next": "outcome"
+    },
+    {
+     "id": "clothes",
+     "text": "Clothes.",
+     "effects": [
+      {
+       "suspicion": "booth",
+       "add": 2
+      },
+      {
+       "answer": "key_answer",
+       "set": "clothes"
+      }
+     ],
+     "next": "outcome"
+    },
+    {
+     "id": "friend_asked",
+     "text": "A friend asked me to carry it.",
+     "effects": [
+      {
+       "suspicion": "booth",
+       "add": 2
+      },
+      {
+       "answer": "key_answer",
+       "set": "friend_asked"
+      }
+     ],
+     "next": "outcome"
+    }
+   ]
+  }
+ }
+}

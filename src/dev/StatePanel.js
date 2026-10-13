@@ -1,5 +1,5 @@
 import { gameState } from '../systems/GameState.js';
-import { buildMissionSummary } from '../systems/missionSummary.js';
+import { buildMissionSummary, summaryDialogues } from '../systems/missionSummary.js';
 
 // Dev-only: F1 toggles a small live panel (top-right) with GameState's meters, flags, answers,
 // control-hint use counts, and the mission's encounter state: attempt, the hidden suspicion counts,
@@ -55,6 +55,7 @@ export default class StatePanel {
       `  card_flagged: ${flag('card_flagged')}`,
       `  envelope_opened: ${flag('envelope_opened')}   envelope_inspected: ${flag('envelope_inspected')}`,
       `  alley attempt: ${flag('alley_attempt')}   passed_guard: ${flag('passed_guard')}   camera heat applied: ${flag('alley_camera_heat')}`,
+      ...this.clockLines(),
       'mission log', m.log.length ? m.log.map(entry).join('\n') : '  (none)',
       'skipped', m.skips.length ? m.skips.map((k) => `  ${k.encounter ?? '-'} ${k.question_id}`).join('\n') : '  (none)',
       `summary: answers with no text (skipped): ${this.unresolved().join(', ') || '(none)'}`,
@@ -62,11 +63,23 @@ export default class StatePanel {
     ].join('\n');
   }
 
+  /** The clock (Mission 2): time, officer, how the booth's count started, the warehouse answer. */
+  clockLines() {
+    const c = gameState.clock;
+    const m = gameState.mission;
+    const parts = m.startParts?.booth;
+    const start = parts ? `${parts.base + parts.bonus} (card ${parts.flagged ? `+${parts.base}` : '0'}, officer +${parts.bonus})` : '-';
+    return [
+      `  mission: ${m.id ?? 1}   clock: ${c.format()} ${c.running ? 'running' : 'stopped'}   officer: ${c.officerAt()}   line start: ${c.lineStart === null ? '-' : c.format(c.lineStart)}`,
+      `  booth start: ${start}   told_officer_warehouse: ${JSON.stringify(gameState.getFlag('told_officer_warehouse'))}`,
+    ];
+  }
+
   /** Log entries the summary couldn't turn into answer text (it skips them). */
   unresolved() {
     const cache = window.__game?.cache.json;
     if (!cache) return [];
-    const dialogues = { booth: cache.get('dialogue_m1_booth'), secondary: cache.get('dialogue_m1_secondary') };
+    const dialogues = summaryDialogues((id) => cache.get(`dialogue_${id}`));
     return buildMissionSummary(gameState.mission.log, dialogues).unresolved;
   }
 

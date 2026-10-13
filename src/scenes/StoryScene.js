@@ -5,6 +5,7 @@ import PhoneUI from '../objects/PhoneUI.js';
 import Player from '../objects/Player.js';
 import { fadeInFromBlack, fadeToBlack, showCard } from '../systems/cards.js';
 import CutsceneRunner from '../systems/CutsceneRunner.js';
+import { resolveDialogue } from '../systems/dialogueData.js';
 import DialogueRunner from '../systems/DialogueRunner.js';
 import { gameState } from '../systems/GameState.js';
 import InteractionSystem from '../systems/InteractionSystem.js';
@@ -111,10 +112,12 @@ export default class StoryScene extends Phaser.Scene {
 
   /**
    * Starts a conversation: an id from public/assets/data/dialogue/ (loaded by BootScene) or the data.
+   * A conversation with "extends" reuses another one's nodes (dialogueData.js).
    * routeEvents: false when a cutscene runs it (the cutscene routes its story events).
    */
   startDialogue(idOrData, startNode, { routeEvents = true } = {}) {
-    const data = typeof idOrData === 'string' ? this.cache.json.get(`dialogue_${idOrData}`) : idOrData;
+    const raw = typeof idOrData === 'string' ? this.cache.json.get(`dialogue_${idOrData}`) : idOrData;
+    const data = resolveDialogue(raw, (id) => this.cache.json.get(`dialogue_${id}`)); // "extends": reuse by reference
     if (!data) throw new Error(`Unknown dialogue "${idOrData}"`);
     const runner = new DialogueRunner(data, gameState);
     this.dialogueRunner = runner;

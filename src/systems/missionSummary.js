@@ -10,9 +10,12 @@
  *                        is the timer's own outcome line ("Mateo doesn't answer.").
  *     unresolved         ids of entries whose text couldn't be found (skipped; shown in the dev panel)
  *   }
- * dialogues: { booth: m1_booth data, secondary: m1_secondary data } (an entry's encounter names its
- * conversation). Suspicion values never appear in the output.
+ * dialogues: { booth: [conversation data], secondary: [...] } (an entry's encounter names its
+ * conversations, e.g. Mission 1's and Mission 2's booth; a single conversation works too). The first
+ * one that has the answer gives its text. Suspicion values never appear in the output.
  */
+import { resolveDialogue } from './dialogueData.js';
+
 export const SUMMARY_ENCOUNTERS = ['booth', 'secondary'];
 
 const PAUSES = /\{p:\d+\}/g; // typewriter holds inside text (never displayed)
@@ -26,12 +29,21 @@ export function buildMissionSummary(log, dialogues) {
     if (e.type === 'spotted') timesSpotted += 1;
     else if (e.type === 'heat') heatChange += e.delta;
     else if (e.type === 'suspicion' && e.delta > 0) {
-      const text = suspiciousAnswers[e.encounter] ? resolveAnswer(dialogues[e.encounter], e.question_id, e.answer_id) : null;
+      const text = suspiciousAnswers[e.encounter] ? resolveAnswerIn(dialogues[e.encounter], e.question_id, e.answer_id) : null;
       if (text) suspiciousAnswers[e.encounter].push(text);
       else unresolved.push(`${e.encounter ?? '-'}:${e.question_id ?? '-'}/${e.answer_id ?? '-'}`);
     }
   }
   return { timesSpotted, heatChange, suspiciousAnswers, unresolved };
+}
+
+/** resolveAnswer over a list of conversations (or one): the first that has the answer. */
+export function resolveAnswerIn(dialogues, questionId, answerId) {
+  for (const d of [].concat(dialogues ?? [])) {
+    const text = resolveAnswer(d, questionId, answerId);
+    if (text) return text;
+  }
+  return null;
 }
 
 /**
@@ -53,6 +65,18 @@ export function resolveAnswer(dialogue, questionId, answerId) {
   }
   const n = /^\d+$/.test(answerId) ? node.options[Number(answerId) - 1] : null;
   return n?.text ? clean(n.text) : null;
+}
+
+/**
+ * The conversations the summary looks answers up in, from a get(id) for loaded dialogue data: each
+ * mission's booth and secondary, with "extends" resolved (Mission 2's add the case questions).
+ */
+export function summaryDialogues(get) {
+  const one = (id) => resolveDialogue(get(id), get);
+  return {
+    booth: ['m1_booth', 'm2_booth'].map(one).filter(Boolean),
+    secondary: ['m1_secondary', 'm2_secondary'].map(one).filter(Boolean),
+  };
 }
 
 /** A signed number for display: +3, -2, 0. */
