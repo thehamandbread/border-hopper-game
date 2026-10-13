@@ -1,6 +1,6 @@
 # Prototype art generator
 
-`make_sample_art.py` generates the prototype sprites and tiles. Edit the script and regenerate; don't hand-edit the PNGs. The script is split into sections: Mateo sprite, border tiles, restaurant tiles, fire and smoke, phone, curb scene, Mission 1 (characters, apartment, tire shop, previews), the Mission 1 crossing (port of entry, secondary inspection, previews), and `main()` (saves assets and previews). Mission 1 art and the crossing art each use their own random stream and run last, so they never change earlier outputs.
+`make_sample_art.py` generates the prototype sprites and tiles. Edit the script and regenerate; don't hand-edit the PNGs. The script is split into sections: Mateo sprite, border tiles, restaurant tiles, fire and smoke, phone, curb scene, Mission 1 (characters, apartment, tire shop, previews), the Mission 1 crossing (port of entry, secondary inspection, previews), Three Hills and stealth (the alley, cover props, the wall camera, detection icons, the guard, Walt, the street, previews), and `main()` (saves assets and previews). Mission 1 art, the crossing art and the Three Hills art each use their own random stream and run in that order after everything else, so they never change earlier outputs.
 
 ## Run
 
@@ -287,6 +287,91 @@ Seated frames, 16x32, feet on row 28 like everyone else (about 3 px shorter than
 ### `secondary_props.png` (48x16)
 16x16 props with transparency: 0 the envelope sealed in a clear plastic bag (signature across the flap), 1 three blank sheets, unfolded, 2 his passport and border crossing card.
 
+## Three Hills and stealth
+
+### `alley_tiles.png` (336x16, 16x16 tiles, one row)
+
+The alley's back walls are two tiles tall (an upper and a lower tile; the lower one has grime along the ground), with `roof` above them. Doors are two tiles tall too (top in the upper row, bottom in the lower row).
+
+| Index | Name | Notes |
+|---|---|---|
+| 0 | asphalt | copied unchanged from `border_tiles.png` (index 4) |
+| 1 | concrete | poured concrete pad, joints on the top and right edges |
+| 2 | gutter | concrete with a shallow channel running left-right through the middle |
+| 3 | drain | the gutter with a grate |
+| 4 | trash_stains | asphalt with a dark seep and some faded litter |
+| 5 | brick_upper | laundromat back wall: red-brown brick |
+| 6 | brick_lower | |
+| 7 | brick_upper_pipe | variant: a downspout |
+| 8 | brick_lower_pipe | the downspout's bottom, a wet mark |
+| 9 | cinder_upper | phone store back wall: painted gray cinder block |
+| 10 | cinder_lower | |
+| 11 | cinder_upper_vent | variant: an exhaust grille with rust streaks |
+| 12 | cinder_lower_box | variant: an electrical box with conduit |
+| 13 | roof | flat tar roof, coping along the bottom edge (goes above a wall's upper row) |
+| 14 | roof_far | same roof with the coping on the top edge: the far side of the alley seen from above |
+| 15 | phone_door_top | phone store's plain steel back door, no window, no text (on cinder) |
+| 16 | phone_door_bottom | |
+| 17 | laundry_door_top | laundromat back door, faded teal steel, closed (on brick) |
+| 18 | laundry_door_bottom | |
+| 19 | laundry_door_open_top | pushed in a few inches: the leaf in shade, a dark gap on the latch side |
+| 20 | laundry_door_open_bottom | |
+
+### `dumpster.png` (64x32)
+Two 32x32 dumpsters, 2 tiles wide, lids closed, seen from the front and a little above: 0 green, 1 dark blue with rust. Feet line (bottom of the casters) on row 28, like the characters; the footprint is the 2x1 tiles under that line.
+
+### `pallets.png` (16x32)
+A stack of wooden pallets, feet line on row 28; the footprint is one tile.
+
+### `parked_car.png` (48x24)
+A faded gray-blue sedan, parked, from the side (the sedan's 3/4 construction), facing right: dusty sills, a dent in the front door, plain hubcaps. Footprint: 3 tiles wide, 1 deep.
+
+### `wall_camera.png` (48x16)
+Security camera on a wall bracket, 3 frames of 16x16 with transparency, drawn over a wall tile (the bracket is at the top of the tile): 0 aimed left, 1 center (toward the viewer), 2 right.
+
+### `stealth_icons.png` (30x10)
+10x10 frames: 0 "?" empty (dark outline, dim inside), 1 "?" filled (amber), 2 "!" (red). Frames 0 and 1 are pixel-aligned: show detection by drawing frame 0, then frame 1 cropped to the bottom part of its height.
+
+### `guard_walk.png` (64x160)
+The alley guard: 40s, a little heavy, buzz cut and mustache, pale gray security shirt with dark epaulettes, charcoal trousers, a radio on his belt; no weapon. `mateo_walk.png` layout, plus row 4 (idle, arms folded): 0-1 facing down (alternate for a slow breath), 2 facing right, 3 facing left.
+
+### `walt_door.png` (16x32)
+Walt in the laundromat's back doorway: the door pushed open a few inches, Walt (50s, thinning gray hair, glasses pushed up, faded green work shirt with the sleeves rolled up) in the gap, a wrench hanging from the hand on the door's edge. Draw it exactly over `laundry_door_top` + `laundry_door_bottom`.
+
+### `threehills_tiles.png` (288x16, 16x16 tiles, one row)
+
+Storefronts are three rows: `storefront_roof`, then the sign row (plain wall and the 2-tile sign band), then the window row.
+
+| Index | Name | Notes |
+|---|---|---|
+| 0 | sidewalk | daytime concrete slab |
+| 1 | curb | sidewalk meeting the street: curb top, face, gutter |
+| 2 | street | copied unchanged from `border_tiles.png` (asphalt, index 4) |
+| 3 | street_line | copied unchanged (asphalt_line, index 5): Fourth Street's center line |
+| 4 | crosswalk | asphalt with white bars, for a street running left-right |
+| 5 | laundry_wall | laundromat front: peach stucco with a dark base |
+| 6 | laundry_wall_plain | without the base (sign row) |
+| 7 | laundry_window | front window, washers inside |
+| 8 | laundry_door | glass front door |
+| 9 | laundry_sign_left | blank sign band, 2 tiles wide (blue frame, pale panel; no text) |
+| 10 | laundry_sign_right | |
+| 11 | phone_wall | phone store front: gray-blue stucco |
+| 12 | phone_wall_plain | |
+| 13 | phone_window | window with two phone posters (shapes only) and a display stand |
+| 14 | phone_door | glass front door |
+| 15 | phone_sign_left | blank sign band (red frame; no text) |
+| 16 | phone_sign_right | |
+| 17 | storefront_roof | same as the alley's `roof` |
+
+### `closed_sign.png` (12x10)
+The cardboard sign taped inside the laundromat's window: marker strokes where the words go (no text baked in; CLOSED FOR REPAIRS is game text).
+
+### `food_truck.png` (64x40)
+A taco truck from the side, facing right: cream body, red stripe, the serving window open under a striped awning, a blank menu board.
+
+### `bus_bench.png` (32x16)
+A bus-stop bench facing down: wooden slats and backrest, steel ends.
+
 ## Previews (`tools/art/previews/`, git-ignored)
 
-`preview_scene.png`, `preview_walk.gif`, `sheet_6x.png`, `tiles_6x.png`, `restaurant_tiles_6x.png`, `fire_6x.png`, `smoke_6x.png`, `restaurant_scene.png` (mock restaurant with Mateo, fire and smoke), `kitchen_door_6x.png`, `task_marker_6x.png`, `restaurant_walls_preview.png` (mock room: walls, corners, counter ends, cafe doors, task markers), `phone_ledge_6x.png` (over the wall tile), `phone_ui_4x.png`, `phone_icon_6x.png`, `curb_scene.png` (mock curb scene at 4x), and 6x previews of each curb image. Mission 1: `apartment_scene.png` and `tireshop_scene.png` (mock scenes at 4x with every character placed), `m1_lineup_1x.png` / `m1_lineup_6x.png` (everyone side by side, for checking they read as different people), and 6x previews of each Mission 1 image. The crossing: `port_scene.png` (mock line and booth at 4x, everyone placed) and `secondary_scene.png` (mock waiting room and office at 4x), `crossing_lineup_1x.png` / `crossing_lineup_6x.png`, and 6x previews of each crossing image.
+`preview_scene.png`, `preview_walk.gif`, `sheet_6x.png`, `tiles_6x.png`, `restaurant_tiles_6x.png`, `fire_6x.png`, `smoke_6x.png`, `restaurant_scene.png` (mock restaurant with Mateo, fire and smoke), `kitchen_door_6x.png`, `task_marker_6x.png`, `restaurant_walls_preview.png` (mock room: walls, corners, counter ends, cafe doors, task markers), `phone_ledge_6x.png` (over the wall tile), `phone_ui_4x.png`, `phone_icon_6x.png`, `curb_scene.png` (mock curb scene at 4x), and 6x previews of each curb image. Mission 1: `apartment_scene.png` and `tireshop_scene.png` (mock scenes at 4x with every character placed), `m1_lineup_1x.png` / `m1_lineup_6x.png` (everyone side by side, for checking they read as different people), and 6x previews of each Mission 1 image. The crossing: `port_scene.png` (mock line and booth at 4x, everyone placed) and `secondary_scene.png` (mock waiting room and office at 4x), `crossing_lineup_1x.png` / `crossing_lineup_6x.png`, and 6x previews of each crossing image. Three Hills: `alley_scene.png` (the sandbox alley mocked up at 4x, with cover, the camera, the guard and Walt), `threehills_scene.png` (Fourth Street at 4x), `threehills_lineup_1x.png` / `threehills_lineup_6x.png`, and 6x previews of each Three Hills image.

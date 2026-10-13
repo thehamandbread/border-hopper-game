@@ -29,6 +29,10 @@ Outputs:
   booth_officer.png, handler_walk.png, dog_walk.png, queue_npcs.png, secondary_tiles.png, carr_walk.png,
   waiting_people.png, secondary_props.png (see the README), and previews port_scene.png,
   secondary_scene.png, crossing_lineup_1x/6x.png
+  Three Hills and stealth: alley_tiles.png, threehills_tiles.png, dumpster.png, pallets.png, parked_car.png,
+  wall_camera.png, stealth_icons.png, guard_walk.png, walt_door.png, food_truck.png, bus_bench.png,
+  closed_sign.png (see the README), and previews alley_scene.png, threehills_scene.png,
+  threehills_lineup_1x/6x.png
 Paths are resolved relative to this file, so it runs from any working directory.
 """
 import random
@@ -3988,6 +3992,893 @@ def save_crossing(frames):
     sec.resize((sec.width * 4, sec.height * 4), Image.NEAREST).save(PREVIEW_DIR / "secondary_scene.png")
 
 
+# ---------------- Three Hills and stealth (Mission 1: the street, the alley) ----------------
+# Its own random stream again, and it runs last, so it never changes an earlier output.
+trng = random.Random(97)
+BRICK, BRICK_DK, BRICK_HI, MORTAR = (150, 92, 72), (124, 74, 60), (170, 110, 86), (176, 162, 144)
+CINDER, CINDER_DK, CINDER_HI = (164, 162, 154), (138, 136, 130), (182, 180, 172)
+GRIME, GRIME_DK = (110, 100, 92), (82, 76, 72)
+ROOF_TAR, ROOF_TAR_DK, ROOF_TAR_HI = (92, 90, 90), (72, 70, 72), (118, 116, 114)
+COPING, COPING_DK = (178, 174, 166), (138, 134, 128)
+ACONC, ACONC_DK, ACONC_HI = (156, 150, 138), (136, 130, 120), (170, 166, 154)
+DSTEEL, DSTEEL_DK, DSTEEL_HI = (112, 118, 122), (84, 90, 94), (146, 152, 156)
+LDOOR, LDOOR_DK, LDOOR_HI = (92, 122, 114), (66, 92, 86), (124, 152, 142)       # faded teal paint
+INSIDE = (30, 28, 32)
+WALK, WALK_DK, WALK_HI = (198, 192, 178), (178, 172, 158), (212, 208, 196)       # daytime sidewalk
+LSTUCCO, LSTUCCO_DK, LSTUCCO_HI = (214, 194, 164), (192, 172, 142), (228, 212, 186)   # laundromat: peach
+PSTUCCO, PSTUCCO_DK, PSTUCCO_HI = (172, 182, 184), (150, 160, 162), (192, 200, 202)   # phone store: gray-blue
+SHOPGLASS, SHOPGLASS_DK, SHOPGLASS_HI = (96, 122, 134), (70, 92, 104), (176, 204, 212)
+
+
+def brick_face(lower=False, pipe=False):
+    """Back wall of the laundromat: red-brown brick, 4 px courses, half-offset. Two tiles tall in the
+    alley: `lower` is the bottom tile (grime along the ground); `pipe` adds a downspout."""
+    img = solid(BRICK)
+    d = img.load()
+    for y in range(T):
+        off = 4 if (y // 4) % 2 else 0
+        for x in range(T):
+            if y % 4 == 3 or (x + off) % 8 == 7:
+                d[x, y] = MORTAR + (255,)
+            elif y % 4 == 0:
+                d[x, y] = BRICK_HI + (255,)
+    for _ in range(10):
+        x, y = trng.randrange(T), trng.randrange(T)
+        if d[x, y][:3] != MORTAR:
+            d[x, y] = BRICK_DK + (255,)
+    if lower:
+        fill(d, 0, 12, 15, 13, GRIME)
+        fill(d, 0, 14, 15, 15, GRIME_DK)
+        dots(d, [(2, 11), (7, 10), (8, 11), (13, 11)], GRIME)
+    if pipe:  # downspout down the wall, a bracket, a kick-out at the bottom
+        fill(d, 10, 0, 12, 15 if not lower else 13, (128, 132, 128))
+        fill(d, 10, 0, 10, 15 if not lower else 13, (160, 164, 160))
+        fill(d, 12, 0, 12, 15 if not lower else 13, (96, 100, 96))
+        fill(d, 9, 6, 13, 6, (84, 86, 84))
+        if lower:
+            fill(d, 9, 13, 14, 14, (128, 132, 128))
+            fill(d, 9, 13, 14, 13, (160, 164, 160))
+            dots(d, [(14, 15), (15, 15)], (70, 76, 80))   # wet mark
+    return img
+
+
+def cinder_face(lower=False, extra=None):
+    """Back wall of the phone store: painted gray cinder block (8x4 px blocks). `extra`: 'vent' (an
+    exhaust grille, upper tile) or 'box' (an electrical box with conduit, lower tile)."""
+    img = solid(CINDER)
+    d = img.load()
+    for y in range(T):
+        off = 4 if (y // 4) % 2 else 0
+        for x in range(T):
+            if y % 4 == 3 or (x + off) % 8 == 7:
+                d[x, y] = CINDER_DK + (255,)
+    fill(d, 0, 0, 15, 0, CINDER_HI)
+    for _ in range(8):
+        d[trng.randrange(T), trng.randrange(T)] = trng.choice([CINDER_DK, CINDER_HI]) + (255,)
+    if lower:
+        fill(d, 0, 12, 15, 13, GRIME)
+        fill(d, 0, 14, 15, 15, GRIME_DK)
+    if extra == "vent":
+        fill(d, 3, 4, 12, 11, (118, 120, 120))
+        for y in range(5, 11, 2):
+            fill(d, 4, y, 11, y, (70, 72, 74))
+        fill(d, 3, 4, 12, 4, (160, 162, 162))
+        dots(d, [(4, 12), (7, 12), (10, 12)], (120, 112, 100))   # rust streaks under it
+    if extra == "box":
+        fill(d, 4, 1, 11, 9, (132, 136, 130))
+        fill(d, 4, 1, 11, 1, (166, 170, 164))
+        fill(d, 11, 1, 11, 9, (100, 104, 100))
+        fill(d, 9, 4, 9, 6, (70, 72, 70))                    # latch
+        fill(d, 7, 10, 8, 15, (110, 112, 108))               # conduit to the ground
+        fill(d, 7, 10, 7, 15, (140, 142, 138))
+    return img
+
+
+def tile_alley_roof(edge_top=False):
+    """A flat tar roof seen from above, with a concrete coping along the edge: on the bottom edge
+    (over a wall face), or with edge_top on the top edge (the far side of the alley, seen from above)."""
+    img = solid(ROOF_TAR)
+    d = img.load()
+    for _ in range(26):
+        d[trng.randrange(T), trng.randrange(T)] = trng.choice([ROOF_TAR_DK, ROOF_TAR_HI]) + (255,)
+    if edge_top:
+        fill(d, 0, 0, 15, 0, OUT)
+        fill(d, 0, 1, 15, 2, COPING)
+        fill(d, 0, 3, 15, 3, COPING_DK)
+    else:
+        fill(d, 0, 12, 15, 12, COPING_DK)
+        fill(d, 0, 13, 15, 14, COPING)
+        fill(d, 0, 15, 15, 15, OUT)
+    return img
+
+
+def tile_alley_concrete():
+    img = solid(ACONC)
+    d = img.load()
+    for _ in range(16):
+        d[trng.randrange(T), trng.randrange(T)] = trng.choice([ACONC_DK, ACONC_HI]) + (255,)
+    fill(d, 0, 0, 15, 0, ACONC_DK)
+    fill(d, 15, 0, 15, 15, ACONC_DK)
+    return img
+
+
+def tile_gutter(drain=False):
+    """Concrete with a shallow channel down the middle of the alley (runs left-right); `drain` adds
+    a grate."""
+    img = tile_alley_concrete()
+    d = img.load()
+    fill(d, 0, 6, 15, 9, (128, 122, 114))
+    fill(d, 0, 6, 15, 6, (108, 102, 96))
+    fill(d, 0, 9, 15, 9, (146, 140, 130))
+    dots(d, [(3, 8), (4, 8), (11, 7)], (100, 104, 108))       # a little damp
+    if drain:
+        fill(d, 4, 5, 11, 10, (40, 38, 40))
+        for x in range(5, 11, 2):
+            fill(d, x, 6, x, 9, (96, 96, 100))
+        fill(d, 4, 5, 11, 5, (112, 112, 116))
+    return img
+
+
+def tile_trash_stains(asphalt):
+    """Asphalt with old trash stains: a dark seep and a few faded bits of litter."""
+    img = asphalt.copy()
+    d = img.load()
+    for y in range(T):
+        for x in range(T):
+            r = ((x - 6) ** 2) / 20 + ((y - 8) ** 2) / 10
+            if r < 1:
+                d[x, y] = (54, 50, 48, 255) if r < 0.5 else (62, 58, 56, 255)
+    dots(d, [(12, 3), (13, 3)], (150, 70, 58))          # a faded wrapper
+    dots(d, [(3, 13)], (196, 176, 96))                  # a bottle cap
+    dots(d, [(10, 12), (11, 13)], (170, 170, 160))      # paper
+    return img
+
+
+def wall_pair(face_top, face_bottom, draw_fn):
+    """Something two tiles tall drawn on a 2-tile wall face (e.g. a door), outlined as one piece;
+    returns (top, bottom) tiles."""
+    layer = Image.new("RGBA", (T, T * 2), (0, 0, 0, 0))
+    draw_fn(layer.load())
+    outline(layer)
+    out = Image.new("RGBA", (T, T * 2))
+    out.paste(face_top, (0, 0))
+    out.paste(face_bottom, (0, T))
+    out.alpha_composite(layer)
+    return out.crop((0, 0, T, T)), out.crop((0, T, T, T * 2))
+
+
+def draw_door_frame(px):
+    fill(px, 2, 5, 13, 31, (70, 72, 74))                # steel frame
+    fill(px, 2, 5, 13, 5, (110, 112, 114))
+
+
+def draw_phone_back_door(px):
+    """Plain steel security door: no window, a deadbolt, a pull handle, a kick plate."""
+    draw_door_frame(px)
+    fill(px, 3, 6, 12, 31, DSTEEL)
+    fill(px, 3, 6, 12, 6, DSTEEL_HI)
+    fill(px, 3, 6, 3, 31, DSTEEL_HI)
+    fill(px, 12, 6, 12, 31, DSTEEL_DK)
+    fill(px, 4, 27, 11, 30, DSTEEL_DK)                  # kick plate
+    fill(px, 4, 27, 11, 27, DSTEEL_HI)
+    fill(px, 10, 15, 11, 16, (40, 42, 44))              # deadbolt
+    fill(px, 10, 18, 10, 21, (196, 196, 190))           # pull handle
+    fill(px, 11, 18, 11, 18, (196, 196, 190))
+    fill(px, 11, 21, 11, 21, (196, 196, 190))
+    dots(px, [(5, 8), (8, 9), (6, 24)], (150, 104, 76))  # chipped paint, rust
+
+
+def draw_laundry_door(px, open_=False, gap=4):
+    """The laundromat's back door: faded teal steel, a peephole, a lever handle. open_: pushed in a
+    few inches; the leaf is narrower (seen at an angle) with a dark gap on the latch side."""
+    draw_door_frame(px)
+    if not open_:
+        fill(px, 3, 6, 12, 31, LDOOR)
+        fill(px, 3, 6, 12, 6, LDOOR_HI)
+        fill(px, 3, 6, 3, 31, LDOOR_HI)
+        fill(px, 12, 6, 12, 31, LDOOR_DK)
+        fill(px, 7, 11, 8, 11, (30, 34, 36))            # peephole
+        fill(px, 9, 18, 11, 18, (200, 196, 180))        # lever handle
+        fill(px, 9, 19, 9, 19, (200, 196, 180))
+        fill(px, 4, 28, 11, 30, LDOOR_DK)               # scuffed bottom
+        dots(px, [(5, 29), (9, 29)], (150, 140, 120))
+        return
+    lx1 = 12 - gap
+    fill(px, 3, 6, 12, 31, INSIDE)                      # dark inside
+    fill(px, 3, 6, lx1, 31, LDOOR_DK)                   # the leaf, turned away, in shade
+    fill(px, 3, 6, 3, 31, LDOOR)
+    fill(px, lx1, 6, lx1, 31, (50, 70, 66))             # its edge
+    fill(px, lx1 - 2, 18, lx1 - 1, 18, (170, 166, 150))  # lever handle, inside face
+
+
+def tile_threehills_sidewalk(seam_left=True):
+    img = solid(WALK)
+    d = img.load()
+    for _ in range(14):
+        d[trng.randrange(T), trng.randrange(T)] = trng.choice([WALK_DK, WALK_HI]) + (255,)
+    fill(d, 0, 0, 15, 0, WALK_DK)
+    if seam_left:
+        fill(d, 0, 0, 0, 15, WALK_DK)
+    return img
+
+
+def tile_threehills_curb():
+    """Sidewalk (top) meeting the street, by day: curb top, curb face, gutter."""
+    img = tile_threehills_sidewalk()
+    d = img.load()
+    fill(d, 0, 9, 15, 9, (226, 222, 212))
+    fill(d, 0, 10, 15, 12, (150, 146, 138))
+    fill(d, 0, 13, 15, 15, (86, 86, 88))
+    return img
+
+
+def tile_crosswalk(asphalt):
+    """Asphalt with white crosswalk bars, for a street running left-right (people cross up-down)."""
+    img = asphalt.copy()
+    d = img.load()
+    for y0 in (1, 6, 11):
+        fill(d, 2, y0, 13, y0 + 2, (222, 220, 210))
+        for _ in range(3):  # worn spots
+            d[trng.randrange(2, 14), trng.randrange(y0, y0 + 3)] = (186, 184, 176, 255)
+    return img
+
+
+def stucco_face(paint, dk, hi, base=True):
+    """A storefront wall face: stucco, a dark base along the sidewalk (when base)."""
+    img = solid(paint)
+    d = img.load()
+    for _ in range(20):
+        d[trng.randrange(T), trng.randrange(T)] = trng.choice([dk, hi]) + (255,)
+    fill(d, 0, 0, 15, 0, hi)
+    if base:
+        fill(d, 0, 13, 15, 13, dk)
+        fill(d, 0, 14, 15, 15, (110, 104, 96))
+    return img
+
+
+def draw_shop_window(px, inside):
+    """A storefront window: aluminium frame, glass; inside(px) draws what shows behind the glass."""
+    fill(px, 0, 1, 15, 12, ALU_DK)
+    fill(px, 0, 2, 15, 11, SHOPGLASS)
+    inside(px)
+    fill(px, 0, 2, 15, 2, SHOPGLASS_HI)                 # glare along the top
+    dots(px, [(2, 4), (3, 3), (11, 9), (12, 8)], SHOPGLASS_HI)
+    fill(px, 0, 1, 15, 1, ALU_HI)
+    fill(px, 0, 12, 15, 12, ALU_HI)                     # sill
+
+
+def washers_inside(px):
+    """Front-loaders behind the glass: white boxes with round dark doors."""
+    for x0 in (1, 9):
+        fill(px, x0, 5, x0 + 5, 11, (210, 210, 204))
+        fill(px, x0 + 1, 7, x0 + 4, 10, (60, 70, 80))
+        fill(px, x0 + 2, 7, x0 + 3, 7, (120, 136, 150))
+        fill(px, x0, 5, x0 + 5, 5, (232, 232, 228))
+
+
+def phones_inside(px):
+    """Phone-store window: two posters of a phone (shapes only) and a display stand."""
+    for x0, c in ((1, (210, 90, 70)), (9, (70, 130, 190))):
+        fill(px, x0, 3, x0 + 5, 9, c)
+        fill(px, x0 + 2, 4, x0 + 3, 8, (30, 32, 36))     # a phone silhouette
+        fill(px, x0 + 2, 5, x0 + 3, 7, (150, 190, 220))
+    fill(px, 4, 10, 11, 11, (90, 92, 96))               # display stand
+
+
+def draw_glass_door(px, frame):
+    fill(px, 2, 0, 13, 15, frame)
+    fill(px, 3, 1, 12, 13, SHOPGLASS)
+    fill(px, 3, 1, 4, 4, SHOPGLASS_HI)
+    fill(px, 3, 7, 12, 7, frame)                        # push bar
+    fill(px, 10, 7, 11, 8, (220, 220, 214))
+    fill(px, 3, 14, 12, 15, (90, 92, 96))               # threshold
+
+
+def draw_sign_band(px, color, color_dk):
+    """A blank sign band across two tiles, on prop2_on's 32 px layer (no text baked in; the shop
+    names are game text)."""
+    fill(px, 2, 2, 29, 12, color)
+    fill(px, 2, 2, 29, 2, tuple(min(255, c + 30) for c in color))
+    fill(px, 2, 12, 29, 12, color_dk)
+    fill(px, 4, 4, 27, 10, (236, 232, 222))             # pale panel where the name goes
+
+
+THREEHILLS_ORDER = ["sidewalk", "curb", "street", "street_line", "crosswalk", "laundry_wall", "laundry_wall_plain",
+                    "laundry_window", "laundry_door", "laundry_sign_left", "laundry_sign_right", "phone_wall",
+                    "phone_wall_plain", "phone_window", "phone_door", "phone_sign_left", "phone_sign_right",
+                    "storefront_roof"]
+
+
+def make_threehills_tiles(border_tiles):
+    lwall = stucco_face(LSTUCCO, LSTUCCO_DK, LSTUCCO_HI)
+    lplain = stucco_face(LSTUCCO, LSTUCCO_DK, LSTUCCO_HI, base=False)
+    pwall = stucco_face(PSTUCCO, PSTUCCO_DK, PSTUCCO_HI)
+    pplain = stucco_face(PSTUCCO, PSTUCCO_DK, PSTUCCO_HI, base=False)
+    lsign_l, lsign_r = prop2_on(lplain, lambda p: draw_sign_band(p, (70, 120, 160), (50, 90, 124)))
+    psign_l, psign_r = prop2_on(pplain, lambda p: draw_sign_band(p, (190, 70, 60), (150, 50, 44)))
+    tiles = {
+        "sidewalk": tile_threehills_sidewalk(), "curb": tile_threehills_curb(),
+        "street": border_tiles["asphalt"], "street_line": border_tiles["asphalt_line"],
+        "crosswalk": tile_crosswalk(border_tiles["asphalt"]),
+        "laundry_wall": lwall, "laundry_wall_plain": lplain,
+        "laundry_window": on_face(lwall, lambda p: draw_shop_window(p, washers_inside)),
+        "laundry_door": on_face(lwall, lambda p: draw_glass_door(p, ALU_DK)),
+        "laundry_sign_left": lsign_l, "laundry_sign_right": lsign_r,
+        "phone_wall": pwall, "phone_wall_plain": pplain,
+        "phone_window": on_face(pwall, lambda p: draw_shop_window(p, phones_inside)),
+        "phone_door": on_face(pwall, lambda p: draw_glass_door(p, (60, 62, 66))),
+        "phone_sign_left": psign_l, "phone_sign_right": psign_r,
+        "storefront_roof": tile_alley_roof(),
+    }
+    sheet = Image.new("RGBA", (T * len(THREEHILLS_ORDER), T))
+    for i, k in enumerate(THREEHILLS_ORDER):
+        sheet.paste(tiles[k], (i * T, 0))
+    return sheet, tiles
+
+
+ALLEY_ORDER = ["asphalt", "concrete", "gutter", "drain", "trash_stains", "brick_upper", "brick_lower",
+               "brick_upper_pipe", "brick_lower_pipe", "cinder_upper", "cinder_lower", "cinder_upper_vent",
+               "cinder_lower_box", "roof", "roof_far", "phone_door_top", "phone_door_bottom",
+               "laundry_door_top", "laundry_door_bottom", "laundry_door_open_top", "laundry_door_open_bottom"]
+
+
+def make_alley_tiles(border_tiles):
+    asphalt = border_tiles["asphalt"]
+    bu, bl = brick_face(), brick_face(lower=True)
+    cu, cl = cinder_face(), cinder_face(lower=True)
+    pd_t, pd_b = wall_pair(cu, cl, draw_phone_back_door)
+    ld_t, ld_b = wall_pair(bu, bl, draw_laundry_door)
+    lo_t, lo_b = wall_pair(bu, bl, lambda p: draw_laundry_door(p, open_=True))
+    tiles = {
+        "asphalt": asphalt, "concrete": tile_alley_concrete(), "gutter": tile_gutter(),
+        "drain": tile_gutter(drain=True), "trash_stains": tile_trash_stains(asphalt),
+        "brick_upper": bu, "brick_lower": bl,
+        "brick_upper_pipe": brick_face(pipe=True), "brick_lower_pipe": brick_face(lower=True, pipe=True),
+        "cinder_upper": cu, "cinder_lower": cl,
+        "cinder_upper_vent": cinder_face(extra="vent"), "cinder_lower_box": cinder_face(lower=True, extra="box"),
+        "roof": tile_alley_roof(), "roof_far": tile_alley_roof(edge_top=True),
+        "phone_door_top": pd_t, "phone_door_bottom": pd_b,
+        "laundry_door_top": ld_t, "laundry_door_bottom": ld_b,
+        "laundry_door_open_top": lo_t, "laundry_door_open_bottom": lo_b,
+    }
+    sheet = Image.new("RGBA", (T * len(ALLEY_ORDER), T))
+    for i, k in enumerate(ALLEY_ORDER):
+        sheet.paste(tiles[k], (i * T, 0))
+    return sheet, tiles
+
+
+# ---- cover props ----
+DUMPSTER_W, DUMPSTER_H = 32, 32
+
+
+def make_dumpsters():
+    """Two 32x32 dumpsters (2 tiles wide), seen from the front and a little above, lids closed:
+    0 green, 1 dark blue with rust. The footprint is the bottom tile row (feet line at row 28)."""
+    sheet = Image.new("RGBA", (DUMPSTER_W * 2, DUMPSTER_H), (0, 0, 0, 0))
+    for f, (body, dk, hi) in enumerate((((70, 110, 78), (50, 84, 58), (96, 136, 102)),
+                                         ((56, 78, 110), (40, 56, 84), (80, 104, 136)))):
+        layer = Image.new("RGBA", (DUMPSTER_W, DUMPSTER_H), (0, 0, 0, 0))
+        px = layer.load()
+        fill(px, 2, 9, 29, 15, (36, 36, 38))            # black plastic lids, seen from above
+        fill(px, 2, 9, 29, 9, (66, 66, 70))
+        fill(px, 15, 9, 16, 15, (22, 22, 24))           # split between the two lids
+        dots(px, [(7, 12), (24, 12)], (58, 58, 62))     # lid handles
+        fill(px, 1, 16, 30, 26, body)                   # front face
+        fill(px, 1, 16, 30, 16, hi)                     # top rim
+        fill(px, 1, 26, 30, 26, dk)
+        fill(px, 1, 17, 1, 26, hi)
+        fill(px, 30, 17, 30, 26, dk)
+        for x in (8, 23):                               # ribs
+            fill(px, x, 17, x, 25, dk)
+        fill(px, 0, 18, 1, 19, (60, 62, 64))            # side pockets for the forks
+        fill(px, 30, 18, 31, 19, (60, 62, 64))
+        for x in (3, 26):                               # casters
+            fill(px, x, 27, x + 2, 28, (24, 22, 24))
+        if f == 1:
+            dots(px, [(4, 24), (5, 25), (12, 23), (20, 25), (27, 22), (28, 23)], (140, 88, 58))
+        else:
+            dots(px, [(10, 25), (18, 24)], (52, 70, 56))
+        outline(layer)
+        sheet.paste(layer, (f * DUMPSTER_W, 0))
+    return sheet
+
+
+def make_pallets():
+    """16x32: a stack of wooden pallets, top slats seen from above, the layers seen from the front.
+    Footprint is the bottom tile (feet line at row 28)."""
+    img = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+    px = img.load()
+    wood, wood_dk, wood_hi = (176, 142, 96), (128, 98, 62), (200, 170, 124)
+    fill(px, 1, 12, 14, 16, wood)                       # top deck from above
+    for y in (12, 14, 16):
+        fill(px, 1, y, 14, y, wood_hi)
+    fill(px, 1, 13, 14, 13, wood_dk)
+    fill(px, 1, 15, 14, 15, wood_dk)
+    for i, y in enumerate(range(17, 28, 3)):            # layers seen from the front
+        fill(px, 1, y, 14, y, wood_hi)                  # deck board
+        fill(px, 1, y + 1, 14, y + 2, (52, 40, 30))     # gap between boards
+        for x in (1, 7, 13):
+            fill(px, x, y + 1, x + 1, y + 2, wood_dk)   # blocks
+        if i % 2:
+            dots(px, [(4, y), (10, y)], wood_dk)
+    fill(px, 1, 28, 14, 28, wood_dk)
+    outline(img)
+    return img
+
+
+CAR_W, CAR_H = 48, 24
+
+
+def make_parked_car():
+    """A faded gray-blue sedan from the side (3/4 top-down, the sedan's construction), facing right,
+    parked: dusty, a dent, plain hubcaps."""
+    img = Image.new("RGBA", (CAR_W, CAR_H), (0, 0, 0, 0))
+    px = img.load()
+    body, body_dk, body_hi = (128, 140, 152), (98, 108, 120), (160, 170, 180)
+    glass, glass_hi = (58, 68, 80), (112, 126, 140)
+    fill(px, 13, 1, 35, 4, body_hi)                     # roof, seen a little from above
+    fill(px, 14, 1, 34, 1, (186, 194, 200))
+    fill(px, 11, 5, 37, 9, glass)
+    fill(px, 23, 5, 24, 9, body_dk)
+    fill(px, 12, 5, 14, 6, glass_hi)
+    fill(px, 26, 5, 28, 6, glass_hi)
+    fill(px, 1, 10, 46, 17, body)
+    fill(px, 1, 10, 46, 10, body_hi)
+    fill(px, 1, 17, 46, 17, body_dk)
+    fill(px, 23, 11, 23, 16, body_dk)                   # door seam
+    fill(px, 26, 12, 27, 12, (190, 194, 198))           # door handle
+    fill(px, 0, 14, 2, 16, (90, 92, 96))                # plastic bumpers
+    fill(px, 45, 14, 47, 16, (90, 92, 96))
+    fill(px, 0, 11, 1, 12, (150, 50, 46))               # tail light
+    fill(px, 45, 11, 47, 12, (196, 194, 178))           # headlight
+    fill(px, 31, 13, 33, 14, body_dk)                   # dent in the front door
+    dots(px, [(5, 16), (6, 16), (40, 16), (17, 16)], (150, 140, 120))   # dust along the sills
+    for wx in (7, 34):
+        fill(px, wx, 16, wx + 7, 22, (24, 22, 24))
+        fill(px, wx + 2, 18, wx + 5, 20, (150, 154, 158))
+        fill(px, wx + 3, 19, wx + 4, 19, (110, 114, 118))
+    outline(img)
+    return img
+
+
+def make_wall_camera():
+    """3 frames of 16x16 on transparency, to draw over a wall tile: a security camera on a bracket
+    at the top of the tile, aimed 0 left, 1 center (toward the viewer), 2 right."""
+    sheet = Image.new("RGBA", (T * 3, T), (0, 0, 0, 0))
+    shell, shell_dk, shell_hi = (214, 214, 208), (166, 166, 160), (236, 236, 232)
+    lens, led = (24, 26, 32), (220, 50, 40)
+    for f in range(3):
+        layer = Image.new("RGBA", (T, T), (0, 0, 0, 0))
+        px = layer.load()
+        fill(px, 6, 1, 9, 2, (90, 92, 94))              # wall plate
+        fill(px, 7, 3, 8, 5, (110, 112, 114))           # arm
+        if f == 1:                                      # facing us: a short box, the lens toward the viewer
+            fill(px, 4, 6, 11, 12, shell)
+            fill(px, 4, 6, 11, 6, shell_hi)
+            fill(px, 4, 12, 11, 12, shell_dk)
+            fill(px, 3, 5, 12, 6, shell_hi)             # sun hood
+            fill(px, 6, 8, 9, 11, lens)
+            fill(px, 7, 9, 7, 9, (90, 110, 140))        # glint
+            px[10, 7] = led + (255,)
+        else:                                           # in profile, the lens end toward the aim
+            fill(px, 3, 6, 12, 10, shell)
+            fill(px, 3, 6, 12, 6, shell_hi)
+            fill(px, 3, 10, 12, 10, shell_dk)
+            fill(px, 2, 5, 13, 5, shell_hi)             # sun hood
+            fill(px, 1, 7, 2, 9, lens)                  # lens (left; flipped for right)
+            px[1, 8] = (90, 110, 140, 255)
+            px[11, 7] = led + (255,)
+        outline(layer)
+        if f == 2:
+            layer = flip(layer)
+        sheet.paste(layer, (f * T, 0))
+    return sheet
+
+
+# ---- detection icons ----
+ICON = 10
+QMARK = [
+    ".XXXXXX.",
+    "XX....XX",
+    "......XX",
+    "....XXX.",
+    "...XX...",
+    "...XX...",
+    "........",
+    "...XX...",
+]
+BANG = [
+    "...XX...",
+    "...XX...",
+    "...XX...",
+    "...XX...",
+    "...XX...",
+    "........",
+    "...XX...",
+    "...XX...",
+]
+
+
+def icon_frame(glyph, inner):
+    """A 10x10 glyph: the 8x8 shape filled with `inner`, a 1 px dark outline around it. Every frame
+    uses the same shape position, so the outlined and filled "?" line up pixel for pixel."""
+    img = Image.new("RGBA", (ICON, ICON), (0, 0, 0, 0))
+    px = img.load()
+    for y, row in enumerate(glyph):
+        for x, c in enumerate(row):
+            if c == "X":
+                px[x + 1, y + 1] = inner
+    outline(img)
+    return img
+
+
+def make_stealth_icons():
+    """30x10: 0 "?" empty (dim inside), 1 "?" filled (amber), 2 "!" (red). Show detection by drawing
+    frame 0, then frame 1 cropped to the bottom part of its height."""
+    sheet = Image.new("RGBA", (ICON * 3, ICON), (0, 0, 0, 0))
+    for f, (glyph, inner) in enumerate(((QMARK, (70, 66, 64, 170)), (QMARK, (244, 198, 66, 255)),
+                                         (BANG, (226, 60, 48, 255)))):
+        sheet.paste(icon_frame(glyph, inner), (f * ICON, 0))
+    return sheet
+
+
+# ---- the guard and Walt ----
+# The alley guard: 40s, bored, unhurried. Buzz cut, mustache, a little heavy. Pale gray security shirt
+# with dark epaulettes and a shoulder patch, charcoal trousers, a radio on his belt. No weapon.
+GUARD_PAL = {"H": (52, 42, 36), "h": (78, 66, 58), "S": (168, 116, 84), "s": (132, 88, 62), "E": (28, 20, 18),
+             "M": (46, 36, 30), "T": (200, 202, 196), "t": (164, 166, 160), "P": (46, 52, 70), "R": (30, 30, 32),
+             "L": (26, 24, 26), "J": (58, 58, 64), "j": (42, 42, 48), "B": (30, 28, 30), "b": (20, 18, 20),
+             "K": (230, 228, 222)}
+GUARD_HEAD_DOWN = check_rows("guard", [
+    "......HHHH......",
+    "....HHhHHhHH....",
+    "...HHSSSSSSHH...",
+    "...SSSSSSSSSS...",
+    "...SSESSSSESS...",
+    "...SSSSSSSSSS...",
+    "....SMMMMMMS....",
+    ".....sSSSSs.....",
+    "......ssss......",
+])
+GUARD_TORSO_FRONT = check_rows("guard", [
+    "...PTTTTTTTTP...",
+    "..TTTTTTTTTTTT..",
+    "..TtTTTTTTTTtT..",
+    "..StTTTTTTTTtS..",
+    "..StTTTTTTTTtS..",
+    "..SLLLLLLLRLLS..",
+    "....JJJJJJJJ....",
+])
+GUARD = {
+    "pal": GUARD_PAL, "legs": 5, "bob": 1,
+    "head_down": GUARD_HEAD_DOWN,
+    "head_up": check_rows("guard", [
+        "......HHHH......",
+        "....HHHhHHHH....",
+        "...HHHHHHHHHH...",
+        "...SHHHHHhHHS...",
+        "...SHHHHHHHHS...",
+        "...SSHHHHHHSS...",
+        "....SSSSSSSS....",
+        ".....sSSSSs.....",
+        "......ssss......",
+    ]),
+    "head_side": check_rows("guard", [
+        ".....HHHH.......",
+        "....HHhHHHH.....",
+        "....HHHSSSSS....",
+        "....HHSSSSSSS...",
+        "....HSSSSSESS...",
+        "....SSSSSSSSS...",
+        ".....SSSSMMMS...",
+        "......sSSSs.....",
+        ".......sss......",
+    ]),
+    "torso_front": GUARD_TORSO_FRONT,
+    "torso_back": check_rows("guard", [
+        "...PtTTTTTTtP...",
+        "..TTtttttttTTT..",
+        "..TtTTTTTTTTtT..",
+        "..StTTTTTTTTtS..",
+        "..StTTTTTTTTtS..",
+        "..SLLLLLLLLLLS..",
+        "....JJJJJJJJ....",
+    ]),
+    "torso_side": check_rows("guard", [
+        ".....PTTTTT.....",
+        ".....TPTTTTT....",
+        ".....TtTTTTTT...",
+        ".....StTTTTTT...",
+        ".....StTTTTTT...",
+        ".....LRLLLLLL...",
+        "......JJJJJ.....",
+    ]),
+}
+# Idle: arms folded, weight on his heels. Front (alternate 0-1 for a slow breath) and side.
+GUARD_IDLE_FRONT = check_rows("guard", [
+    "...PTTTTTTTTP...",
+    "..TTTTTTTTTTTT..",
+    "..TtTTTTTTTTtT..",
+    "..TtsSSSSSSstT..",
+    "..TtTssssssTtT..",
+    "..tLLLLLLLRLLt..",
+    "....JJJJJJJJ....",
+])
+GUARD_IDLE_SIDE = check_rows("guard", [
+    ".....PTTTTT.....",
+    ".....TPTTTTT....",
+    ".....TtTSSSSS...",
+    ".....TtTTTTTT...",
+    ".....TtTTTTTT...",
+    ".....LRLLLLLL...",
+    "......JJJJJ.....",
+])
+
+
+def make_guard():
+    """mateo_walk.png layout, plus row 4 (idle, arms folded): 0-1 facing down (alternate, a slow
+    breath), 2 facing right, 3 facing left."""
+    folded = with_parts(GUARD, torso_front=GUARD_IDLE_FRONT, torso_side=GUARD_IDLE_SIDE)
+    breath = char_frame("down", 1, folded)            # the step frame's 1 px bob, standing still
+    breath_px = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+    CUR["pal"] = GUARD_PAL
+    stand = char_frame("down", 0, folded)
+    # A breath is the shoulders rising, not the legs: take the bobbed upper body, the standing legs.
+    breath_px.paste(breath.crop((0, 0, FW, 18)), (0, 0))
+    breath_px.paste(stand.crop((0, 18, FW, FH)), (0, 18))
+    side = char_frame("right", 0, folded)
+    row = [stand, breath_px, side, side.transpose(Image.FLIP_LEFT_RIGHT)]
+    return char_sheet(GUARD, [row])
+
+
+# Walt: 50s, owns the laundromat. Thinning gray hair, reading glasses pushed up, a faded green work
+# shirt with the sleeves rolled up, a wrench in one hand.
+WALT_PAL = {"H": (150, 146, 140), "h": (118, 114, 110), "S": (196, 150, 120), "s": (160, 116, 90),
+            "E": (28, 20, 18), "G": (60, 60, 64), "T": (110, 130, 110), "t": (84, 102, 86), "J": (70, 66, 60),
+            "j": (52, 48, 44), "B": (60, 44, 34), "b": (40, 30, 24), "K": (230, 228, 222)}
+WALT = {
+    "pal": WALT_PAL, "legs": 5, "bob": 1,
+    "head_down": check_rows("walt", [
+        "......HHHH......",
+        "....HHhSShHH....",
+        "...HHSGGSGGHH...",
+        "...HSSSSSSSSH...",
+        "...SSSESSESSS...",
+        "....SSSSSSSS....",
+        "....sSSssSSs....",
+        ".....sSSSSs.....",
+        "......ssss......",
+    ]),
+    "torso_front": check_rows("walt", [
+        "....TTTTTTTT....",
+        "..TTTTtTTtTTTT..",
+        "..TtTTTTTTTTtT..",
+        "..ttTTTTTTTTtt..",
+        "..SStTTTTTTtSS..",
+        "..SStttttttsSS..",
+        "....JJJJJJJJ....",
+    ]),
+}
+
+
+def make_walt_door():
+    """16x32, drawn exactly over the two laundromat back-door tiles: the door pushed open a few inches
+    and Walt in the gap, sleeves rolled up, a wrench in his hand resting on the door's edge."""
+    gap_x0 = 7
+    walt = char_frame("down", 0, {**WALT, "head_up": WALT["head_down"], "head_side": WALT["head_down"],
+                                  "torso_back": WALT["torso_front"], "torso_side": WALT["torso_front"]})
+    img = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+    px = img.load()
+    draw_door_frame(px)
+    fill(px, 3, 6, 12, 31, INSIDE)
+    # Walt stands back in the doorway (feet on the threshold), only the gap shows him.
+    wp = walt.load()
+    for y in range(FH):
+        for x in range(gap_x0, 13):
+            sx, sy = x - 2, y + 3                       # his left side lines up with the gap
+            if 0 <= sx < FW and 0 <= sy < FH and wp[sx, sy][3] and y >= 6:
+                px[x, y] = wp[sx, sy]
+    fill(px, 3, 6, gap_x0 - 1, 31, LDOOR_DK)            # the leaf, pushed in, in shade
+    fill(px, 3, 6, 3, 31, LDOOR)
+    fill(px, gap_x0 - 1, 6, gap_x0 - 1, 31, (50, 70, 66))
+    CUR["pal"] = WALT_PAL
+    rect(px, gap_x0 - 2, 19, 2, 2, "S")                 # his hand on the door's edge
+    fill(px, gap_x0 - 4, 17, gap_x0 - 4, 23, (150, 154, 160))   # the wrench, hanging from it
+    fill(px, gap_x0 - 5, 16, gap_x0 - 3, 16, (150, 154, 160))
+    fill(px, gap_x0 - 5, 15, gap_x0 - 5, 15, (150, 154, 160))
+    fill(px, gap_x0 - 3, 15, gap_x0 - 3, 15, (150, 154, 160))
+    fill(px, gap_x0 - 3, 20, gap_x0 - 3, 20, (150, 154, 160))
+    CUR["pal"] = PAL
+    outline(img)
+    return img
+
+
+# ---- Three Hills street props ----
+TRUCK_FOOD_W, TRUCK_FOOD_H = 64, 40
+
+
+def make_food_truck():
+    """64x40 taco truck from the side (3/4 top-down), facing right: cream box body, the serving window
+    open under a striped awning, a blank menu board (no text), the cab at the front."""
+    img = Image.new("RGBA", (TRUCK_FOOD_W, TRUCK_FOOD_H), (0, 0, 0, 0))
+    px = img.load()
+    body, body_dk, body_hi = (226, 218, 196), (194, 184, 160), (240, 236, 222)
+    fill(px, 2, 3, 44, 6, (200, 196, 184))              # box roof, seen from above
+    fill(px, 2, 3, 44, 3, body_hi)
+    fill(px, 1, 7, 45, 31, body)                        # box side
+    fill(px, 1, 7, 45, 7, body_hi)
+    fill(px, 1, 31, 45, 31, body_dk)
+    fill(px, 1, 26, 45, 27, (176, 60, 48))              # red stripe
+    fill(px, 8, 14, 32, 22, (52, 46, 44))               # serving window (open, dark inside)
+    fill(px, 10, 18, 14, 22, (110, 100, 90))            # a steam tray / shelf inside
+    fill(px, 7, 22, 33, 23, (170, 174, 180))            # steel serving ledge
+    for i, x in enumerate(range(6, 35, 4)):             # striped awning over the window
+        fill(px, x, 9, x + 3, 12, (196, 64, 52) if i % 2 == 0 else (240, 230, 206))
+    fill(px, 6, 13, 34, 13, (120, 40, 32))
+    fill(px, 36, 10, 43, 20, (40, 44, 40))              # menu board, blank
+    for y in (12, 14, 16, 18):
+        fill(px, 37, y, 42, y, (200, 196, 170))
+    fill(px, 46, 13, 61, 31, body)                      # cab
+    fill(px, 46, 13, 61, 13, body_hi)
+    fill(px, 49, 15, 59, 21, (58, 68, 80))              # windshield / side window
+    fill(px, 50, 15, 52, 16, (112, 126, 140))
+    fill(px, 54, 23, 55, 23, (160, 160, 156))           # door handle
+    fill(px, 60, 24, 63, 25, (214, 210, 186))           # headlight
+    fill(px, 61, 28, 63, 30, (150, 150, 146))           # bumper
+    fill(px, 0, 28, 1, 30, (150, 150, 146))
+    for wx in (8, 48):
+        fill(px, wx, 30, wx + 8, 37, (24, 22, 24))
+        fill(px, wx + 2, 32, wx + 6, 35, (170, 170, 164))
+        fill(px, wx + 4, 33, wx + 4, 34, (110, 110, 106))
+    outline(img)
+    return img
+
+
+def make_bus_bench():
+    """32x16 bus-stop bench, facing down: steel ends, wooden slats, a backrest."""
+    img = Image.new("RGBA", (T * 2, T), (0, 0, 0, 0))
+    px = img.load()
+    wood, wood_dk, wood_hi = (150, 104, 64), (112, 76, 44), (180, 132, 86)
+    steel = (70, 74, 78)
+    fill(px, 2, 2, 29, 3, wood)                         # backrest slats
+    fill(px, 2, 5, 29, 6, wood)
+    fill(px, 2, 2, 29, 2, wood_hi)
+    fill(px, 2, 5, 29, 5, wood_hi)
+    fill(px, 2, 8, 29, 11, wood)                        # seat
+    fill(px, 2, 8, 29, 8, wood_hi)
+    fill(px, 2, 10, 29, 10, wood_dk)
+    for x in (1, 30):                                   # steel ends and legs
+        fill(px, x, 1, x, 14, steel)
+    fill(px, 1, 12, 2, 14, steel)
+    fill(px, 29, 12, 30, 14, steel)
+    outline(img)
+    return img
+
+
+def make_closed_sign():
+    """12x10 piece of cardboard with hand-lettered marks (no text baked in; the words are game text),
+    taped inside the laundromat's window."""
+    img = Image.new("RGBA", (12, 10), (0, 0, 0, 0))
+    px = img.load()
+    fill(px, 1, 1, 10, 8, (190, 156, 108))
+    fill(px, 1, 1, 10, 1, (206, 176, 132))
+    fill(px, 9, 7, 10, 8, (166, 132, 88))               # a bent corner
+    for y in (3, 5):                                    # marker strokes where the words go
+        fill(px, 3, y, 8, y, (40, 34, 30))
+    fill(px, 4, 7, 6, 7, (40, 34, 30))
+    fill(px, 0, 0, 1, 0, (230, 230, 220))               # tape
+    fill(px, 10, 0, 11, 0, (230, 230, 220))
+    return img
+
+
+# ---- Three Hills previews ----
+def make_alley_preview(tiles, dumpsters, pallets, car, camera, guard, walt, icons, mateo_frames):
+    """The stealth sandbox's 28x9 alley, mocked up: back walls along the top, roofs along the bottom."""
+    # R roof, b/B brick upper/lower, p/P brick with pipe, c/C cinder upper/lower, v vent, x box,
+    # 1/2 phone door, 3/4 laundry door, a asphalt, k concrete, g gutter, d drain, s stains, F far roof
+    layout = [
+        "RRRRRRRRRRRRRRRRRRRRRRRRRRRR",
+        "bbbbpbbbbbbbbccccvccccc1cbb3",
+        "BBBBPBBBBBBBBCCCCCCCxCC2CBB4",
+        "aaaasaaaaaaakkkkkkkkkkkkkkkk",
+        "aaaaaaaaaaaaakkkkkkkkkkkkkkk",
+        "gggggggdggggggggggggggdggggg",
+        "aaaaaaasaaaaaaakkkkkkkkkkkkk",
+        "aaaaaaaaaaaaaaaaaaaaaaasaaaa",
+        "FFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+    ]
+    key = {"R": "roof", "b": "brick_upper", "B": "brick_lower", "p": "brick_upper_pipe", "P": "brick_lower_pipe",
+           "c": "cinder_upper", "C": "cinder_lower", "v": "cinder_upper_vent", "x": "cinder_lower_box",
+           "1": "phone_door_top", "2": "phone_door_bottom", "3": "laundry_door_top", "4": "laundry_door_bottom",
+           "a": "asphalt", "k": "concrete", "g": "gutter", "d": "drain", "s": "trash_stains", "F": "roof_far"}
+    img = paste_layout(layout, key, tiles)
+    img.alpha_composite(camera.crop((0, 0, T, T)), (21 * T, 1 * T))                # camera aimed left
+    img.alpha_composite(walt, (27 * T, 1 * T))                                     # Walt at the door
+    feet(img, dumpsters.crop((0, 0, 32, 32)), 7 * T, 4 * T + 3 - 3)                # cover along the walls
+    feet(img, pallets, 11 * T + 8, 7 * T + 3 - 3)
+    feet(img, car, 17 * T, 8 * T)
+    feet(img, dumpsters.crop((32, 0, 64, 32)), 24 * T, 4 * T)
+    feet(img, cell(guard, 1, 2), 13 * T + 8, 6 * T)                                # the guard patrolling
+    img.alpha_composite(icons.crop((0, 0, ICON, ICON)), (13 * T + 3, 6 * T - 36))   # "?" partly filled
+    part = icons.crop((ICON, 5, 2 * ICON, ICON))
+    img.alpha_composite(part, (13 * T + 3, 6 * T - 36 + 5))
+    feet(img, mateo_frames[("right", 0)], 3 * T + 8, 7 * T)
+    return img
+
+
+def make_street_preview(tiles, alley_tiles, truck, bench, sign, mateo_frames):
+    # R roof, < > sign bands, u plain upper, w window, D door, W wall; laundromat uses l*, phone store p*
+    layout = [
+        "RRRRRRRRRRRRRRRRRRRR",
+        "uu<>uuqq[]qquuuuuuuu",
+        "WwwDwwXyyZyyXWWWWWWW",
+        "ssssssssssssssssssss",
+        "ssssssssssssssssssss",
+        "cccccccccccccccccccc",
+        "aaaaaaaaaakkaaaaaaaa",
+        "llllllllllkkllllllll",
+        "aaaaaaaaaakkaaaaaaaa",
+    ]
+    key = {"R": "storefront_roof", "u": "laundry_wall_plain", "<": "laundry_sign_left", ">": "laundry_sign_right",
+           "W": "laundry_wall", "w": "laundry_window", "D": "laundry_door", "q": "phone_wall_plain",
+           "[": "phone_sign_left", "]": "phone_sign_right", "X": "phone_wall", "y": "phone_window",
+           "Z": "phone_door", "s": "sidewalk", "c": "curb", "a": "street", "l": "street_line", "k": "crosswalk"}
+    img = paste_layout(layout, key, tiles)
+    img.alpha_composite(sign, (4 * T + 2, 2 * T + 3))                       # closed sign in the window
+    img.alpha_composite(truck, (13 * T, 6 * T + 6 - truck.height + 8))      # the taco truck at the curb
+    img.alpha_composite(bench, (8 * T, 3 * T + 4))
+    feet(img, mateo_frames[("right", 0)], 2 * T + 8, 4 * T + 4)
+    return img
+
+
+def save_three_hills(frames):
+    border = Image.open(ASSET_DIR / "border_tiles.png")
+    border_tiles = {"asphalt": border.crop((4 * T, 0, 5 * T, T)), "asphalt_line": border.crop((5 * T, 0, 6 * T, T))}
+    alley_sheet, alley_tiles = make_alley_tiles(border_tiles)
+    alley_sheet.save(ASSET_DIR / "alley_tiles.png")
+    th_sheet, th_tiles = make_threehills_tiles(border_tiles)
+    th_sheet.save(ASSET_DIR / "threehills_tiles.png")
+    dumpsters = make_dumpsters()
+    dumpsters.save(ASSET_DIR / "dumpster.png")
+    pallets = make_pallets()
+    pallets.save(ASSET_DIR / "pallets.png")
+    car = make_parked_car()
+    car.save(ASSET_DIR / "parked_car.png")
+    camera = make_wall_camera()
+    camera.save(ASSET_DIR / "wall_camera.png")
+    icons = make_stealth_icons()
+    icons.save(ASSET_DIR / "stealth_icons.png")
+    guard, _ = make_guard()
+    guard.save(ASSET_DIR / "guard_walk.png")
+    walt = make_walt_door()
+    walt.save(ASSET_DIR / "walt_door.png")
+    truck = make_food_truck()
+    truck.save(ASSET_DIR / "food_truck.png")
+    bench = make_bus_bench()
+    bench.save(ASSET_DIR / "bus_bench.png")
+    sign = make_closed_sign()
+    sign.save(ASSET_DIR / "closed_sign.png")
+
+    for name, im in (("alley_tiles", alley_sheet), ("threehills_tiles", th_sheet)):
+        im.resize((im.width * 6, im.height * 6), Image.NEAREST).save(PREVIEW_DIR / f"{name}_6x.png")
+    for name, im in (("dumpster", dumpsters), ("pallets", pallets), ("parked_car", car), ("wall_camera", camera),
+                     ("stealth_icons", icons), ("guard_walk", guard), ("walt_door", walt), ("food_truck", truck),
+                     ("bus_bench", bench), ("closed_sign", sign)):
+        bg = Image.new("RGBA", im.size, (150, 140, 124, 255))
+        bg.alpha_composite(im)
+        bg.resize((im.width * 6, im.height * 6), Image.NEAREST).save(PREVIEW_DIR / f"{name}_6x.png")
+    lineup = Image.new("RGBA", (FW * 4 + 10, FH + 4), (150, 140, 124, 255))
+    mateo_sheet = Image.open(ASSET_DIR / "mateo_walk.png")
+    for i, fr in enumerate((cell(mateo_sheet, 0, 0), cell(guard, 0, 0), cell(guard, 0, 4), walt)):
+        lineup.alpha_composite(fr, (2 + i * (FW + 2), 2))
+    lineup.save(PREVIEW_DIR / "threehills_lineup_1x.png")
+    lineup.resize((lineup.width * 6, lineup.height * 6), Image.NEAREST).save(PREVIEW_DIR / "threehills_lineup_6x.png")
+    alley = make_alley_preview(alley_tiles, dumpsters, pallets, car, camera, guard, walt, icons, frames)
+    alley.resize((alley.width * 4, alley.height * 4), Image.NEAREST).save(PREVIEW_DIR / "alley_scene.png")
+    street = make_street_preview(th_tiles, alley_tiles, truck, bench, sign, frames)
+    street.resize((street.width * 4, street.height * 4), Image.NEAREST).save(PREVIEW_DIR / "threehills_scene.png")
+
+
 def main():
     ASSET_DIR.mkdir(parents=True, exist_ok=True)
     PREVIEW_DIR.mkdir(parents=True, exist_ok=True)
@@ -4081,6 +4972,8 @@ def main():
     save_mission1(frames)
     # Mission 1 crossing (after that: its own random stream, so it never changes anything above)
     save_crossing(frames)
+    # Three Hills and the stealth art (last: its own random stream, so it never changes anything above)
+    save_three_hills(frames)
 
 
 if __name__ == "__main__":
