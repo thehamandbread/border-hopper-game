@@ -37,7 +37,11 @@ export default class StatePanel {
     };
     const m = gameState.mission;
     const flag = (name) => JSON.stringify(gameState.getFlag(name));
-    const entry = (e) => `  ${e.type === 'heat' ? 'heat' : 'susp'} ${e.encounter ?? '-'} ${e.question_id ?? '-'}/${e.answer_id ?? '-'} ${e.delta > 0 ? '+' : ''}${e.delta}`;
+    const entry = (e) => {
+      if (e.type === 'spotted') return `  spot ${e.encounter} by ${e.source}`;
+      if (e.delta === undefined) return `  ans  ${e.encounter ?? '-'} ${e.question_id ?? '-'}/${e.answer_id ?? '-'}`;
+      return `  ${e.type === 'heat' ? 'heat' : 'susp'} ${e.encounter ?? '-'} ${e.question_id ?? '-'}/${e.answer_id ?? '-'} ${e.delta > 0 ? '+' : ''}${e.delta}`;
+    };
     this.el.textContent = [
       'STATE (F1)',
       'meters', fmt(gameState.meters),
@@ -49,6 +53,7 @@ export default class StatePanel {
       `  suspicion booth: ${m.suspicion.booth ?? '-'}   secondary: ${m.suspicion.secondary ?? '-'}`,
       `  card_flagged: ${flag('card_flagged')}`,
       `  envelope_opened: ${flag('envelope_opened')}   envelope_inspected: ${flag('envelope_inspected')}`,
+      `  alley attempt: ${flag('alley_attempt')}   passed_guard: ${flag('passed_guard')}   camera heat applied: ${flag('alley_camera_heat')}`,
       'mission log', m.log.length ? m.log.map(entry).join('\n') : '  (none)',
       'skipped', m.skips.length ? m.skips.map((k) => `  ${k.encounter ?? '-'} ${k.question_id}`).join('\n') : '  (none)',
       ...this.stealthLines(),

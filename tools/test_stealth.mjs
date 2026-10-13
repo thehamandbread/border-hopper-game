@@ -45,6 +45,7 @@ function grid(w = 30, h = 15, solids = []) {
 function fixedEngine(g, { x = 2 * TS + 8, y = 7 * TS + 8, facing = 0, type = 'camera' } = {}) {
   const cfg = structuredClone(CONFIG);
   cfg.camera.sweep = { fromDeg: 0, toDeg: 0, secondsOneWay: 1 };
+  cfg.camera.respotCooldownSeconds = 0; // the re-spot cooldown is checked in tools/test_alley.mjs
   const e = new StealthEngine(cfg, g);
   if (type === 'camera') e.addCamera({ id: 'cam', x, y, mountDeg: facing });
   return e;

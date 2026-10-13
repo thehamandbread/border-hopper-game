@@ -33,7 +33,7 @@ const dirOf = (deg) => {
  *              just below the two-tile wall, and its cone is drawn from the lens
  *   guardSolid true: Mateo can't walk through the guard
  * }
- * update(deltaMs, { frozen }) runs the engine (unless frozen), then syncs the sprites and redraws.
+ * update(deltaMs, { frozen, step }) runs the engine (unless frozen), then syncs the sprites and redraws.
  */
 export default class StealthStage {
   constructor(scene, player, def) {
@@ -136,20 +136,24 @@ export default class StealthStage {
     this.guardBody?.body.reset(g.x, g.y);
   }
 
-  update(deltaMs, { frozen = false } = {}) {
-    const start = performance.now();
-    if (!frozen) {
-      const g = this.guardSource;
-      const x0 = g.x;
-      const y0 = g.y;
-      this.engine.update(deltaMs, this.target());
-      // A solid guard can't walk into Mateo either: he stays put (facing where he was going) until
-      // Mateo moves (the engine moves him, so the physics collider alone would let him pass through).
-      if (this.guardBody && this.guardOverlapsPlayer()) {
-        g.x = x0;
-        g.y = y0;
-      }
+  /** One engine step, with the solid guard kept out of Mateo. */
+  stepEngine(deltaMs) {
+    const g = this.guardSource;
+    const x0 = g.x;
+    const y0 = g.y;
+    this.engine.update(deltaMs, this.target());
+    // A solid guard can't walk into Mateo either: he stays put (facing where he was going) until
+    // Mateo moves (the engine moves him, so the physics collider alone would let him pass through).
+    if (this.guardBody && this.guardOverlapsPlayer()) {
+      g.x = x0;
+      g.y = y0;
     }
+  }
+
+  /** frozen: skip the step. step: replaces the engine step (e.g. a scene's encounter logic driving it). */
+  update(deltaMs, { frozen = false, step } = {}) {
+    const start = performance.now();
+    if (!frozen) (step ?? ((ms) => this.stepEngine(ms)))(deltaMs);
     this.syncGuard(deltaMs);
     const f = ((this.cameraSource.facingDeg % 360) + 360) % 360;
     this.cameraSprite.setFrame(f < 75 || f > 285 ? CAMERA_FRAME.RIGHT : f > 105 ? CAMERA_FRAME.LEFT : CAMERA_FRAME.CENTER);

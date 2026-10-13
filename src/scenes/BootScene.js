@@ -110,6 +110,7 @@ export default class BootScene extends Phaser.Scene {
     this.load.spritesheet('stealth_icons', assetUrl('assets/images/stealth_icons.png'), { frameWidth: 10, frameHeight: 10 });
     this.load.spritesheet('guard_walk', assetUrl('assets/images/guard_walk.png'), figure);
     this.load.json('alley_map', assetUrl('assets/data/alley_map.json'));
+    this.load.json('dialogue_m1_alley', assetUrl('assets/data/dialogue/m1_alley.json'));
     this.load.json('stealth_config', assetUrl('assets/data/stealth_config.json'));
   }
 

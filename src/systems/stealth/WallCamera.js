@@ -15,6 +15,7 @@ export default class WallCamera {
     this.from = cfg.sweep.fromDeg;
     this.to = cfg.sweep.toDeg;
     this.oneWay = cfg.sweep.secondsOneWay;
+    this.respotCooldown = cfg.respotCooldownSeconds ?? 0; // seconds after a spot before it can report again
     this.cone = { widthDeg: cfg.cone.widthDeg, length: cfg.cone.lengthTiles * tileSize };
     this.restart();
   }

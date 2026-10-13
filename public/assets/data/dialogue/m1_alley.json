@@ -1,0 +1,163 @@
+{
+ "_comment": "Mission 1, Scene 4: spotted by the alley guard (docs/script/mission1.md). 'hey' when he spots Mateo; 'again' when he spots him after Mateo already talked his way past (no second conversation: he walks over, the fail line, and the fail path). The choice offers one option matched to the booth's cover story (visiting family: the Fourth Street option unless the booth answer was near downtown; with no address on record, Fourth Street), then the two always offered. The wait event guard_approach holds while he walks over; guard_pass and guard_fail are the outcomes (the scene logs the answer, raises Heat on a fail and restarts the alley).",
+ "id": "m1_alley",
+ "presenter": "box",
+ "lockMovement": true,
+ "start": "hey",
+ "nodes": {
+  "hey": {
+   "type": "narration",
+   "text": "The guard turns. He walks over, unhurried.",
+   "next": "approach"
+  },
+  "approach": {
+   "type": "event",
+   "name": "guard_approach",
+   "wait": true,
+   "next": "what"
+  },
+  "what": {
+   "type": "line",
+   "speaker": "GUARD",
+   "text": "Hey. What are you doing back here?",
+   "next": "guard"
+  },
+  "guard": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "fourth_street",
+     "text": "My tía lives on Fourth. I'm cutting through.",
+     "if": {
+      "all": [
+       {
+        "answer": "cover_story",
+        "eq": "family"
+       },
+       {
+        "any": [
+         {
+          "answer": "booth_address",
+          "eq": "fourth_street"
+         },
+         {
+          "answer": "booth_address",
+          "exists": false
+         }
+        ]
+       }
+      ]
+     },
+     "next": "pass"
+    },
+    {
+     "id": "downtown",
+     "text": "Visiting my tía. I got turned around.",
+     "if": {
+      "all": [
+       {
+        "answer": "cover_story",
+        "eq": "family"
+       },
+       {
+        "answer": "booth_address",
+        "eq": "downtown"
+       }
+      ]
+     },
+     "next": "pass"
+    },
+    {
+     "id": "clinic",
+     "text": "I'm looking for a clinic. I think I'm lost.",
+     "if": {
+      "answer": "cover_story",
+      "eq": "doctor"
+     },
+     "next": "clinic_line"
+    },
+    {
+     "id": "bus_stop",
+     "text": "Shortcut to the bus stop.",
+     "if": {
+      "answer": "cover_story",
+      "eq": "shopping"
+     },
+     "next": "pass"
+    },
+    {
+     "id": "laundromat",
+     "text": "I'm dropping something at the laundromat.",
+     "if": {
+      "answer": "cover_story",
+      "eq": "dropoff"
+     },
+     "next": "closed_line"
+    },
+    {
+     "id": "just_walking",
+     "text": "Just walking.",
+     "next": "fail"
+    },
+    {
+     "id": "say_nothing",
+     "text": "(Say nothing.)",
+     "next": "fail"
+    }
+   ]
+  },
+  "clinic_line": {
+   "type": "line",
+   "speaker": "GUARD",
+   "text": "Clinic's two blocks that way.",
+   "next": "pass"
+  },
+  "closed_line": {
+   "type": "line",
+   "speaker": "GUARD",
+   "text": "They're closed.",
+   "next": "fail"
+  },
+  "pass": {
+   "type": "line",
+   "speaker": "GUARD",
+   "text": "Use the street next time.",
+   "next": "back_to_route"
+  },
+  "back_to_route": {
+   "type": "narration",
+   "text": "He goes back to his route.",
+   "next": "pass_event"
+  },
+  "pass_event": {
+   "type": "event",
+   "name": "guard_pass",
+   "next": "end"
+  },
+  "again": {
+   "type": "event",
+   "name": "guard_approach",
+   "wait": true,
+   "next": "fail"
+  },
+  "fail": {
+   "type": "line",
+   "speaker": "GUARD",
+   "text": "Out. Come on.",
+   "next": "walked_out"
+  },
+  "walked_out": {
+   "type": "narration",
+   "text": "He walks Mateo to the end of the alley and waits there until he's gone.",
+   "next": "fail_event"
+  },
+  "fail_event": {
+   "type": "event",
+   "name": "guard_fail",
+   "next": "end"
+  },
+  "end": {
+   "type": "end"
+  }
+ }
+}

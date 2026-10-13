@@ -102,6 +102,14 @@ function passedBooth(gs, answers) {
   gs.mission.suspicion.booth = 0;
 }
 
+/** In the alley: through the booth with these answers, the back-door text already read. */
+function alleyState(answers) {
+  crossingState(gameState);
+  passedBooth(gameState, answers);
+  gameState.setFlag('m1_back_door_text', true);
+  gameState.mission.encounter = 'alley';
+}
+
 function placeAtTile(scene, tileX, tileY) {
   const { x, y } = scene.tileFeet(tileX, tileY);
   scene.player.setPosition(x, y);
@@ -279,11 +287,34 @@ export const CHECKPOINTS = [
     id: 'm1_alley',
     label: 'M1: the alley (visiting family, Fourth Street)',
     scene: 'AlleyScene',
+    setup: () => alleyState({ cover_story: 'family', cover_detail: 'tia', booth_address: 'fourth_street', key_answer: 'tia_letter' }),
+  },
+  {
+    id: 'm1_alley_family',
+    label: 'M1: alley (visiting family, Fourth Street)',
+    scene: 'AlleyScene',
+    setup: () => alleyState({ cover_story: 'family', cover_detail: 'tia', booth_address: 'fourth_street', key_answer: 'tia_letter' }),
+  },
+  {
+    id: 'm1_alley_drop',
+    label: 'M1: alley (drop something off)',
+    scene: 'AlleyScene',
+    setup: () => alleyState({ cover_story: 'dropoff', cover_detail: 'letter', key_answer: 'dropoff_letter' }),
+  },
+  {
+    id: 'm1_alley_passed_guard',
+    label: 'M1: alley (already talked past the guard)',
+    scene: 'AlleyScene',
     setup: () => {
-      crossingState(gameState);
-      passedBooth(gameState, { cover_story: 'family', cover_detail: 'tia', booth_address: 'fourth_street', key_answer: 'tia_letter' });
-      gameState.setFlag('m1_back_door_text', true);
+      alleyState({ cover_story: 'shopping', cover_detail: 'shoes', key_answer: 'cash' });
+      gameState.setFlag('passed_guard', true);
     },
+  },
+  {
+    id: 'm1_alley_clinic',
+    label: "M1: alley (doctor's appointment)",
+    scene: 'AlleyScene',
+    setup: () => alleyState({ cover_story: 'doctor', cover_detail: 'dentist', booth_time: 'eleven_thirty', key_answer: 'medical_papers' }),
   },
   {
     id: 'stealth_sandbox',

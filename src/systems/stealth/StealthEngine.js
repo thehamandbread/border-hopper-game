@@ -12,7 +12,8 @@
  *     the guard stops and turns toward the target (if noise.guardTurnsToNoise); walking is silent;
  *   - otherwise: falls at 1 / detection.decaySeconds.
  * Reaching 1 emits 'spotted' { sourceId, sourceType, targetPos } once; it doesn't emit again until the
- * value has fallen back to 0 or reset() is called.
+ * value has fallen back to 0 or reset() is called, nor (cameras) within camera.respotCooldownSeconds of
+ * the last spot. A source with `blind` set sees and hears nothing (its value only falls).
  *
  * Each source exposes, for rendering and the dev panel: detection (the "?" fill, 0..1), alert ('none',
  * 'suspicious' or 'spotted'), inView, hearing, state, x, y, facingDeg, cone.
@@ -48,6 +49,8 @@ export default class StealthEngine extends Emitter {
   addSource(source) {
     source.detection = 0;
     source.spotted = false;
+    source.cooldown = 0;
+    source.blind = false;
     source.alert = 'none';
     source.inView = false;
     source.hearing = false;
@@ -64,6 +67,8 @@ export default class StealthEngine extends Emitter {
     for (const s of this.sources) {
       s.detection = 0;
       s.spotted = false;
+      s.cooldown = 0;
+      s.blind = false;
       s.alert = 'none';
       s.inView = false;
       s.hearing = false;
@@ -95,19 +100,21 @@ export default class StealthEngine extends Emitter {
 
     for (const s of this.sources) {
       const distance = Math.hypot(t.x - s.x, t.y - s.y);
-      s.hearing = s.hears && ring > 0 && distance <= ring;
+      s.hearing = !s.blind && s.hears && ring > 0 && distance <= ring;
       if (s.type === 'guard') s.listenTo(s.hearing && guardTurnsToNoise ? t : null);
       s.update(dt);
 
       const d = Math.hypot(t.x - s.x, t.y - s.y);
-      s.inView = canSee(s, t, this.grid);
+      s.inView = !s.blind && canSee(s, t, this.grid);
       let rate = 0;
       if (s.inView) rate = 1 / this.fillSeconds(d, s.cone.length);
       if (s.hearing && noiseFillsWithoutLineOfSight) rate = Math.max(rate, 1 / fillSecondsNear);
       s.detection = rate > 0 ? Math.min(1, s.detection + rate * dt) : Math.max(0, s.detection - dt / decaySeconds);
 
-      if (s.detection >= 1 && !s.spotted) {
+      s.cooldown = Math.max(0, s.cooldown - dt);
+      if (s.detection >= 1 && !s.spotted && s.cooldown <= 0) {
         s.spotted = true;
+        s.cooldown = s.respotCooldown ?? 0;
         this.emit('spotted', { sourceId: s.id, sourceType: s.type, targetPos: { x: t.x, y: t.y } });
       } else if (s.detection <= 0) {
         s.spotted = false;

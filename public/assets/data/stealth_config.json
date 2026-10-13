@@ -1,5 +1,5 @@
 {
- "_comment": "Stealth tuning (src/systems/stealth/). Edit and refresh the page; no code changes needed. Distances are in tiles (16 px), angles in degrees, times in seconds. cone.widthDeg is the full angle; camera.sweep is relative to the camera's mount direction (it starts at fromDeg). detection: fill time is linear from fillSecondsNear at distance 0 to fillSecondsFar at the cone's length; decaySeconds is full to empty. player.sprintMultiplier multiplies the existing walk speed (Player.js PLAYER_SPEED). noise.walkNoise is 'none' or a ring radius in tiles. rays: rays cast across each cone. render.maxConesPerFrame caps how many cones are redrawn each frame.",
+ "_comment": "Stealth tuning (src/systems/stealth/). Edit and refresh the page; no code changes needed. Distances are in tiles (16 px), angles in degrees, times in seconds. cone.widthDeg is the full angle; camera.sweep is relative to the camera's mount direction (it starts at fromDeg). detection: fill time is linear from fillSecondsNear at distance 0 to fillSecondsFar at the cone's length; decaySeconds is full to empty. player.sprintMultiplier multiplies the existing walk speed (Player.js PLAYER_SPEED). noise.walkNoise is 'none' or a ring radius in tiles. camera.respotCooldownSeconds: after spotting Mateo, the camera can't report him again for this long. rays: rays cast across each cone. render.maxConesPerFrame caps how many cones are redrawn each frame.",
  "rays": 24,
  "guard": {
   "cone": { "widthDeg": 70, "lengthTiles": 6 },
@@ -9,7 +9,8 @@
  },
  "camera": {
   "cone": { "widthDeg": 60, "lengthTiles": 7 },
-  "sweep": { "fromDeg": -45, "toDeg": 45, "secondsOneWay": 6 }
+  "sweep": { "fromDeg": -45, "toDeg": 45, "secondsOneWay": 6 },
+  "respotCooldownSeconds": 5
  },
  "detection": { "fillSecondsFar": 2.0, "fillSecondsNear": 0.6, "decaySeconds": 1.5 },
  "player": { "sprintMultiplier": 1.7 },

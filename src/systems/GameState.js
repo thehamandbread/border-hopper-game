@@ -14,7 +14,8 @@ const METERS = ['loyalty', 'heat', 'conscience'];
  *      attempt     1, 2, 3... (refused entry restarts the mission and raises it)
  *      encounter   the encounter running now (e.g. 'booth', 'secondary'), or null
  *      suspicion   a hidden count per encounter, e.g. { booth: 2, secondary: 0 }; never shown to the player
- *      log         every suspicion and Heat change: { type, encounter, question_id, answer_id, delta }
+ *      log         every suspicion and Heat change: { type, encounter, question_id, answer_id, delta },
+ *                  and other events (logEvent), e.g. { type: 'spotted', encounter: 'alley', source }
  *                  (for the end-of-mission summary)
  *      skips       questions skipped for lack of an earlier answer: { encounter, question_id } (dev panel)
  *  - encounterConfig: public/assets/data/encounter_config.json (thresholds and start values); kept on reset
@@ -136,6 +137,12 @@ export default class GameState extends Emitter {
   logChange(type, encounter, delta, { question = null, answer = null } = {}) {
     if (!delta) return;
     this.mission.log.push({ type, encounter: encounter ?? null, question_id: question, answer_id: answer, delta });
+  }
+
+  /** Any other entry for the mission log (e.g. being spotted, or an answer that changed nothing). */
+  logEvent(entry) {
+    this.mission.log.push({ ...entry });
+    this.emit('change', { kind: 'log', name: entry.type, value: entry });
   }
 
   logSkip(question) {
