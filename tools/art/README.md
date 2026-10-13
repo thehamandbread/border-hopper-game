@@ -1,6 +1,6 @@
 # Prototype art generator
 
-`make_sample_art.py` generates the prototype sprites and tiles. Edit the script and regenerate; don't hand-edit the PNGs. The script is split into sections: Mateo sprite, border tiles, restaurant tiles, fire and smoke, phone, curb scene, Mission 1 (characters, apartment, tire shop, previews), and `main()` (saves assets and previews). Mission 1 art uses its own random stream and runs last, so it never changes earlier outputs.
+`make_sample_art.py` generates the prototype sprites and tiles. Edit the script and regenerate; don't hand-edit the PNGs. The script is split into sections: Mateo sprite, border tiles, restaurant tiles, fire and smoke, phone, curb scene, Mission 1 (characters, apartment, tire shop, previews), the Mission 1 crossing (port of entry, secondary inspection, previews), and `main()` (saves assets and previews). Mission 1 art and the crossing art each use their own random stream and run last, so they never change earlier outputs.
 
 ## Run
 
@@ -199,6 +199,94 @@ An old faded-blue pickup from the side, facing right, like the sedan. The gap be
 ### `creeper.png` (16x32)
 Mechanic's creeper, lengthwise up the screen, headrest at the top. Same frame size and feet row as Nando's lying frames.
 
+## Mission 1: the crossing
+
+### `port_tiles.png` (352x16, 16x16 tiles, one row)
+
+| Index | Name | Notes |
+|---|---|---|
+| 0 | pavement | sun-bleached concrete |
+| 1 | pavement_seam | with expansion joints on its right and bottom edges |
+| 2 | pavement_stains | old gum and a drink stain |
+| 3 | rope | stanchion rope crossing the tile at waist height, sagging a pixel in the middle |
+| 4 | rope_post | rope with a chrome post in the middle of the tile |
+| 5 | rope_end_left | first post of a barrier (post on the left, rope going right) |
+| 6 | rope_end_right | last post (rope coming in from the left) |
+| 7 | port_wall | the port building's wall face, government tan, dark baseboard |
+| 8 | port_sign_left | metal sign, 2 tiles wide, on the wall face: blue header band and gray lines where the words go. No text is baked in; the words are game text |
+| 9 | port_sign_right |  |
+| 10 | port_door | steel door with a wired-glass window (wall row; the way to secondary inspection) |
+| 11 | roof | the building's flat gravel roof edge, seen from above (goes above the wall row) |
+| 12 | booth_roof_left | inspection booth, 2 wide x 3 tall: flat roof with a lip and a blue band |
+| 13 | booth_roof_right |  |
+| 14 | booth_window_left | the window: dim inside, a monitor on the right. Draw the officer over it, then `booth_glass.png` |
+| 15 | booth_window_right |  |
+| 16 | booth_counter_left | steel ledge with the document slot, ribbed front |
+| 17 | booth_counter_right |  |
+| 18 | gate_closed | steel swing gate past the booth |
+| 19 | gate_open | swung back against its post |
+| 20 | fence | copied unchanged from `border_tiles.png` (index 6) |
+| 21 | wall | copied unchanged from `border_tiles.png` (index 7) |
+
+Rope tiles sit on pavement and block movement; a one-wide queue lane is a row of pavement between two rows of rope.
+
+### `port_awning.png` (32x16)
+Shade overlays for the long awning over the line, partially transparent: 0 shade, 1 shade along its sunny edge (dithered). Draw them above the floor and below people.
+
+### `awning_post.png` (16x48)
+A steel support post for the awning, taller than anyone in line, with a bracket at the top. Feet on row 44 (3 px above the bottom, like the characters), so it depth-sorts with them.
+
+### `booth_glass.png` (32x16)
+Faint glass tint and two glare streaks, partially transparent. Draw it over the booth officer, exactly over `booth_window_left` + `booth_window_right`.
+
+### `port_props.png` (48x16)
+16x16 props in line, with transparency: 0 a cooler, 1 a stroller, 2 a full plastic shopping bag (a red logo, no lettering).
+
+### `booth_officer.png` (32x32)
+The booth officer, waist-up behind the glass, 16x32 frames: 0 idle, looking out; 1 head down, typing. The frame's bottom row is the counter's top edge: stand him on the bottom of the `booth_window` row.
+
+### `handler_walk.png` (64x128)
+The K-9 handler, `mateo_walk.png` layout: the agency uniform (steel-blue shirt, gold badge, navy trousers) under a black vest, a navy ball cap.
+
+### `dog_walk.png` (64x80)
+The handler's dog, a German shepherd (tan, black saddle). 16x16 frames; rows 0 down, 1 up, 2 right, 3 left (4-frame walk, frame 0 standing), row 4: 0-1 sniffing, facing right (nose to the ground; alternate them). Feet on row 12, so it stands on the characters' ground line (3 px above the frame's bottom).
+
+### `queue_npcs.png` (64x160)
+People in line ahead of Mateo, 16x32 frames, all facing right (toward the booth). Row 0: the woman with the flyer (50s, curly hair, mustard blouse, brown skirt) walking, frame 0 standing. Row 1: 0-1 her fanning herself with the flyer (alternate). Row 2: the man holding a sleeping boy against his shoulder (gray T-shirt; the boy in yellow), walking. Row 3: the teenage girl (ponytail, teal hoodie), walking. Row 4: the teenage boy (maroon T-shirt), walking. The teenagers share earbuds: a white earbud and thin cord each; she holds the phone.
+
+### `secondary_tiles.png` (272x16, 16x16 tiles, one row)
+
+| Index | Name | Notes |
+|---|---|---|
+| 0 | vinyl | waiting room and office floor: institutional vinyl squares |
+| 1 | vinyl_scuff | with scuff marks |
+| 2 | sec_wall | pale institutional wall face, gray baseboard |
+| 3 | wall_side_left | same rules as the restaurant's side walls and corners |
+| 4 | wall_side_right |  |
+| 5 | wall_corner_top_left |  |
+| 6 | wall_corner_top_right |  |
+| 7 | wall_corner_bottom_left |  |
+| 8 | wall_corner_bottom_right |  |
+| 9 | wall_clock | round wall clock on the wall face |
+| 10 | chair_row_left | one seat of a row of molded plastic chairs bolted to a steel beam, facing down; leg at the left end |
+| 11 | chair_row_mid | middle seat |
+| 12 | chair_row_right | leg at the right end |
+| 13 | office_door | the office door, closed (wall row) |
+| 14 | office_door_open | open: the lit office beyond |
+| 15 | desk_left | steel office desk, 2 wide, seen from the visitor's side |
+| 16 | desk_right | drawers |
+
+Empty chairs are these tiles; occupied chairs are the seated frames in `waiting_people.png` drawn over them.
+
+### `carr_walk.png` (64x160)
+Officer Carr: 40s, dark brown hair in a low bun, the agency uniform. `mateo_walk.png` layout, plus row 4: at her desk, waist-up, facing down (the frame's bottom row is the desk's far edge; her notepad is on the desk): 0-1 writing (alternate), 2 stopped writing (pen still in her hand), 3 the pen set down.
+
+### `waiting_people.png` (64x32)
+Seated frames, 16x32, feet on row 28 like everyone else (about 3 px shorter than standing). Draw 0-2 over a `chair_row` tile with the feet on the tile's bottom edge: 0 the man in work boots (50s, faded red work shirt) staring at the floor; 1 the woman holding a manila folder flat against her chest (lavender blouse); 2 Mateo, sitting facing down (his own head and torso rows, sitting); 3 Mateo at Carr's desk, back to us, on a plastic chair (the chair is part of the frame). The curb-sitting frame in `sitting.png` is cut off at the knees, so it doesn't fit a chair; frame 2 replaces it here.
+
+### `secondary_props.png` (48x16)
+16x16 props with transparency: 0 the envelope sealed in a clear plastic bag (signature across the flap), 1 three blank sheets, unfolded, 2 his passport and border crossing card.
+
 ## Previews (`tools/art/previews/`, git-ignored)
 
-`preview_scene.png`, `preview_walk.gif`, `sheet_6x.png`, `tiles_6x.png`, `restaurant_tiles_6x.png`, `fire_6x.png`, `smoke_6x.png`, `restaurant_scene.png` (mock restaurant with Mateo, fire and smoke), `kitchen_door_6x.png`, `task_marker_6x.png`, `restaurant_walls_preview.png` (mock room: walls, corners, counter ends, cafe doors, task markers), `phone_ledge_6x.png` (over the wall tile), `phone_ui_4x.png`, `phone_icon_6x.png`, `curb_scene.png` (mock curb scene at 4x), and 6x previews of each curb image. Mission 1: `apartment_scene.png` and `tireshop_scene.png` (mock scenes at 4x with every character placed), `m1_lineup_1x.png` / `m1_lineup_6x.png` (everyone side by side, for checking they read as different people), and 6x previews of each Mission 1 image.
+`preview_scene.png`, `preview_walk.gif`, `sheet_6x.png`, `tiles_6x.png`, `restaurant_tiles_6x.png`, `fire_6x.png`, `smoke_6x.png`, `restaurant_scene.png` (mock restaurant with Mateo, fire and smoke), `kitchen_door_6x.png`, `task_marker_6x.png`, `restaurant_walls_preview.png` (mock room: walls, corners, counter ends, cafe doors, task markers), `phone_ledge_6x.png` (over the wall tile), `phone_ui_4x.png`, `phone_icon_6x.png`, `curb_scene.png` (mock curb scene at 4x), and 6x previews of each curb image. Mission 1: `apartment_scene.png` and `tireshop_scene.png` (mock scenes at 4x with every character placed), `m1_lineup_1x.png` / `m1_lineup_6x.png` (everyone side by side, for checking they read as different people), and 6x previews of each Mission 1 image. The crossing: `port_scene.png` (mock line and booth at 4x, everyone placed) and `secondary_scene.png` (mock waiting room and office at 4x), `crossing_lineup_1x.png` / `crossing_lineup_6x.png`, and 6x previews of each crossing image.

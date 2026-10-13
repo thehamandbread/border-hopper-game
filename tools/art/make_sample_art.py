@@ -25,6 +25,10 @@ Outputs:
   Mission 1: apartment_tiles.png, apartment_props.png, tireshop_tiles.png, pickup_truck.png, creeper.png,
   abuela_walk.png, tomi_walk.png, ruiz_walk.png, nando_walk.png, mateo_extra.png (see the README),
   and previews apartment_scene.png, tireshop_scene.png, m1_lineup_1x/6x.png
+  Mission 1 crossing: port_tiles.png, port_awning.png, awning_post.png, booth_glass.png, port_props.png,
+  booth_officer.png, handler_walk.png, dog_walk.png, queue_npcs.png, secondary_tiles.png, carr_walk.png,
+  waiting_people.png, secondary_props.png (see the README), and previews port_scene.png,
+  secondary_scene.png, crossing_lineup_1x/6x.png
 Paths are resolved relative to this file, so it runs from any working directory.
 """
 import random
@@ -1489,7 +1493,8 @@ def draw_char_legs(px, ch, view, step, ly, bare):
         rect(px, fx, ly + L - 1, fw + 1, 2, "B")
 
 
-def char_frame(direction, step, ch, bare=False):
+def char_frame(direction, step, ch, bare=False, extra=None):
+    """extra(px, y): draws more of the figure (e.g. something held) before the outline; y is the head's top row."""
     CUR["pal"] = ch["pal"]
     img = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
     px = img.load()
@@ -1503,6 +1508,8 @@ def char_frame(direction, step, ch, bare=False):
     blit_rows(px, head, y)
     blit_rows(px, skirt, y + len(head) + len(torso))
     draw_char_legs(px, ch, view, step, y + len(head) + len(torso) + len(skirt), bare)
+    if extra:
+        extra(px, y)
     outline(img)
     CUR["pal"] = PAL
     return img
@@ -2821,6 +2828,1165 @@ def save_mission1(frames):
     shop.resize((shop.width * 4, shop.height * 4), Image.NEAREST).save(PREVIEW_DIR / "tireshop_scene.png")
 
 
+# ---------------- Mission 1: port of entry (the line, the booth) ----------------
+# Its own random stream again, and it runs after everything above, so it never changes those outputs.
+prng = random.Random(83)
+PAVE, PAVE_DK, PAVE_HI = (200, 192, 172), (180, 172, 154), (214, 208, 192)   # sun-bleached concrete
+ROPE, ROPE_DK = (132, 40, 44), (96, 28, 32)
+CHROME, CHROME_DK, CHROME_HI = (170, 174, 180), (120, 124, 132), (222, 226, 230)
+PORT_PAINT, PORT_PAINT_DK, PORT_PAINT_HI = (214, 204, 180), (192, 182, 158), (228, 220, 200)  # government tan
+PORT_BASE, PORT_BASE_DK, PORT_BASE_HI = (104, 100, 96), (80, 76, 74), (128, 124, 118)
+BOOTH, BOOTH_DK, BOOTH_HI = (186, 190, 194), (146, 150, 156), (214, 218, 222)    # painted steel kiosk
+SHADE = (26, 24, 40)
+
+
+def tile_pavement(seam=False, stains=False):
+    img = solid(PAVE)
+    d = img.load()
+    for _ in range(14):
+        d[prng.randrange(T), prng.randrange(T)] = prng.choice([PAVE_DK, PAVE_HI]) + (255,)
+    if seam:  # expansion joint between slabs
+        fill(d, 0, 15, 15, 15, PAVE_DK)
+        fill(d, 15, 0, 15, 15, PAVE_DK)
+    if stains:  # old gum and a drink stain
+        dots(d, [(3, 4), (11, 9), (6, 12)], (150, 144, 132))
+        fill(d, 8, 3, 10, 4, (186, 176, 150))
+    return img
+
+
+def draw_rope(px, posts=(), x0=0, x1=15):
+    """A stanchion barrier seen from the side: chrome posts on round bases, a velvet rope at waist
+    height running from x0 to x1 (off the tile's edges unless a post ends it). A rope with no post on
+    the tile sags a pixel in the middle."""
+    for x in range(x0, x1 + 1):
+        sag = 1 if not posts and 4 <= x <= 11 else 0
+        fill(px, x, 6 + sag, x, 7 + sag, ROPE)
+        px[x, 8 + sag] = ROPE_DK + (255,)
+    for x in posts:
+        fill(px, x - 1, 4, x + 1, 4, CHROME_HI)          # cap
+        fill(px, x, 5, x, 13, CHROME)
+        fill(px, x - 1, 14, x + 1, 14, CHROME_DK)        # base
+        fill(px, x - 1, 13, x + 1, 13, CHROME)
+
+
+def port_face():
+    return wall_face(PORT_PAINT, PORT_PAINT_DK, PORT_PAINT_HI, PORT_BASE, PORT_BASE_DK, PORT_BASE_HI)
+
+
+def tile_port_wall():
+    return wall_face(PORT_PAINT, PORT_PAINT_DK, PORT_PAINT_HI, PORT_BASE, PORT_BASE_DK, PORT_BASE_HI, speckles=6)
+
+
+def draw_port_sign(px):
+    """32 wide: a metal sign on the wall. A blue header band and gray lines where the words go;
+    the words themselves are game text, not pixels."""
+    fill(px, 1, 1, 30, 9, (240, 238, 230))
+    fill(px, 1, 1, 30, 3, (46, 72, 128))
+    fill(px, 4, 2, 27, 2, (130, 150, 190))
+    for y in (5, 7):
+        fill(px, 4, y, 27, y, (150, 150, 150))
+    fill(px, 6, 9, 25, 9, (150, 150, 150))
+    dots(px, [(2, 2), (29, 2), (2, 8), (29, 8)], (120, 120, 124))   # bolts
+
+
+def draw_port_door(px):
+    """Steel door with a narrow wired-glass window (to secondary inspection)."""
+    fill(px, 2, 1, 13, 15, (150, 158, 164))
+    fill(px, 2, 1, 13, 1, (178, 186, 190))
+    fill(px, 5, 3, 7, 8, (70, 82, 92))                   # wired glass
+    dots(px, [(6, 4), (6, 6)], (110, 124, 134))
+    fill(px, 11, 8, 12, 8, (204, 206, 210))              # lever handle
+    fill(px, 2, 12, 13, 13, (128, 136, 142))             # kick plate
+    dots(px, [(3, 3), (3, 12)], (100, 106, 112))         # hinges
+
+
+def tile_roof():
+    """The port building's flat roof edge, seen from above: gravel and a metal coping."""
+    img = solid((150, 146, 140))
+    d = img.load()
+    for _ in range(30):
+        d[prng.randrange(T), prng.randrange(2, T - 3)] = prng.choice([(128, 124, 118), (170, 166, 160)]) + (255,)
+    fill(d, 0, 13, 15, 14, (184, 186, 188))
+    fill(d, 0, 15, 15, 15, OUT)
+    return img
+
+
+def draw_booth(px, part):
+    """The inspection booth, 2 tiles wide, 3 tall (drawn on a 32x48 layer): a flat roof with a lip,
+    a glass window (the officer is drawn behind it in game), a steel counter with the document slot."""
+    if part == "roof":
+        fill(px, 0, 4, 31, 15, BOOTH)
+        fill(px, 0, 4, 31, 6, BOOTH_HI)                  # roof lip
+        fill(px, 0, 7, 31, 7, BOOTH_DK)
+        fill(px, 3, 10, 28, 13, (46, 72, 128))           # blue band (no lettering)
+        fill(px, 0, 15, 31, 15, BOOTH_DK)
+    elif part == "window":
+        fill(px, 0, 0, 31, 15, BOOTH)
+        fill(px, 1, 1, 30, 14, (40, 46, 56))             # dim inside of the booth
+        fill(px, 1, 1, 30, 3, (64, 72, 84))              # a light panel on the back wall
+        fill(px, 1, 9, 30, 14, (56, 62, 72))             # back counter, a monitor's glow
+        fill(px, 20, 6, 26, 10, (30, 34, 40))            # monitor
+        fill(px, 21, 7, 25, 9, (120, 170, 186))
+        fill(px, 0, 0, 0, 15, BOOTH_DK)
+        fill(px, 31, 0, 31, 15, BOOTH_DK)
+    else:  # counter
+        fill(px, 0, 0, 31, 15, BOOTH_DK)
+        fill(px, 0, 0, 31, 4, CHROME)                    # steel ledge
+        fill(px, 0, 0, 31, 0, CHROME_HI)
+        fill(px, 11, 1, 20, 2, (34, 34, 38))             # document slot under the glass
+        fill(px, 0, 5, 31, 5, (100, 104, 112))
+        for x in range(2, 31, 4):
+            fill(px, x, 7, x, 14, (128, 132, 138))       # ribbed steel front
+        fill(px, 0, 15, 31, 15, (100, 104, 112))
+
+
+def booth_tiles(floor):
+    """Six booth tiles: roof, window, counter rows, each left and right (outlined as one kiosk)."""
+    layer = Image.new("RGBA", (T * 2, T * 3), (0, 0, 0, 0))
+    for i, part in enumerate(("roof", "window", "counter")):
+        piece = Image.new("RGBA", (T * 2, T), (0, 0, 0, 0))
+        draw_booth(piece.load(), part)
+        layer.alpha_composite(piece, (0, i * T))
+    outline(layer)
+    base = Image.new("RGBA", (T * 2, T * 3))
+    for y in range(3):
+        for x in range(2):
+            base.paste(floor, (x * T, y * T))
+    base.alpha_composite(layer)
+    out = {}
+    for i, part in enumerate(("roof", "window", "counter")):
+        out[f"booth_{part}_left"] = base.crop((0, i * T, T, i * T + T))
+        out[f"booth_{part}_right"] = base.crop((T, i * T, T * 2, i * T + T))
+    return out
+
+
+def draw_gate(px, open_):
+    """Steel swing gate past the booth (the way out to Three Hills)."""
+    fill(px, 0, 3, 1, 14, CHROME_DK)                     # hinge post
+    fill(px, 0, 2, 1, 2, CHROME_HI)
+    if open_:  # swung back against the post: seen edge-on
+        fill(px, 2, 5, 4, 13, CHROME)
+        fill(px, 2, 5, 4, 5, CHROME_HI)
+    else:
+        fill(px, 2, 5, 15, 5, CHROME_HI)                 # top rail
+        fill(px, 2, 12, 15, 12, CHROME)                  # bottom rail
+        for x in range(4, 16, 3):
+            fill(px, x, 6, x, 11, CHROME)
+
+
+PORT_ORDER = ["pavement", "pavement_seam", "pavement_stains", "rope", "rope_post", "rope_end_left",
+              "rope_end_right", "port_wall", "port_sign_left", "port_sign_right", "port_door", "roof",
+              "booth_roof_left", "booth_roof_right", "booth_window_left", "booth_window_right",
+              "booth_counter_left", "booth_counter_right", "gate_closed", "gate_open", "fence", "wall"]
+
+
+def make_port_tiles():
+    pave = tile_pavement()
+    sign_l, sign_r = prop2_on(port_face(), draw_port_sign)
+    border = Image.open(ASSET_DIR / "border_tiles.png")              # reuse the border fence and wall as-is
+    tiles = {
+        "pavement": pave, "pavement_seam": tile_pavement(seam=True), "pavement_stains": tile_pavement(stains=True),
+        "rope": prop_on(pave, lambda p: draw_rope(p)),
+        "rope_post": prop_on(pave, lambda p: draw_rope(p, posts=(8,))),
+        "rope_end_left": prop_on(pave, lambda p: draw_rope(p, posts=(2,), x0=3)),
+        "rope_end_right": prop_on(pave, lambda p: draw_rope(p, posts=(13,), x1=12)),
+        "port_wall": tile_port_wall(), "port_sign_left": sign_l, "port_sign_right": sign_r,
+        "port_door": on_face(port_face(), draw_port_door), "roof": tile_roof(),
+        **booth_tiles(pave),
+        "gate_closed": prop_on(pave, lambda p: draw_gate(p, False)),
+        "gate_open": prop_on(pave, lambda p: draw_gate(p, True)),
+        "fence": border.crop((6 * T, 0, 7 * T, T)), "wall": border.crop((7 * T, 0, 8 * T, T)),
+    }
+    sheet = Image.new("RGBA", (T * len(PORT_ORDER), T))
+    for i, k in enumerate(PORT_ORDER):
+        sheet.paste(tiles[k], (i * T, 0))
+    return sheet, tiles
+
+
+def make_port_awning():
+    """Shade overlays for the awning over the line (draw above the floor, below people):
+    0 shade, 1 shade along its sunny edge (dithered)."""
+    sheet = Image.new("RGBA", (T * 2, T), (0, 0, 0, 0))
+    px = sheet.load()
+    for y in range(T):
+        for x in range(T):
+            px[x, y] = SHADE + (92,)
+            if y < 10 or (x + y) % 2 == 0 and y < 13:
+                px[T + x, y] = SHADE + (92,)
+    return sheet
+
+
+POST_H = 48
+
+
+def make_awning_post():
+    """16x48 support post for the awning, taller than anyone in line; feet at row 44 (3 px above the
+    bottom, like the characters), a bracket at the top where it meets the roof."""
+    img = Image.new("RGBA", (FW, POST_H), (0, 0, 0, 0))
+    px = img.load()
+    fill(px, 7, 3, 8, 43, (150, 156, 164))
+    fill(px, 7, 3, 7, 43, (196, 202, 208))
+    fill(px, 3, 1, 12, 2, (150, 156, 164))               # bracket under the roof
+    fill(px, 3, 1, 12, 1, (196, 202, 208))
+    fill(px, 5, 43, 10, 44, (104, 110, 118))             # base plate
+    outline(img)
+    return img
+
+
+def make_booth_glass():
+    """32x16 overlay for the booth window: a faint tint and glare, drawn over the officer."""
+    img = Image.new("RGBA", (T * 2, T), (0, 0, 0, 0))
+    px = img.load()
+    for y in range(1, 15):
+        for x in range(1, 31):
+            px[x, y] = (190, 214, 226, 34)
+    for i in range(8):                                   # two diagonal glare streaks
+        for x0 in (3, 22):
+            x, y = x0 + i, 12 - i
+            if 1 <= y <= 14:
+                px[x, y] = (236, 244, 248, 110)
+                px[x + 1, y] = (236, 244, 248, 70)
+    return img
+
+
+def draw_cooler(px):
+    fill(px, 2, 6, 13, 14, (52, 104, 168))               # blue body
+    fill(px, 2, 4, 13, 6, (232, 232, 226))               # white lid
+    fill(px, 2, 4, 13, 4, (246, 246, 242))
+    fill(px, 6, 3, 9, 3, (90, 90, 96))                   # handle
+    fill(px, 2, 14, 13, 14, (36, 72, 124))
+
+
+def draw_stroller(px):
+    fill(px, 3, 3, 10, 9, (72, 84, 100))                 # canopy and seat
+    fill(px, 3, 3, 10, 3, (100, 112, 130))
+    fill(px, 6, 6, 9, 8, (180, 170, 150))                # blanket
+    fill(px, 11, 2, 13, 2, (40, 40, 44))                 # handle
+    fill(px, 12, 2, 12, 10, (40, 40, 44))
+    fill(px, 3, 10, 12, 10, (40, 40, 44))                # frame
+    for x in (3, 10):
+        fill(px, x, 12, x + 2, 14, (30, 30, 34))         # wheels
+        px[x + 1, 13] = (140, 140, 146, 255)
+
+
+def draw_shopping_bag(px):
+    fill(px, 4, 6, 11, 14, (238, 234, 222))              # plastic shopping bag, full
+    fill(px, 4, 6, 11, 6, (250, 248, 240))
+    fill(px, 5, 3, 6, 5, (238, 234, 222))                # handles
+    fill(px, 9, 3, 10, 5, (238, 234, 222))
+    fill(px, 6, 9, 9, 11, (196, 60, 52))                 # a store's red logo (no lettering)
+    dots(px, [(5, 13), (10, 8)], (212, 208, 196))
+
+
+PORT_PROP_ORDER = ["cooler", "stroller", "shopping_bag"]
+
+
+def make_port_props():
+    sheet = Image.new("RGBA", (T * len(PORT_PROP_ORDER), T), (0, 0, 0, 0))
+    for i, fn in enumerate((draw_cooler, draw_stroller, draw_shopping_bag)):
+        layer = Image.new("RGBA", (T, T), (0, 0, 0, 0))
+        fn(layer.load())
+        outline(layer)
+        sheet.paste(layer, (i * T, 0))
+    return sheet
+
+
+# Officers: one agency uniform (steel-blue shirt, navy trousers, gold badge on the left chest, black shoes).
+UNIFORM = {"T": (98, 122, 150), "t": (74, 94, 120), "G": (214, 178, 70), "J": (40, 46, 70), "j": (28, 32, 52),
+           "B": (30, 28, 30), "b": (20, 18, 20), "K": (230, 228, 222)}
+UNIFORM_TORSO_FRONT = [
+    "....TTTTTTTT....",
+    "..TTTTTTTTTTTT..",
+    "..TtTTTTTGTTtT..",
+    "..TtTTTTTTTTtT..",
+    "..TtTTTTTTTTtT..",
+    "..SttttttttttS..",
+    "....JJJJJJJJ....",
+]
+UNIFORM_TORSO_BACK = [
+    "....tTTTTTTt....",
+    "..TTtttttttTTT..",
+    "..TtTTTTTTTTtT..",
+    "..TtTTTTTTTTtT..",
+    "..TtTTTTTTTTtT..",
+    "..SttttttttttS..",
+    "....JJJJJJJJ....",
+]
+UNIFORM_TORSO_SIDE = [
+    ".....TTTTTT.....",
+    ".....TTTTTTT....",
+    ".....TtTTTTT....",
+    ".....TtTTGTT....",
+    ".....TtTTTTT....",
+    ".....tStttttt...",
+    "......JJJJJ.....",
+]
+
+# The booth officer: 30s, close-cropped black hair. Seen only behind the glass, waist-up.
+OFFICER_PAL = {"H": (26, 22, 22), "h": (52, 44, 42), "S": (184, 130, 96), "s": (146, 100, 72),
+               "E": (28, 20, 18), "W": (40, 42, 46), "w": (70, 74, 80), **UNIFORM}
+OFFICER_HEAD = check_rows("officer", [
+    "................",
+    "....HHHHHHHH....",
+    "...HHHHHHHHHH...",
+    "...HSSSSSSSSH...",
+    "...SSSESSESSS...",
+    "...SSSSSSSSSS...",
+    "....SSssssSS....",
+    ".....sSSSSs.....",
+    "......ssss......",
+])
+OFFICER_HEAD_DOWN = check_rows("officer", [   # looking down at the keyboard: more hair, no eyes
+    "................",
+    "................",
+    "....HHHHHHHH....",
+    "...HHHHHhHHHH...",
+    "...HHHHHHHHHH...",
+    "...HSSSSSSSSH...",
+    "...SSSssssSSS...",
+    "....sSSSSSSs....",
+    "......ssss......",
+])
+OFFICER_IDLE_TORSO = check_rows("officer", [
+    "....TTTTTTTT....",
+    "..TTTTTTTTTTTT..",
+    "..TtTTTTTGTTtT..",
+    "..TtTTTTTTTTtT..",
+    "..TtTTTTTTTTtT..",
+    "..TtTTTTTTTTtT..",
+])
+OFFICER_TYPING_TORSO = check_rows("officer", [
+    "....TTTTTTTT....",
+    "..TTTTTTTTTTTT..",
+    "..TtTTTTTGTTtT..",
+    "..TtTTTTTTTTtT..",
+    "..tTTTTTTTTTTt..",
+    "..SSWWWWWWWWSS..",                          # hands on the keyboard
+])
+
+
+def make_booth_officer():
+    """32x32: 0 idle, looking out through the glass; 1 head down, typing. Waist-up: the frame's
+    bottom row is the counter's top edge (stand him on the booth_window row)."""
+    sheet = Image.new("RGBA", (FW * 2, FH), (0, 0, 0, 0))
+    ch = {"pal": OFFICER_PAL}
+    sheet.alpha_composite(seated_frame(ch, OFFICER_HEAD, OFFICER_IDLE_TORSO), (0, 0))
+    sheet.alpha_composite(seated_frame(ch, OFFICER_HEAD_DOWN, OFFICER_TYPING_TORSO), (FW, 0))
+    return sheet
+
+
+# The K-9 handler: same uniform under a black vest, a navy ball cap, a lighter step than Mateo.
+HANDLER_PAL = {"C": (36, 42, 64), "c": (24, 28, 44), "H": (60, 44, 36), "S": (150, 100, 70), "s": (116, 76, 52),
+               "E": (28, 20, 18), "V": (36, 36, 40), "v": (54, 54, 60), **UNIFORM}
+HANDLER = {
+    "pal": HANDLER_PAL, "legs": 5, "bob": 1,
+    "head_down": check_rows("handler", [
+        ".....CCCCCC.....",
+        "....CCCCCCCC....",
+        "...cccccccccc...",
+        "...HSSSSSSSSH...",
+        "...HSSESSESSH...",
+        "....SSSSSSSS....",
+        ".....sSSSSs.....",
+        "......ssss......",
+    ]),
+    "head_up": check_rows("handler", [
+        ".....CCCCCC.....",
+        "....CCCCCCCC....",
+        "...CCCCcCCCCC...",
+        "...HHHHHHHHHH...",
+        "...HHHHHHHHHH...",
+        "....HHHHHHHH....",
+        ".....sSSSSs.....",
+        "......ssss......",
+    ]),
+    "head_side": check_rows("handler", [
+        ".....CCCCC......",
+        "....CCCCCCC.....",
+        "....CCCCCCcccc..",
+        "....HHHSSSSS....",
+        "....HHSSSSESS...",
+        ".....HSSSSSS....",
+        "......sSSSs.....",
+        ".......sss......",
+    ]),
+    "torso_front": check_rows("handler", [
+        "....TTTTTTTT....",
+        "..TTVVVVVVVVTT..",
+        "..TtVVvVVvVVtT..",
+        "..TtVVVVVVVVtT..",
+        "..TtVVVVVVVVtT..",
+        "..SttttttttttS..",
+        "....JJJJJJJJ....",
+    ]),
+    "torso_back": check_rows("handler", [
+        "....tTTTTTTt....",
+        "..TTVVVVVVVVTT..",
+        "..TtVVVVVVVVtT..",
+        "..TtVVVVVVVVtT..",
+        "..TtVVVVVVVVtT..",
+        "..SttttttttttS..",
+        "....JJJJJJJJ....",
+    ]),
+    "torso_side": check_rows("handler", [
+        ".....TTTTTT.....",
+        ".....VVVVVVT....",
+        ".....VtVVVVV....",
+        ".....VtVVvVV....",
+        ".....VtVVVVV....",
+        ".....tStttttt...",
+        "......JJJJJ.....",
+    ]),
+}
+
+# The dog: a German shepherd, tan with a black saddle. 16x16 frames; feet on row 12, so it stands on
+# the same ground line as the characters (3 px above the frame's bottom).
+DOG_PAL = {"D": (178, 132, 80), "d": (140, 100, 60), "K": (44, 38, 34), "k": (70, 60, 54),
+           "E": (20, 16, 14), "N": (24, 20, 20)}
+DOG_FEET = 12
+DOG_SIDE = check_rows("dog", [               # facing right, rows 2-9 (legs drawn per frame)
+    "...........K.K..",
+    "..........KDKD..",
+    "..........DDDED.",
+    "D.........DDDDNN",
+    ".D..kKKKKKDDDd..",
+    "..DKKKKKKKKDD...",
+    "...KKKKKKKKDD...",
+    "...dDDDDDDDDd...",
+])
+DOG_SNIFF = check_rows("dog", [              # nose down to the ground
+    "................",
+    "..........K.K...",
+    "...kKKKKKKKDK...",
+    "D.KKKKKKKKKDDD..",
+    ".DKKKKKKKKKDDED.",
+    "...KKKKKKKKDDDD.",
+    "...dDDDDDDDd.DNN",
+    "................",
+])
+DOG_FRONT = check_rows("dog", [              # walking toward us
+    ".....K....K.....",
+    ".....KK..KK.....",
+    "......DDDD......",
+    ".....DEDDED.....",
+    "......DNND......",
+    "......dDDd......",
+    ".....kDDDDk.....",
+    ".....KDDDDK.....",
+])
+DOG_BACK = check_rows("dog", [               # walking away
+    ".....K....K.....",
+    ".....KK..KK.....",
+    "......DDDD......",
+    "......DDDD......",
+    ".....KKKKKK.....",
+    ".....KKKKKK.....",
+    ".....KKKKKK.....",
+    ".....dDDDDd.....",
+])
+DOG_LEGS = {  # per view: [(x, lift on step 1, lift on step 3)]; a lifted leg is a pixel shorter
+    "side": [(3, 1, 0), (5, 0, 1), (10, 0, 1), (12, 1, 0)],
+    "front": [(6, 1, 0), (9, 0, 1)],
+    "back": [(6, 0, 1), (9, 1, 0)],
+}
+
+
+def dog_frame(view, step, body=None):
+    CUR["pal"] = DOG_PAL
+    img = Image.new("RGBA", (T, T), (0, 0, 0, 0))
+    px = img.load()
+    rows = body or {"side": DOG_SIDE, "front": DOG_FRONT, "back": DOG_BACK}[view]
+    blit_rows(px, rows, 2)
+    if view == "back" and body is None:
+        fill(px, 7, 10, 8, 11, DOG_PAL["d"])             # tail hanging between the back legs
+    for x, l1, l3 in DOG_LEGS[view]:
+        lift = l1 if step == 1 else l3 if step == 3 else 0
+        fill(px, x, 10, x, DOG_FEET - lift, DOG_PAL["D"])
+        px[x, DOG_FEET - lift] = DOG_PAL["d"] + (255,)
+    outline(img)
+    CUR["pal"] = PAL
+    return img
+
+
+def make_dog():
+    """64x80: rows down, up, right, left (4-frame walk, frame 0 standing), then row 4: 0-1 sniffing,
+    facing right (nose down; alternate them)."""
+    sheet = Image.new("RGBA", (T * 4, T * 5), (0, 0, 0, 0))
+    for r, view in enumerate(("front", "back", "side")):
+        for f in range(4):
+            sheet.alpha_composite(dog_frame(view, f), (f * T, r * T))
+    for f in range(4):
+        sheet.alpha_composite(flip(dog_frame("side", f)), (f * T, 3 * T))
+    sniff = DOG_SNIFF
+    sniff2 = sniff[:6] + ["...dDDDDDDDd.DNd", "..............N."]
+    sheet.alpha_composite(dog_frame("side", 0, sniff), (0, 4 * T))
+    sheet.alpha_composite(dog_frame("side", 2, sniff2), (T, 4 * T))
+    return sheet
+
+
+# Queue: people in line ahead of Mateo, all facing right (toward the booth). Side view only.
+# The woman with the flyer: 50s, short curly hair, mustard blouse, brown skirt.
+WOMAN_PAL = {"H": (58, 44, 40), "h": (110, 100, 96), "S": (180, 124, 92), "s": (142, 96, 68), "E": (28, 20, 18),
+             "T": (198, 164, 84), "t": (164, 132, 62), "D": (104, 76, 58), "d": (84, 60, 46),
+             "J": (178, 136, 108), "j": (146, 108, 84), "B": (60, 40, 34), "b": (44, 30, 26), "K": (230, 228, 222),
+             "F": (242, 240, 232), "f": (200, 70, 60)}
+WOMAN = {
+    "pal": WOMAN_PAL, "legs": 2, "bob": 1,
+    "head_side": check_rows("woman", [
+        ".....HhHH.......",
+        "....HHHHHH......",
+        "...HHhHHHSS.....",
+        "...HHHHSSSSS....",
+        "...HHHSSSESS....",
+        "....HHSSSSSS....",
+        "......sSSSs.....",
+        ".......sss......",
+    ]),
+    "torso_side": check_rows("woman", [
+        ".....TTTTTT.....",
+        ".....TTTTTTT....",
+        ".....TtTTTTT....",
+        ".....TtTTTTT....",
+        ".....tStttTT....",
+    ]),
+    "skirt_side": check_rows("woman", [
+        ".....DDDDDD.....",
+        ".....DDdDDD.....",
+        "....DDDDDDDD....",
+    ]),
+    "leg_geom": {"front": [(5, 2), (9, 2)], "stand": (7, 2), "back": (6, 2), "fwd": (8, 2)},
+}
+
+
+def fan_flyer(up):
+    """The flyer held up in front of her face, a little higher on the up-stroke."""
+    def draw(px, y):
+        top = y + (1 if up else 3)
+        fill(px, 11, top, 13, top + 4, WOMAN_PAL["F"])
+        fill(px, 11, top + 1, 13, top + 1, WOMAN_PAL["f"])
+        fill(px, 10, y + 10, 11, y + 10, WOMAN_PAL["S"])  # her hand at the bottom of it
+        px[11, top + 5] = WOMAN_PAL["S"] + (255,)
+    return draw
+
+
+# The man holding a sleeping boy on his shoulder: 30s, shaved head, gray T-shirt, jeans. The boy
+# (yellow shirt, dark hair) is slumped over his shoulder, head resting behind his neck.
+FATHER_PAL = {"H": (60, 48, 42), "h": (90, 74, 64), "S": (160, 106, 74), "s": (124, 82, 58), "E": (28, 20, 18),
+              "T": (128, 130, 134), "t": (100, 102, 108), "J": (66, 82, 116), "j": (48, 60, 88),
+              "B": (52, 44, 40), "b": (36, 30, 28), "K": (230, 228, 222),
+              "C": (34, 28, 26), "Y": (200, 172, 88), "y": (168, 142, 70), "R": (176, 120, 88), "P": (90, 98, 120)}
+FATHER = {
+    "pal": FATHER_PAL, "legs": 5, "bob": 1,
+    "head_side": check_rows("father", [
+        "................",
+        ".....HHHHH......",
+        "....HhHHHSSS....",
+        "....HHHSSSSSS...",
+        "....HHHSSSESS...",
+        ".....HSSSSSS....",
+        "......sSSSs.....",
+        ".......sss......",
+        ".......sss......",
+    ]),
+    "torso_side": check_rows("father", [
+        ".....TTTTTT.....",
+        ".....TTTTTTT....",
+        ".....TtTTTTT....",
+        ".....TtTTTTT....",
+        ".....TtTTTTT....",
+        ".....tStttttt...",
+        "......JJJJJ.....",
+    ]),
+}
+
+
+def sleeping_boy(px, y):
+    """Asleep against his chest, head on his shoulder: dark hair, a yellow shirt, the man's arm under
+    him, legs hanging down."""
+    rows = check_rows("boy", [
+        "........CCC.....",
+        ".......CCCRC....",
+        "........YYYYY...",
+        "........YYyYYY..",
+        "........SSSSSY..",
+        ".........yYYYy..",
+        "..........PPP...",
+        "..........PP....",
+        "..........bb....",
+    ])
+    blit_rows(px, rows, y + 7)
+
+
+# Two teenagers sharing earbuds: a girl (ponytail, teal hoodie, black leggings) and a boy (short hair,
+# maroon T-shirt, jeans). A white earbud cord runs from each of their ears to the phone in her hand.
+TEEN_GIRL_PAL = {"H": (40, 30, 28), "h": (72, 56, 50), "S": (176, 120, 86), "s": (138, 92, 64), "E": (28, 20, 18),
+                 "T": (72, 132, 128), "t": (54, 104, 102), "J": (36, 34, 40), "j": (24, 22, 28),
+                 "B": (232, 230, 224), "b": (196, 194, 188), "K": (230, 228, 222), "W": (246, 246, 242),
+                 "w": (206, 206, 202), "P": (30, 30, 36)}
+TEEN_GIRL = {
+    "pal": TEEN_GIRL_PAL, "legs": 4, "bob": 1,
+    "head_side": check_rows("teen_girl", [
+        ".....HHHHH......",
+        "....HHHhHHH.....",
+        "...HHHHHHSSS....",
+        "..HHHHHSSSSSS...",
+        "..HH.HHSSSESS...",
+        "..H...HSSSSS....",
+        "......sSSSs.....",
+        ".......sss......",
+    ]),
+    "torso_side": check_rows("teen_girl", [
+        ".....TTTTTT.....",
+        ".....TTTTTTT....",
+        ".....TtTTTTT....",
+        ".....TtTTTTT....",
+        ".....tStttTT....",
+        "......JJJJJ.....",
+    ]),
+}
+TEEN_BOY_PAL = {"H": (24, 20, 20), "h": (56, 46, 42), "S": (150, 98, 68), "s": (116, 76, 52), "E": (28, 20, 18),
+                "T": (124, 48, 56), "t": (96, 36, 44), "J": (70, 92, 128), "j": (52, 70, 100),
+                "B": (40, 40, 44), "b": (26, 26, 30), "K": (230, 228, 222), "W": (246, 246, 242),
+                "w": (206, 206, 202)}
+TEEN_BOY = {
+    "pal": TEEN_BOY_PAL, "legs": 4, "bob": 1,
+    "head_side": check_rows("teen_boy", [
+        "....HHHHH.......",
+        "...HHHHhHHH.....",
+        "...HHHHHHHHH....",
+        "....HHHHSSSS....",
+        "....HHHSSSESS...",
+        ".....HSSSSSS....",
+        "......sSSSs.....",
+        ".......sss......",
+    ]),
+    "torso_side": check_rows("teen_boy", [
+        ".....TTTTTT.....",
+        ".....TTTTTTT....",
+        ".....TtTTTTT....",
+        ".....TtTTTTT....",
+        ".....tStttttt...",
+        "......JJJJJ.....",
+    ]),
+}
+
+
+def earbud(phone):
+    """A white earbud at the ear and its cord down the front; the girl holds the phone."""
+    def draw(px, y):
+        pal = CUR["pal"]
+        px[7, y + 4] = pal["W"] + (255,)
+        for dy in range(6, 12, 2):                       # a thin cord: every other pixel
+            px[7 + (dy > 7), y + dy] = pal["w"] + (255,)
+        if phone:
+            fill(px, 10, y + 11, 11, y + 13, pal["P"])
+    return draw
+
+
+def side_walk_row(ch, extra=None):
+    return [char_frame("right", f, ch, extra=extra) for f in range(4)]
+
+
+def make_queue_npcs():
+    """64x160, all facing right (toward the booth), 16x32 frames:
+    row 0 the woman walking (frame 0 standing); row 1 her fanning herself with a flyer (0-1, alternate);
+    row 2 the man with the sleeping boy, walking; row 3 the teenage girl; row 4 the teenage boy."""
+    rows = [
+        side_walk_row(WOMAN),
+        [char_frame("right", 0, WOMAN, extra=fan_flyer(True)), char_frame("right", 0, WOMAN, extra=fan_flyer(False))],
+        side_walk_row(FATHER, sleeping_boy),
+        side_walk_row(TEEN_GIRL, earbud(True)),
+        side_walk_row(TEEN_BOY, earbud(False)),
+    ]
+    sheet = Image.new("RGBA", (FW * 4, FH * len(rows)), (0, 0, 0, 0))
+    for r, row in enumerate(rows):
+        for f, fr in enumerate(row):
+            sheet.alpha_composite(fr, (f * FW, r * FH))
+    return sheet
+
+
+# ---------------- Mission 1: secondary inspection ----------------
+SEC_PAINT, SEC_PAINT_DK, SEC_PAINT_HI = (202, 206, 196), (180, 184, 174), (216, 220, 212)   # pale institutional
+SEC_BASE, SEC_BASE_DK, SEC_BASE_HI = (92, 98, 104), (70, 74, 80), (116, 122, 128)
+VINYL, VINYL_DK, VINYL_HI = (176, 174, 164), (160, 158, 148), (190, 188, 180)
+PLASTIC, PLASTIC_DK, PLASTIC_HI = (86, 104, 132), (64, 78, 102), (114, 132, 160)        # molded plastic seats
+DESK, DESK_DK, DESK_HI = (132, 138, 146), (100, 106, 114), (196, 196, 190)
+
+
+def sec_face():
+    return wall_face(SEC_PAINT, SEC_PAINT_DK, SEC_PAINT_HI, SEC_BASE, SEC_BASE_DK, SEC_BASE_HI)
+
+
+def tile_vinyl(scuff=False):
+    img = solid(VINYL)
+    d = img.load()
+    for y in range(T):
+        for x in range(T):
+            if ((x // 8) + (y // 8)) % 2:
+                d[x, y] = VINYL_DK + (255,)
+    for _ in range(8):
+        d[prng.randrange(T), prng.randrange(T)] = VINYL_HI + (255,)
+    if scuff:
+        fill(d, 3, 9, 8, 9, (138, 136, 128))
+        dots(d, [(9, 10), (10, 10), (12, 4)], (138, 136, 128))
+    return img
+
+
+def draw_wall_clock(px):
+    """A round wall clock: white face, black rim and hands."""
+    fill(px, 5, 1, 10, 8, (238, 238, 232))
+    fill(px, 4, 2, 11, 7, (238, 238, 232))
+    for x, y in ((5, 1), (10, 1), (5, 8), (10, 8), (4, 2), (11, 2), (4, 7), (11, 7)):
+        px[x, y] = (40, 40, 44, 255)
+    fill(px, 7, 2, 7, 5, (30, 30, 32))                   # minute hand
+    fill(px, 8, 5, 9, 5, (30, 30, 32))                   # hour hand
+    px[3, 4] = (0, 0, 0, 0)
+
+
+def draw_chair_seat(px, left_end, right_end):
+    """One seat of a row of molded plastic chairs bolted to a steel beam, facing down."""
+    fill(px, 2, 2, 13, 6, PLASTIC_DK)                    # backrest
+    fill(px, 3, 2, 12, 2, PLASTIC_HI)
+    fill(px, 3, 3, 12, 5, PLASTIC)
+    fill(px, 2, 7, 13, 10, PLASTIC_HI)                   # seat
+    fill(px, 2, 10, 13, 10, PLASTIC_DK)
+    fill(px, 0, 11, 15, 11, CHROME_DK)                   # the beam they're bolted to
+    if left_end:
+        fill(px, 1, 11, 1, 14, CHROME_DK)                # legs at the ends of the row
+        fill(px, 0, 11, 0, 11, (0, 0, 0, 0))
+    if right_end:
+        fill(px, 14, 11, 14, 14, CHROME_DK)
+        fill(px, 15, 11, 15, 11, (0, 0, 0, 0))
+
+
+def draw_office_door(px, open_):
+    fill(px, 2, 0, 13, 15, (112, 118, 124))              # steel frame
+    if open_:
+        fill(px, 3, 1, 12, 15, (64, 66, 70))             # the office beyond, lit
+        fill(px, 3, 1, 12, 2, (120, 124, 128))
+        fill(px, 3, 11, 12, 15, (150, 148, 140))
+        fill(px, 3, 1, 4, 15, (176, 166, 140))           # the door, swung in
+    else:
+        fill(px, 3, 1, 12, 15, (176, 166, 140))          # wood-look door
+        fill(px, 3, 1, 12, 1, (198, 188, 162))
+        fill(px, 6, 3, 9, 7, (90, 104, 114))             # narrow window
+        fill(px, 10, 8, 11, 8, (204, 206, 210))          # handle
+        fill(px, 3, 13, 12, 14, (150, 140, 116))
+
+
+def draw_desk(px):
+    """32 wide: a steel office desk seen from the visitor's side; drawers on the right."""
+    fill(px, 0, 1, 31, 6, DESK_HI)                       # laminate top
+    fill(px, 0, 1, 31, 1, (214, 214, 208))
+    fill(px, 0, 7, 31, 7, DESK_DK)
+    fill(px, 0, 8, 31, 14, DESK)                         # modesty panel
+    fill(px, 20, 8, 31, 14, DESK_DK)                     # drawer stack
+    for y in (10, 13):
+        fill(px, 21, y, 30, y, DESK)
+        fill(px, 24, y - 1, 27, y - 1, (190, 192, 196))  # drawer pulls
+    fill(px, 0, 15, 31, 15, DESK_DK)
+
+
+SEC_ORDER = ["vinyl", "vinyl_scuff", "sec_wall", "wall_side_left", "wall_side_right",
+             "wall_corner_top_left", "wall_corner_top_right", "wall_corner_bottom_left",
+             "wall_corner_bottom_right", "wall_clock", "chair_row_left", "chair_row_mid",
+             "chair_row_right", "office_door", "office_door_open", "desk_left", "desk_right"]
+
+
+def make_secondary_tiles():
+    vinyl = tile_vinyl()
+    shades = [SEC_PAINT, SEC_PAINT_DK, (162, 166, 156), (146, 150, 140), (130, 134, 124)]
+    desk_l, desk_r = prop2_on(vinyl, draw_desk)
+    tiles = {
+        "vinyl": vinyl, "vinyl_scuff": tile_vinyl(scuff=True),
+        "sec_wall": wall_face(SEC_PAINT, SEC_PAINT_DK, SEC_PAINT_HI, SEC_BASE, SEC_BASE_DK, SEC_BASE_HI, speckles=4),
+        **wall_set(sec_face(), SEC_PAINT_HI, shades),
+        "wall_clock": on_face(sec_face(), draw_wall_clock),
+        "chair_row_left": prop_on(vinyl, lambda p: draw_chair_seat(p, True, False)),
+        "chair_row_mid": prop_on(vinyl, lambda p: draw_chair_seat(p, False, False)),
+        "chair_row_right": prop_on(vinyl, lambda p: draw_chair_seat(p, False, True)),
+        "office_door": on_face(sec_face(), lambda p: draw_office_door(p, False)),
+        "office_door_open": on_face(sec_face(), lambda p: draw_office_door(p, True)),
+        "desk_left": desk_l, "desk_right": desk_r,
+    }
+    sheet = Image.new("RGBA", (T * len(SEC_ORDER), T))
+    for i, k in enumerate(SEC_ORDER):
+        sheet.paste(tiles[k], (i * T, 0))
+    return sheet, tiles
+
+
+# Officer Carr: 40s, dark brown hair in a low bun, the agency uniform.
+CARR_PAL = {"H": (70, 44, 34), "h": (102, 68, 52), "S": (196, 150, 118), "s": (160, 116, 88), "E": (28, 20, 18),
+            "L": (176, 92, 88), "W": (240, 238, 228), "w": (196, 194, 184), "P": (36, 36, 44), **UNIFORM}
+CARR = {
+    "pal": CARR_PAL, "legs": 5, "bob": 1,
+    "head_down": check_rows("carr", [
+        "......HHHH......",
+        "....HHHhHHHH....",
+        "...HHHHHHHHHH...",
+        "...HHSSSSSSHH...",
+        "...HSSESSESSH...",
+        "...HSSSSSSSSH...",
+        "....SSSLLSSS....",
+        ".....sSSSSs.....",
+        "......ssss......",
+    ]),
+    "head_up": check_rows("carr", [
+        "......HHHH......",
+        "....HHHHHHHH....",
+        "...HHHHhHHHHH...",
+        "...HHHhhhHHHH...",
+        "...HHHHHHHHHH...",
+        "...HHHHHHHHHH...",
+        "....HHHHHHHH....",
+        ".....sSSSSs.....",
+        "......ssss......",
+    ]),
+    "head_side": check_rows("carr", [
+        ".....HHHHH......",
+        "...HHHHhHHH.....",
+        "..HhHHHHHHHH....",
+        "..HHHHHHSSSS....",
+        "...HHHHSSSESS...",
+        "....HHHSSSSSS...",
+        ".....HSSSSLS....",
+        "......sSSSs.....",
+        ".......sss......",
+    ]),
+    "torso_front": UNIFORM_TORSO_FRONT, "torso_back": UNIFORM_TORSO_BACK, "torso_side": UNIFORM_TORSO_SIDE,
+}
+# At her desk, waist-up: the frame's bottom row is the desk's far edge; her notepad is on the desk.
+CARR_DESK_TORSOS = [
+    check_rows("carr", [                     # 0, 1: writing (the pen moves)
+        "....TTTTTTTT....",
+        "..TTTTTTTTTTTT..",
+        "..TtTTTTTGTTtT..",
+        "..TtTTTTTTTTtT..",
+        "..ttTTTTTTTTtt..",
+        "...WWWWWWSPS....",
+        "...WwWwWwWWW....",
+    ]),
+    check_rows("carr", [
+        "....TTTTTTTT....",
+        "..TTTTTTTTTTTT..",
+        "..TtTTTTTGTTtT..",
+        "..TtTTTTTTTTtT..",
+        "..ttTTTTTTTTtt..",
+        "...WWWWWSPSW....",
+        "...WwWwWwWWW....",
+    ]),
+    check_rows("carr", [                     # 2: stopped writing, pen still in her hand
+        "....TTTTTTTT....",
+        "..TTTTTTTTTTTT..",
+        "..TtTTTTTGTTtT..",
+        "..TtTTTTTTTSPt..",
+        "..ttTTTTTTTTSt..",
+        "...WWWWWWWW.....",
+        "...WwWwWwWW.....",
+    ]),
+    check_rows("carr", [                     # 3: the pen set down, hands together
+        "....TTTTTTTT....",
+        "..TTTTTTTTTTTT..",
+        "..TtTTTTTGTTtT..",
+        "..TtTTTTTTTTtT..",
+        "..ttTTSSSSTTtt..",
+        "...WWWWWWWW.PP..",
+        "...WwWwWwWW.....",
+    ]),
+]
+
+
+def make_carr():
+    """mateo_walk.png layout, plus row 4: at her desk, waist-up, facing down: 0-1 writing (alternate),
+    2 stopped writing (pen in hand), 3 pen set down."""
+    desk = [seated_frame(CARR, CARR["head_down"], t) for t in CARR_DESK_TORSOS]
+    return char_sheet(CARR, [desk])
+
+
+def seated_down_frame(ch, head, torso, lap, shin_cols, shoe, shoe_w=3, extra=None):
+    """Sitting on a chair, facing down: head, torso, lap (foreshortened thighs), shins, shoes.
+    Feet on FEET_ROW like a standing character; about 3 px shorter than standing."""
+    CUR["pal"] = ch["pal"]
+    img = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+    px = img.load()
+    total = len(head) + len(torso) + len(lap) + 2 + 2
+    y = FEET_ROW + 1 - total
+    blit_rows(px, torso, y + len(head))
+    blit_rows(px, head, y)
+    blit_rows(px, lap, y + len(head) + len(torso))
+    sy = y + len(head) + len(torso) + len(lap)
+    for x in shin_cols:
+        rect(px, x, sy, 2, 2, "J")
+        rect(px, x - (1 if x < 8 else 0), sy + 2, shoe_w, 2, shoe)
+    if extra:
+        extra(px, y)
+    outline(img)
+    CUR["pal"] = PAL
+    return img
+
+
+# The man in work boots: 50s, gray-streaked hair, a faded red work shirt, staring at the floor.
+WORKER_PAL = {"H": (64, 58, 54), "h": (120, 114, 108), "S": (150, 100, 70), "s": (116, 76, 52), "E": (28, 20, 18),
+              "T": (150, 74, 62), "t": (118, 56, 48), "J": (86, 92, 104), "j": (64, 70, 80),
+              "B": (140, 98, 56), "b": (108, 74, 42)}
+WORKER_HEAD = check_rows("worker", [         # head bowed: mostly hair, no eyes
+    "................",
+    ".....HHhHHH.....",
+    "....HHHHHhHH....",
+    "...HHhHHHHHHH...",
+    "...HHHHHHHHHH...",
+    "...HSSSSSSSSH...",
+    "....SssssssS....",
+    ".....sSSSSs.....",
+])
+WORKER_TORSO = check_rows("worker", [
+    "....TTTTTTTT....",
+    "..TTTTTTTTTTTT..",
+    "..TtTTTtTTTTtT..",
+    "..TtTTTtTTTTtT..",
+    "..SSttttttttSS..",                          # forearms on his knees
+])
+# The woman with the folder: 30s, long dark hair, lavender blouse, gray trousers; a manila folder
+# held flat against her chest with both arms.
+FOLDER_PAL = {"H": (36, 28, 26), "h": (66, 52, 48), "S": (178, 124, 92), "s": (140, 96, 70), "E": (28, 20, 18),
+              "T": (164, 150, 182), "t": (134, 120, 152), "J": (96, 96, 104), "j": (74, 74, 82),
+              "B": (40, 36, 40), "b": (28, 24, 28), "F": (214, 184, 112), "f": (182, 152, 84)}
+FOLDER_HEAD = check_rows("folder", [
+    ".....HHHHHH.....",
+    "....HHHhHHHH....",
+    "...HHHHHHHHHH...",
+    "...HHSSSSSSHH...",
+    "...HSSESSESSH...",
+    "...HSSSSSSSSH...",
+    "...HHSSSSSSHH...",
+    "...HH.sSSs.HH...",
+    "......ssss......",
+])
+FOLDER_TORSO = check_rows("folder", [
+    "...HTTTTTTTTH...",
+    "..TTTFFFFFFTTT..",
+    "..TtSFFFFFFStT..",
+    "..TtTFFFFFFTtT..",
+    "..TtTffffffTtT..",
+])
+MATEO_SEAT_TORSO = check_rows("mateo", [
+    "....TTTTTTTT....",
+    "..TTTTTTTTTTTT..",
+    "..TtTTTTTTTTtT..",
+    "..TtTTTTTTTTtT..",
+    "..SttttttttttS..",
+])
+LAP = ["...JJJJJJJJJJ...", "...JjJJJJJJjJ..."]
+
+
+def draw_plastic_chair_back(px, oy):
+    """A single plastic chair facing up (away from us), drawn over a sitter's lower back."""
+    fill(px, 3, oy + 1, 12, oy + 8, PLASTIC_DK)
+    fill(px, 4, oy + 2, 11, oy + 7, PLASTIC)
+    fill(px, 3, oy + 1, 12, oy + 1, PLASTIC_HI)
+    fill(px, 3, oy + 9, 12, oy + 9, PLASTIC_DK)          # seat edge peeking out
+    fill(px, 4, oy + 10, 4, oy + 13, CHROME_DK)          # steel legs
+    fill(px, 11, oy + 10, 11, oy + 13, CHROME_DK)
+
+
+def make_waiting_people():
+    """64x32, 16x32 frames, feet on row 28 like everyone else:
+    0 the man in work boots, sitting, staring at the floor; 1 the woman holding a folder to her chest;
+    2 Mateo sitting facing down; 3 Mateo sitting at Carr's desk, back to us, on a plastic chair."""
+    worker = seated_down_frame({"pal": WORKER_PAL}, WORKER_HEAD, WORKER_TORSO, LAP, (5, 9), "B", shoe_w=3)
+    folder = seated_down_frame({"pal": FOLDER_PAL}, FOLDER_HEAD, FOLDER_TORSO, LAP, (5, 9), "B", shoe_w=2)
+    mateo = seated_down_frame({"pal": PAL}, HEAD_DOWN, MATEO_SEAT_TORSO, LAP, (5, 9), "B", shoe_w=2)
+    CUR["pal"] = PAL
+    back = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+    px = back.load()
+    blit_rows(px, HEAD_UP, 7)
+    blit_rows(px, TORSO_BACK, 16)
+    outline(back)
+    chair = Image.new("RGBA", (FW, FH), (0, 0, 0, 0))
+    draw_plastic_chair_back(chair.load(), 15)
+    outline(chair)
+    back.alpha_composite(chair)
+    sheet = Image.new("RGBA", (FW * 4, FH), (0, 0, 0, 0))
+    for i, fr in enumerate((worker, folder, mateo, back)):
+        sheet.alpha_composite(fr, (i * FW, 0))
+    return sheet
+
+
+def draw_envelope_bag(px):
+    """The envelope sealed in a clear evidence bag."""
+    fill(px, 2, 3, 13, 12, (214, 226, 232))              # the bag
+    fill(px, 2, 3, 13, 3, (236, 242, 246))
+    fill(px, 3, 5, 12, 10, (232, 220, 190))              # envelope
+    fill(px, 3, 5, 12, 6, (214, 200, 168))               # flap
+    fill(px, 6, 6, 9, 6, (60, 56, 70))                   # the signature across it
+
+
+def draw_blank_pages(px):
+    """Three blank sheets, unfolded."""
+    fill(px, 2, 4, 10, 13, (232, 232, 226))
+    fill(px, 4, 3, 12, 12, (240, 240, 234))
+    fill(px, 6, 2, 14, 11, (250, 250, 246))
+    fill(px, 6, 6, 14, 6, (226, 226, 220))               # the fold
+
+
+def draw_documents(px):
+    """His passport and border crossing card."""
+    fill(px, 2, 5, 8, 13, (92, 40, 46))                  # passport
+    fill(px, 4, 8, 6, 9, (204, 172, 90))
+    fill(px, 9, 7, 14, 11, (226, 228, 222))              # the card
+    fill(px, 10, 8, 11, 10, (150, 120, 96))              # photo
+    fill(px, 12, 8, 13, 8, (120, 140, 180))
+
+
+SEC_PROP_ORDER = ["envelope_bag", "blank_pages", "documents"]
+
+
+def make_secondary_props():
+    sheet = Image.new("RGBA", (T * len(SEC_PROP_ORDER), T), (0, 0, 0, 0))
+    for i, fn in enumerate((draw_envelope_bag, draw_blank_pages, draw_documents)):
+        layer = Image.new("RGBA", (T, T), (0, 0, 0, 0))
+        fn(layer.load())
+        outline(layer)
+        sheet.paste(layer, (i * T, 0))
+    return sheet
+
+
+# ---------------- Mission 1 crossing previews ----------------
+def make_port_preview(tiles, awning, post, booth_glass, officer, handler, dog, queue, props, mateo_frames):
+    # f fence, R roof, w wall, < > sign, D door, p pavement, s seam, x stains, - rope, + post,
+    # ( ) rope ends, 1 2 booth roof, 3 4 window, 5 6 counter, g gate
+    layout = [
+        "f" * 30,
+        "R" * 30,
+        "wwwww<>wwwwwwwwwwwwwwwwDww12ww",
+        "ppppsppppxppppspppppppppps34pp",
+        "(--+---+---+---+---+---+-)56pp",
+        "pspppppppppxpppppsppppppppppppg",
+        "(--+---+---+---+---+---+-)pppp",
+        "ppppppppspppppppppppxppppppppp",
+        "pppxppppppppppppspppppppppppps",
+    ]
+    layout = [row.ljust(30, "p")[:30] for row in layout]
+    key = {"f": "fence", "R": "roof", "w": "port_wall", "<": "port_sign_left", ">": "port_sign_right",
+           "D": "port_door", "p": "pavement", "s": "pavement_seam", "x": "pavement_stains", "-": "rope",
+           "+": "rope_post", "(": "rope_end_left", ")": "rope_end_right", "1": "booth_roof_left",
+           "2": "booth_roof_right", "3": "booth_window_left", "4": "booth_window_right",
+           "5": "booth_counter_left", "6": "booth_counter_right", "g": "gate_closed"}
+    img = paste_layout(layout, key, tiles)
+    fr = lambda sheet, c, r, w=FW, h=FH: cell(sheet, c, r, w, h)  # noqa: E731
+    for x in range(26):                                              # awning shade over the line
+        for y in (3, 4, 5):
+            img.alpha_composite(awning.crop((0, 0, T, T)), (x * T, y * T))
+        img.alpha_composite(awning.crop((T, 0, 2 * T, T)), (x * T, 6 * T))
+    feet(img, fr(officer, 0, 0), 26 * T + 8, 4 * T)                  # the officer behind the glass
+    img.alpha_composite(booth_glass, (26 * T, 3 * T))
+    feet(img, fr(queue, 0, 2), 24 * T, 6 * T)                        # the man with the sleeping boy
+    feet(img, fr(queue, 0, 4), 21 * T, 6 * T)                        # the teenagers
+    feet(img, fr(queue, 0, 3), 20 * T, 6 * T)
+    feet(img, fr(queue, 0, 1), 17 * T, 6 * T)                        # the woman with the flyer
+    img.alpha_composite(props.crop((0, 0, T, T)), (22 * T + 4, 5 * T + 1))       # cooler
+    img.alpha_composite(props.crop((2 * T, 0, 3 * T, T)), (16 * T - 4, 5 * T + 1))   # shopping bag
+    img.alpha_composite(props.crop((T, 0, 2 * T, T)), (10 * T, 5 * T + 1))       # stroller
+    feet(img, mateo_frames[("right", 0)], 14 * T, 6 * T)             # Mateo in line
+    feet(img, fr(handler, 0, 3), 9 * T, 8 * T)                       # the handler and dog walking the line
+    feet(img, fr(dog, 0, 3, T, T), 7 * T + 8, 8 * T)
+    feet(img, fr(dog, 0, 4, T, T), 4 * T, 8 * T)                     # sniffing
+    feet(img, fr(handler, 0, 0), 2 * T, 9 * T)
+    for x in range(1, 26, 4):                                        # posts along the front rope
+        feet(img, post, x * T + 8, 7 * T)
+    return img
+
+
+def make_secondary_preview(tiles, carr, people, props):
+    # < > [ ] corners, l r side walls, w wall, c clock, o door, O open door, v vinyl, V scuff,
+    # ( m ) chair row, d e desk
+    layout = [
+        "<wwwwcwwwww>.<wwwwww>",
+        "lvvvvvvvvvvr.lvvvvvvr",
+        "lv(mm)v(mm)r.lvvdevvr",
+        "lvvvvvvvvvVr.lvvvvvvr",
+        "lv(mm)v(mm)r.lvvvvvvr",
+        "lvvvvvvvvvvr.lvvvvvvr",
+        "[wwwwwwwoww].[wwwOww]",
+    ]
+    width = max(len(r) for r in layout)
+    layout = [r.ljust(width, ".") for r in layout]
+    key = {"<": "wall_corner_top_left", ">": "wall_corner_top_right", "[": "wall_corner_bottom_left",
+           "]": "wall_corner_bottom_right", "l": "wall_side_left", "r": "wall_side_right", "w": "sec_wall",
+           "c": "wall_clock", "o": "office_door", "O": "office_door_open", "v": "vinyl", "V": "vinyl_scuff",
+           "(": "chair_row_left", "m": "chair_row_mid", ")": "chair_row_right", "d": "desk_left",
+           "e": "desk_right"}
+    tiles = {**tiles, ".": None}
+    img = Image.new("RGBA", (width * T, len(layout) * T), (0, 0, 0, 255))
+    for y, row in enumerate(layout):
+        for x, ch in enumerate(row):
+            if ch != ".":
+                img.paste(tiles[key[ch]], (x * T, y * T))
+    feet(img, cell(people, 0, 0), 3 * T + 8, 3 * T)                  # the man in work boots
+    feet(img, cell(people, 1, 0), 9 * T + 8, 3 * T)                  # the woman with the folder
+    feet(img, cell(people, 2, 0), 8 * T + 8, 5 * T)                  # Mateo waiting
+    feet(img, cell(carr, 0, 1), 8 * T + 8, 6 * T + 6)                # Carr at the door
+    feet(img, cell(carr, 0, 4), 17 * T, 2 * T + 2)                   # Carr at her desk, writing
+    img.alpha_composite(props.crop((0, 0, T, T)), (17 * T + 4, 2 * T - 4))   # envelope in its bag
+    img.alpha_composite(props.crop((2 * T, 0, 3 * T, T)), (16 * T - 6, 2 * T - 3))   # documents
+    feet(img, cell(people, 3, 0), 17 * T, 4 * T + 6)                 # Mateo across the desk
+    return img
+
+
+def save_crossing(frames):
+    port_sheet, port_tiles = make_port_tiles()
+    port_sheet.save(ASSET_DIR / "port_tiles.png")
+    awning = make_port_awning()
+    awning.save(ASSET_DIR / "port_awning.png")
+    post = make_awning_post()
+    post.save(ASSET_DIR / "awning_post.png")
+    glass = make_booth_glass()
+    glass.save(ASSET_DIR / "booth_glass.png")
+    port_props = make_port_props()
+    port_props.save(ASSET_DIR / "port_props.png")
+    officer = make_booth_officer()
+    officer.save(ASSET_DIR / "booth_officer.png")
+    handler, _ = char_sheet(HANDLER)
+    handler.save(ASSET_DIR / "handler_walk.png")
+    dog = make_dog()
+    dog.save(ASSET_DIR / "dog_walk.png")
+    queue = make_queue_npcs()
+    queue.save(ASSET_DIR / "queue_npcs.png")
+    sec_sheet, sec_tiles = make_secondary_tiles()
+    sec_sheet.save(ASSET_DIR / "secondary_tiles.png")
+    carr, _ = make_carr()
+    carr.save(ASSET_DIR / "carr_walk.png")
+    people = make_waiting_people()
+    people.save(ASSET_DIR / "waiting_people.png")
+    sec_props = make_secondary_props()
+    sec_props.save(ASSET_DIR / "secondary_props.png")
+
+    for name, im in (("port_tiles", port_sheet), ("secondary_tiles", sec_sheet)):
+        im.resize((im.width * 6, im.height * 6), Image.NEAREST).save(PREVIEW_DIR / f"{name}_6x.png")
+    for name, im in (("port_awning", awning), ("awning_post", post), ("booth_glass", glass),
+                     ("port_props", port_props), ("booth_officer", officer), ("handler_walk", handler),
+                     ("dog_walk", dog), ("queue_npcs", queue), ("carr_walk", carr),
+                     ("waiting_people", people), ("secondary_props", sec_props)):
+        bg = Image.new("RGBA", im.size, (150, 140, 124, 255))
+        bg.alpha_composite(im)
+        bg.resize((im.width * 6, im.height * 6), Image.NEAREST).save(PREVIEW_DIR / f"{name}_6x.png")
+    # Everyone new at 1x, beside Mateo, for checking they read as different people.
+    lineup = Image.new("RGBA", (FW * 12 + 26, FH + 4), (150, 140, 124, 255))
+    mateo_sheet = Image.open(ASSET_DIR / "mateo_walk.png")
+    strip = [cell(mateo_sheet, 0, 0), cell(mateo_sheet, 0, 2), cell(handler, 0, 0), cell(handler, 0, 2),
+             cell(carr, 0, 0), cell(carr, 0, 2), cell(queue, 0, 0), cell(queue, 0, 1), cell(queue, 0, 2),
+             cell(queue, 0, 3), cell(queue, 0, 4)]
+    for i, fr in enumerate(strip):
+        lineup.alpha_composite(fr, (2 + i * (FW + 2), 2))
+    lineup.alpha_composite(dog.crop((0, 2 * T, T, 3 * T)), (2 + 11 * (FW + 2), FH + 2 - T))
+    lineup.save(PREVIEW_DIR / "crossing_lineup_1x.png")
+    lineup.resize((lineup.width * 6, lineup.height * 6), Image.NEAREST).save(PREVIEW_DIR / "crossing_lineup_6x.png")
+    port = make_port_preview(port_tiles, awning, post, glass, officer, handler, dog, queue, port_props, frames)
+    port.resize((port.width * 4, port.height * 4), Image.NEAREST).save(PREVIEW_DIR / "port_scene.png")
+    sec = make_secondary_preview(sec_tiles, carr, people, sec_props)
+    sec.resize((sec.width * 4, sec.height * 4), Image.NEAREST).save(PREVIEW_DIR / "secondary_scene.png")
+
+
 def main():
     ASSET_DIR.mkdir(parents=True, exist_ok=True)
     PREVIEW_DIR.mkdir(parents=True, exist_ok=True)
@@ -2912,6 +4078,8 @@ def main():
 
     # Mission 1 (last: its own random stream and builders, so it never changes the outputs above)
     save_mission1(frames)
+    # Mission 1 crossing (after that: its own random stream, so it never changes anything above)
+    save_crossing(frames)
 
 
 if __name__ == "__main__":
