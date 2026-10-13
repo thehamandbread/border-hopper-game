@@ -12,7 +12,9 @@ const LINE_H = 10;
 const TAG_H = 13;
 const DEPTH = 4000;
 
-const COLORS = { fill: 0x16121c, border: 0xe8d8b0, name: 0xf0d080, text: 0xffffff, narration: 0x98a4bc, pick: 0xffe08a, other: 0xb8b0c0 };
+const COLORS = { fill: 0x16121c, border: 0xe8d8b0, name: 0xf0d080, text: 0xffffff, narration: 0x98a4bc, pick: 0xffe08a, other: 0xb8b0c0, timer: 0xb8b0c0 };
+// Timed choices: a thin bar along the inside top of the box that drains as time runs out (no numbers).
+const TIMER_BAR = { x: BOX.x + 4, y: BOX.y + 3, w: BOX.w - 8, h: 1 };
 
 /**
  * Dialogue box presenter: a box along the bottom with a speaker tag, typewriter text, a blinking
@@ -20,8 +22,9 @@ const COLORS = { fill: 0x16121c, border: 0xe8d8b0, name: 0xf0d080, text: 0xfffff
  * is paused at a wait event (e.g. a text arriving) the box is hidden and ignores input.
  *
  * Controls: Space completes a line, then advances. Choices: W/S or up/down to highlight, Space to
- * confirm, 1-3 to pick directly. One key press is one action (holding Space does not repeat).
- * E does nothing here.
+ * confirm, 1-4 to pick directly. One key press is one action (holding Space does not repeat).
+ * E does nothing here. A timed choice shows a thin bar that drains; when it's empty the runner's
+ * timeout() decides what happens.
  */
 export default class DialogueBox {
   constructor(scene) {
@@ -45,6 +48,8 @@ export default class DialogueBox {
     this.spaceHint = this.make(0, 0, ADVANCE_HINT, COLORS.other);
     this.spaceHint.setPosition(BOX.x + BOX.w - 18 - textWidth(scene, ADVANCE_HINT), BOX.y + BOX.h - 15);
     this.choiceHint = this.make(TEXT_X, BOX.y + BOX.h - 13, CHOICE_HINT, COLORS.other);
+    this.timerBar = scene.add.graphics().setScrollFactor(0).setDepth(DEPTH + 1);
+    this.choiceTimer = null;
 
     this.typer = new Typewriter(scene, {
       onReveal: (n) => this.body.setText(this.typer.text.slice(0, n)),
@@ -79,6 +84,7 @@ export default class DialogueBox {
     this.choiceHint.setVisible(false);
     if (!v) {
       this.indicatorWanted = false;
+      this.stopTimer();
       this.clearOptions();
       this.marker.setVisible(false);
     }
@@ -176,6 +182,33 @@ export default class DialogueBox {
     this.refreshChoice();
     this.spaceHint.setVisible(false);
     this.choiceHint.setVisible(showChoiceHint());
+    const ms = this.runner.timerMs(node);
+    if (ms > 0) this.startTimer(ms);
+  }
+
+  startTimer(ms) {
+    this.stopTimer();
+    this.choiceTimer = this.scene.time.delayedCall(ms, () => {
+      this.choiceTimer = null;
+      this.stopTimer();
+      this.choiceHint.setVisible(false);
+      this.clearOptions();
+      this.marker.setVisible(false);
+      this.runner.timeout();
+    });
+    this.drawTimer();
+  }
+
+  stopTimer() {
+    this.choiceTimer?.remove();
+    this.choiceTimer = null;
+    this.timerBar.clear();
+  }
+
+  drawTimer() {
+    if (!this.choiceTimer) return;
+    const w = Math.round(TIMER_BAR.w * (1 - this.choiceTimer.getProgress()));
+    this.timerBar.clear().fillStyle(COLORS.timer, 1).fillRect(TIMER_BAR.x, TIMER_BAR.y, w, TIMER_BAR.h);
   }
 
   refreshChoice() {
@@ -191,6 +224,7 @@ export default class DialogueBox {
 
   pick(index) {
     if (index < 0 || index >= this.options.length) return;
+    this.stopTimer();
     countChoice();
     this.choiceHint.setVisible(false);
     this.clearOptions();
@@ -203,6 +237,7 @@ export default class DialogueBox {
   update() {
     if (!this.runner || this.runner.waiting) return; // paused: leave keys alone (e.g. Space closes the phone)
     const { space, up, down, pick } = this.input.read();
+    this.drawTimer();
 
     if (this.options.length) {
       if (up) this.selected = (this.selected + this.options.length - 1) % this.options.length;

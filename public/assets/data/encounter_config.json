@@ -1,0 +1,8 @@
+{
+ "_comment": "Encounter tuning. Suspicion is hidden (never shown). Each encounter keeps its own count: 'start' is where it begins, 'flaggedStart' replaces it while the border crossing card is flagged (flag card_flagged). Booth: 'heldAt' and up the officer holds the passport a moment; 'secondaryAt' and up sends Mateo to secondary inspection. Secondary: 'refuseAt' and up is refused entry. Dialogue data reads these as \"@encounters.booth.secondaryAt\" etc. keyQuestionMs: time to answer a key (timed) question.",
+ "encounters": {
+  "booth": { "start": 0, "flaggedStart": 1, "heldAt": 2, "secondaryAt": 4 },
+  "secondary": { "start": 0, "refuseAt": 4 }
+ },
+ "keyQuestionMs": 6000
+}

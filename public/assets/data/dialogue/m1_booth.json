@@ -1,0 +1,676 @@
+{
+ "_comment": "Mission 1, Scene 3: the booth. Suspicion is the hidden 'booth' count (encounter_config.json). Remembered answers: cover_story (shopping, family, doctor, dropoff); cover_detail (shoes, work_stuff, not_sure, tia, friend, dentist, prescription, checkup, letter, business_papers); booth_address (fourth_street, downtown: only when he gave one); booth_time (eleven_thirty, afternoon); key_answer (just_paper, tia_letter, cash, prescription, medical_papers, dropoff_letter, paperwork, dont_know, none). Ends with the event booth_pass or booth_secondary. Other events are for the officer's frames.",
+ "id": "m1_booth",
+ "presenter": "box",
+ "lockMovement": true,
+ "start": "booth_start",
+ "nodes": {
+  "booth_start": {
+   "type": "event",
+   "name": "booth_start",
+   "next": "documents",
+   "effects": [
+    {
+     "startEncounter": "booth"
+    }
+   ]
+  },
+  "documents": {
+   "type": "line",
+   "speaker": "OFFICER",
+   "text": "Documents.",
+   "next": "slide_ev"
+  },
+  "slide_ev": {
+   "type": "event",
+   "name": "documents_under_glass",
+   "next": "slide"
+  },
+  "slide": {
+   "type": "narration",
+   "text": "Mateo slides his passport and card under the glass. The officer scans them without looking up.",
+   "next": "purpose_q"
+  },
+  "purpose_q": {
+   "type": "line",
+   "speaker": "OFFICER",
+   "text": "Purpose of your visit?",
+   "next": "purpose"
+  },
+  "purpose": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "shopping",
+     "text": "Shopping.",
+     "effects": [
+      {
+       "answer": "cover_story",
+       "set": "shopping"
+      }
+     ],
+     "next": "tells"
+    },
+    {
+     "id": "family",
+     "text": "Visiting family.",
+     "effects": [
+      {
+       "answer": "cover_story",
+       "set": "family"
+      }
+     ],
+     "next": "tells"
+    },
+    {
+     "id": "doctor",
+     "text": "A doctor's appointment.",
+     "effects": [
+      {
+       "answer": "cover_story",
+       "set": "doctor"
+      }
+     ],
+     "next": "tells"
+    },
+    {
+     "id": "dropoff",
+     "text": "I have to drop something off.",
+     "effects": [
+      {
+       "answer": "cover_story",
+       "set": "dropoff"
+      },
+      {
+       "suspicion": "booth",
+       "add": 2
+      }
+     ],
+     "next": "tells"
+    }
+   ]
+  },
+  "tells": {
+   "type": "branch",
+   "cases": [
+    {
+     "if": {
+      "mission": "attempt",
+      "gte": 3
+     },
+     "next": "tell3_ev"
+    },
+    {
+     "if": {
+      "mission": "attempt",
+      "eq": 2
+     },
+     "next": "tell2_ev"
+    }
+   ],
+   "else": "followups"
+  },
+  "tell2_ev": {
+   "type": "event",
+   "name": "officer_stops_typing",
+   "next": "tell2"
+  },
+  "tell2": {
+   "type": "narration",
+   "text": "He stops typing.",
+   "next": "followups"
+  },
+  "tell3_ev": {
+   "type": "event",
+   "name": "officer_looks_at_photo",
+   "next": "tell3"
+  },
+  "tell3": {
+   "type": "narration",
+   "text": "He looks at the passport photo, then at Mateo.",
+   "next": "followups"
+  },
+  "followups": {
+   "type": "branch",
+   "cases": [
+    {
+     "if": {
+      "answer": "cover_story",
+      "eq": "shopping"
+     },
+     "next": "buying_q"
+    },
+    {
+     "if": {
+      "answer": "cover_story",
+      "eq": "family"
+     },
+     "next": "who_q"
+    },
+    {
+     "if": {
+      "answer": "cover_story",
+      "eq": "doctor"
+     },
+     "next": "kind_q"
+    }
+   ],
+   "else": "drop_q"
+  },
+  "buying_q": {
+   "type": "line",
+   "speaker": "OFFICER",
+   "text": "What are you buying?",
+   "next": "buying"
+  },
+  "buying": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "shoes",
+     "text": "Shoes for my brother.",
+     "effects": [
+      {
+       "answer": "cover_detail",
+       "set": "shoes"
+      }
+     ],
+     "next": "key"
+    },
+    {
+     "id": "work_stuff",
+     "text": "Some stuff for work.",
+     "effects": [
+      {
+       "answer": "cover_detail",
+       "set": "work_stuff"
+      },
+      {
+       "suspicion": "booth",
+       "add": 2
+      }
+     ],
+     "next": "key"
+    },
+    {
+     "id": "not_sure",
+     "text": "I don't know yet.",
+     "effects": [
+      {
+       "answer": "cover_detail",
+       "set": "not_sure"
+      },
+      {
+       "suspicion": "booth",
+       "add": 1
+      }
+     ],
+     "next": "key"
+    }
+   ]
+  },
+  "who_q": {
+   "type": "line",
+   "speaker": "OFFICER",
+   "text": "Who?",
+   "next": "who"
+  },
+  "who": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "tia",
+     "text": "My tía.",
+     "effects": [
+      {
+       "answer": "cover_detail",
+       "set": "tia"
+      }
+     ],
+     "next": "where_q"
+    },
+    {
+     "id": "friend",
+     "text": "A friend.",
+     "effects": [
+      {
+       "answer": "cover_detail",
+       "set": "friend"
+      },
+      {
+       "suspicion": "booth",
+       "add": 1
+      }
+     ],
+     "next": "said_family"
+    }
+   ]
+  },
+  "where_q": {
+   "type": "line",
+   "speaker": "OFFICER",
+   "text": "Where does she live?",
+   "next": "where"
+  },
+  "where": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "fourth_street",
+     "text": "Fourth Street.",
+     "effects": [
+      {
+       "answer": "booth_address",
+       "set": "fourth_street"
+      }
+     ],
+     "next": "key"
+    },
+    {
+     "id": "downtown",
+     "text": "Near downtown.",
+     "effects": [
+      {
+       "answer": "booth_address",
+       "set": "downtown"
+      }
+     ],
+     "next": "key"
+    },
+    {
+     "id": "check_phone",
+     "text": "I'd have to check my phone.",
+     "effects": [
+      {
+       "suspicion": "booth",
+       "add": 2
+      }
+     ],
+     "next": "key"
+    }
+   ]
+  },
+  "said_family": {
+   "type": "line",
+   "speaker": "OFFICER",
+   "text": "Thought you said family.",
+   "next": "key"
+  },
+  "kind_q": {
+   "type": "line",
+   "speaker": "OFFICER",
+   "text": "What kind of appointment?",
+   "next": "kind"
+  },
+  "kind": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "dentist",
+     "text": "The dentist.",
+     "effects": [
+      {
+       "answer": "cover_detail",
+       "set": "dentist"
+      }
+     ],
+     "next": "time_q"
+    },
+    {
+     "id": "prescription",
+     "text": "Picking up a prescription for my grandmother.",
+     "effects": [
+      {
+       "answer": "cover_detail",
+       "set": "prescription"
+      }
+     ],
+     "next": "key"
+    },
+    {
+     "id": "checkup",
+     "text": "It's… a checkup.",
+     "effects": [
+      {
+       "answer": "cover_detail",
+       "set": "checkup"
+      },
+      {
+       "suspicion": "booth",
+       "add": 1
+      }
+     ],
+     "next": "key"
+    }
+   ]
+  },
+  "time_q": {
+   "type": "line",
+   "speaker": "OFFICER",
+   "text": "What time?",
+   "next": "time"
+  },
+  "time": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "eleven_thirty",
+     "text": "Eleven thirty.",
+     "effects": [
+      {
+       "answer": "booth_time",
+       "set": "eleven_thirty"
+      }
+     ],
+     "next": "key"
+    },
+    {
+     "id": "afternoon",
+     "text": "Sometime this afternoon.",
+     "effects": [
+      {
+       "answer": "booth_time",
+       "set": "afternoon"
+      },
+      {
+       "suspicion": "booth",
+       "add": 1
+      }
+     ],
+     "next": "key"
+    }
+   ]
+  },
+  "drop_q": {
+   "type": "line",
+   "speaker": "OFFICER",
+   "text": "Drop off what?",
+   "next": "drop_what"
+  },
+  "drop_what": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "letter",
+     "text": "A letter for a friend.",
+     "effects": [
+      {
+       "answer": "cover_detail",
+       "set": "letter"
+      }
+     ],
+     "next": "key"
+    },
+    {
+     "id": "business_papers",
+     "text": "Some papers for a business.",
+     "effects": [
+      {
+       "answer": "cover_detail",
+       "set": "business_papers"
+      },
+      {
+       "suspicion": "booth",
+       "add": 2
+      }
+     ],
+     "next": "key"
+    }
+   ]
+  },
+  "key": {
+   "type": "branch",
+   "cases": [
+    {
+     "if": {
+      "suspicion": "booth",
+      "gte": 2
+     },
+     "next": "key_typing_ev"
+    }
+   ],
+   "else": "key_glance_ev"
+  },
+  "key_typing_ev": {
+   "type": "event",
+   "name": "officer_stops_typing",
+   "next": "key_typing"
+  },
+  "key_typing": {
+   "type": "narration",
+   "text": "He stops typing.",
+   "next": "jacket_q"
+  },
+  "key_glance_ev": {
+   "type": "event",
+   "name": "officer_glances_at_jacket",
+   "next": "key_glance"
+  },
+  "key_glance": {
+   "type": "narration",
+   "text": "He glances at the front of Mateo's jacket.",
+   "next": "jacket_q"
+  },
+  "jacket_q": {
+   "type": "line",
+   "speaker": "OFFICER",
+   "text": "What's in your jacket?",
+   "next": "jacket"
+  },
+  "jacket": {
+   "type": "choice",
+   "timer": {
+    "ms": "@keyQuestionMs",
+    "effects": [
+     {
+      "suspicion": "booth",
+      "add": 2
+     },
+     {
+      "answer": "key_answer",
+      "set": "none"
+     }
+    ],
+    "next": "no_answer"
+   },
+   "options": [
+    {
+     "id": "just_paper",
+     "text": "Just paper.",
+     "effects": [
+      {
+       "answer": "key_answer",
+       "set": "just_paper"
+      }
+     ],
+     "next": "outcome",
+     "if": {
+      "flag": "envelope_opened"
+     }
+    },
+    {
+     "id": "cover_answer",
+     "variants": [
+      {
+       "if": {
+        "answer": "cover_story",
+        "eq": "family"
+       },
+       "id": "tia_letter",
+       "text": "A letter for my tía.",
+       "effects": [
+        {
+         "answer": "key_answer",
+         "set": "tia_letter"
+        }
+       ]
+      },
+      {
+       "if": {
+        "answer": "cover_story",
+        "eq": "shopping"
+       },
+       "id": "cash",
+       "text": "Cash. For the shoes.",
+       "effects": [
+        {
+         "answer": "key_answer",
+         "set": "cash"
+        }
+       ]
+      },
+      {
+       "if": {
+        "answer": "cover_detail",
+        "eq": "prescription"
+       },
+       "id": "prescription",
+       "text": "The prescription.",
+       "effects": [
+        {
+         "answer": "key_answer",
+         "set": "prescription"
+        }
+       ]
+      },
+      {
+       "if": {
+        "answer": "cover_story",
+        "eq": "doctor"
+       },
+       "id": "medical_papers",
+       "text": "My medical papers.",
+       "effects": [
+        {
+         "answer": "key_answer",
+         "set": "medical_papers"
+        }
+       ]
+      },
+      {
+       "if": {
+        "answer": "cover_story",
+        "eq": "dropoff"
+       },
+       "id": "dropoff_letter",
+       "text": "The letter I'm dropping off.",
+       "effects": [
+        {
+         "answer": "key_answer",
+         "set": "dropoff_letter"
+        }
+       ]
+      }
+     ],
+     "next": "outcome"
+    },
+    {
+     "id": "paperwork",
+     "text": "Paperwork.",
+     "effects": [
+      {
+       "answer": "key_answer",
+       "set": "paperwork"
+      },
+      {
+       "suspicion": "booth",
+       "add": 2
+      }
+     ],
+     "next": "outcome"
+    },
+    {
+     "id": "dont_know",
+     "text": "I don't know.",
+     "effects": [
+      {
+       "answer": "key_answer",
+       "set": "dont_know"
+      },
+      {
+       "suspicion": "booth",
+       "add": 2
+      }
+     ],
+     "next": "outcome"
+    }
+   ]
+  },
+  "no_answer": {
+   "type": "narration",
+   "text": "Mateo doesn't answer.",
+   "next": "outcome"
+  },
+  "outcome": {
+   "type": "branch",
+   "cases": [
+    {
+     "if": {
+      "suspicion": "booth",
+      "gte": "@encounters.booth.secondaryAt"
+     },
+     "next": "step_over"
+    },
+    {
+     "if": {
+      "suspicion": "booth",
+      "gte": "@encounters.booth.heldAt"
+     },
+     "next": "held_ev"
+    }
+   ],
+   "else": "back_ev"
+  },
+  "back_ev": {
+   "type": "event",
+   "name": "documents_back",
+   "next": "back"
+  },
+  "back": {
+   "type": "narration",
+   "text": "He slides the documents back under the glass.",
+   "next": "good_day"
+  },
+  "good_day": {
+   "type": "line",
+   "speaker": "OFFICER",
+   "text": "Have a good day.",
+   "next": "pass"
+  },
+  "held_ev": {
+   "type": "event",
+   "name": "officer_holds_passport",
+   "next": "held"
+  },
+  "held": {
+   "type": "narration",
+   "text": "He holds onto the passport a moment longer. Then he slides it back.",
+   "next": "go_ahead"
+  },
+  "go_ahead": {
+   "type": "line",
+   "speaker": "OFFICER",
+   "text": "Go ahead.",
+   "next": "pass"
+  },
+  "pass": {
+   "type": "event",
+   "name": "booth_pass",
+   "next": "end"
+  },
+  "step_over": {
+   "type": "line",
+   "speaker": "OFFICER",
+   "text": "Step over there, please. The door on your left.",
+   "next": "secondary"
+  },
+  "secondary": {
+   "type": "event",
+   "name": "booth_secondary",
+   "next": "end"
+  },
+  "end": {
+   "type": "end"
+  }
+ }
+}

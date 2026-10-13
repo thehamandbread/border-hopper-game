@@ -1,0 +1,737 @@
+{
+ "_comment": "Mission 1, Scene 3b: secondary inspection. Suspicion is the hidden 'secondary' count, starting at 0; the booth answers (see m1_booth.json) are compared. Questions that compare against an earlier answer have 'requires' and are skipped (and logged) when there is none. Carr opening the envelope sets envelope_inspected, never envelope_opened. Ends with the event secondary_pass (Heat +1) or refused (Heat +2, card flagged, attempt +1, booth answers cleared; the scene restarts the mission from the line).",
+ "id": "m1_secondary",
+ "presenter": "box",
+ "lockMovement": true,
+ "start": "sec_start",
+ "nodes": {
+  "sec_start": {
+   "type": "event",
+   "name": "secondary_start",
+   "next": "room",
+   "effects": [
+    {
+     "startEncounter": "secondary"
+    }
+   ]
+  },
+  "room": {
+   "type": "narration",
+   "text": "A small room with plastic chairs bolted together in rows. A clock on the wall. A man in work boots stares at the floor. A woman holds a folder of documents against her chest.",
+   "next": "sit_ev"
+  },
+  "sit_ev": {
+   "type": "event",
+   "name": "mateo_sits",
+   "next": "sits",
+   "wait": true
+  },
+  "sits": {
+   "type": "narration",
+   "text": "Mateo sits. The clock says 11:12.{p:1500}",
+   "next": "clock_ev"
+  },
+  "clock_ev": {
+   "type": "event",
+   "name": "clock_1131",
+   "next": "later"
+  },
+  "later": {
+   "type": "narration",
+   "text": "11:31.",
+   "next": "door_ev"
+  },
+  "door_ev": {
+   "type": "event",
+   "name": "door_opens",
+   "next": "door",
+   "wait": true
+  },
+  "door": {
+   "type": "narration",
+   "text": "A door opens.",
+   "next": "name"
+  },
+  "name": {
+   "type": "line",
+   "speaker": "OFFICER CARR",
+   "text": "Mateo Ibarra?",
+   "next": "follow_ev"
+  },
+  "follow_ev": {
+   "type": "event",
+   "name": "follow_carr",
+   "next": "follows",
+   "wait": true
+  },
+  "follows": {
+   "type": "narration",
+   "text": "He follows her into a small office. She has his passport, his card, and the envelope in a clear plastic bag.",
+   "next": "have_seat"
+  },
+  "have_seat": {
+   "type": "line",
+   "speaker": "OFFICER CARR",
+   "text": "Have a seat.",
+   "next": "seat_ev"
+  },
+  "seat_ev": {
+   "type": "event",
+   "name": "sit_at_desk",
+   "next": "notepad",
+   "wait": true
+  },
+  "notepad": {
+   "type": "narration",
+   "text": "She sits across from him and opens a notepad. The envelope stays in its bag.",
+   "next": "tells"
+  },
+  "tells": {
+   "type": "branch",
+   "cases": [
+    {
+     "if": {
+      "mission": "attempt",
+      "gte": 3
+     },
+     "next": "tell3_ev"
+    },
+    {
+     "if": {
+      "mission": "attempt",
+      "eq": 2
+     },
+     "next": "tell2_ev"
+    }
+   ],
+   "else": "followups"
+  },
+  "tell2_ev": {
+   "type": "event",
+   "name": "carr_stops_writing",
+   "next": "tell2"
+  },
+  "tell2": {
+   "type": "narration",
+   "text": "She stops writing.",
+   "next": "followups"
+  },
+  "tell3_ev": {
+   "type": "event",
+   "name": "carr_sets_pen_down",
+   "next": "tell3"
+  },
+  "tell3": {
+   "type": "narration",
+   "text": "She sets the pen down.",
+   "next": "followups"
+  },
+  "followups": {
+   "type": "branch",
+   "cases": [
+    {
+     "if": {
+      "answer": "cover_story",
+      "eq": "family"
+     },
+     "next": "tia_name_q"
+    },
+    {
+     "if": {
+      "answer": "cover_story",
+      "eq": "shopping"
+     },
+     "next": "store_q"
+    },
+    {
+     "if": {
+      "answer": "cover_story",
+      "eq": "doctor"
+     },
+     "next": "doctor_q"
+    }
+   ],
+   "else": "friend_q"
+  },
+  "tia_name_q": {
+   "type": "line",
+   "speaker": "OFFICER CARR",
+   "text": "What's your tía's name?",
+   "next": "tia_name"
+  },
+  "tia_name": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "rosa",
+     "text": "Rosa.",
+     "next": "address_q"
+    },
+    {
+     "id": "rosa_ibarra",
+     "text": "Rosa… Ibarra.",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 1
+      }
+     ],
+     "next": "address_q"
+    },
+    {
+     "id": "silent",
+     "text": "(Say nothing.)",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 2
+      }
+     ],
+     "next": "address_q"
+    }
+   ]
+  },
+  "address_q": {
+   "type": "line",
+   "speaker": "OFFICER CARR",
+   "text": "And where does she live?",
+   "next": "address",
+   "requires": {
+    "answer": "booth_address",
+    "exists": true
+   },
+   "skip": "envelope"
+  },
+  "address": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "fourth_street",
+     "text": "Fourth Street.",
+     "next": "envelope",
+     "variants": [
+      {
+       "if": {
+        "answer": "booth_address",
+        "ne": "fourth_street"
+       },
+       "effects": [
+        {
+         "suspicion": "secondary",
+         "add": 2
+        }
+       ],
+       "next": "writes"
+      }
+     ]
+    },
+    {
+     "id": "downtown",
+     "text": "Near downtown.",
+     "next": "envelope",
+     "variants": [
+      {
+       "if": {
+        "answer": "booth_address",
+        "ne": "downtown"
+       },
+       "effects": [
+        {
+         "suspicion": "secondary",
+         "add": 2
+        }
+       ],
+       "next": "writes"
+      }
+     ]
+    }
+   ]
+  },
+  "writes": {
+   "type": "narration",
+   "text": "She writes something down.",
+   "next": "envelope"
+  },
+  "store_q": {
+   "type": "line",
+   "speaker": "OFFICER CARR",
+   "text": "Which store?",
+   "next": "store"
+  },
+  "store": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "his_size",
+     "text": "Whichever one has his size.",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 1
+      }
+     ],
+     "next": "price_q"
+    },
+    {
+     "id": "outlets",
+     "text": "The outlets on the highway.",
+     "next": "price_q"
+    }
+   ]
+  },
+  "price_q": {
+   "type": "line",
+   "speaker": "OFFICER CARR",
+   "text": "How much are the shoes?",
+   "next": "price",
+   "requires": {
+    "answer": "cover_detail",
+    "eq": "shoes"
+   },
+   "skip": "envelope"
+  },
+  "price": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "sixty",
+     "text": "Around sixty dollars.",
+     "next": "envelope"
+    },
+    {
+     "id": "a_lot",
+     "text": "I don't know. A lot.",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 1
+      }
+     ],
+     "next": "envelope"
+    }
+   ]
+  },
+  "doctor_q": {
+   "type": "line",
+   "speaker": "OFFICER CARR",
+   "text": "What's the doctor's name?",
+   "next": "doctor"
+  },
+  "doctor": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "in_phone",
+     "text": "I have it in my phone.",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 1
+      }
+     ],
+     "next": "time_q"
+    },
+    {
+     "id": "silent",
+     "text": "(Say nothing.)",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 2
+      }
+     ],
+     "next": "time_q"
+    }
+   ]
+  },
+  "time_q": {
+   "type": "line",
+   "speaker": "OFFICER CARR",
+   "text": "What time did you say it was?",
+   "next": "time",
+   "requires": {
+    "answer": "booth_time",
+    "exists": true
+   },
+   "skip": "envelope"
+  },
+  "time": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "eleven_thirty",
+     "text": "Eleven thirty.",
+     "next": "envelope",
+     "variants": [
+      {
+       "if": {
+        "answer": "booth_time",
+        "ne": "eleven_thirty"
+       },
+       "effects": [
+        {
+         "suspicion": "secondary",
+         "add": 2
+        }
+       ],
+       "next": "envelope"
+      }
+     ]
+    },
+    {
+     "id": "afternoon",
+     "text": "Sometime this afternoon.",
+     "next": "envelope",
+     "variants": [
+      {
+       "if": {
+        "answer": "booth_time",
+        "ne": "afternoon"
+       },
+       "effects": [
+        {
+         "suspicion": "secondary",
+         "add": 2
+        }
+       ],
+       "next": "envelope"
+      }
+     ]
+    }
+   ]
+  },
+  "friend_q": {
+   "type": "line",
+   "speaker": "OFFICER CARR",
+   "text": "Who's the friend?",
+   "next": "friend",
+   "requires": {
+    "answer": "cover_detail",
+    "eq": "letter"
+   },
+   "skip": "envelope"
+  },
+  "friend": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "walt",
+     "text": "His name's Walt.",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 1
+      }
+     ],
+     "next": "envelope"
+    },
+    {
+     "id": "a_guy",
+     "text": "Just a guy I know.",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 2
+      }
+     ],
+     "next": "envelope"
+    }
+   ]
+  },
+  "envelope": {
+   "type": "branch",
+   "cases": [
+    {
+     "if": {
+      "flag": "envelope_opened"
+     },
+     "next": "torn_ev"
+    }
+   ],
+   "else": "unfold_ev"
+  },
+  "torn_ev": {
+   "type": "event",
+   "name": "carr_turns_bag",
+   "next": "torn"
+  },
+  "torn": {
+   "type": "narration",
+   "text": "She turns the bag over. The signature on the flap is already torn.",
+   "next": "unfold_ev"
+  },
+  "unfold_ev": {
+   "type": "event",
+   "name": "carr_opens_envelope",
+   "next": "unfold",
+   "effects": [
+    {
+     "flag": "envelope_inspected",
+     "set": true
+    }
+   ],
+   "wait": true
+  },
+  "unfold": {
+   "type": "narration",
+   "text": "She takes the envelope out and unfolds the sheets. Three pages. Blank.",
+   "next": "lie"
+  },
+  "lie": {
+   "type": "branch",
+   "cases": [
+    {
+     "if": {
+      "answer": "key_answer",
+      "in": [
+       "cash",
+       "medical_papers",
+       "prescription",
+       "dropoff_letter"
+      ]
+     },
+     "next": "exposed"
+    }
+   ],
+   "else": "why_q"
+  },
+  "exposed": {
+   "type": "narration",
+   "text": "She looks at the blank pages, then at him.",
+   "next": "told_outside",
+   "effects": [
+    {
+     "suspicion": "secondary",
+     "add": 2
+    }
+   ]
+  },
+  "told_outside": {
+   "type": "line",
+   "speaker": "OFFICER CARR",
+   "text": "",
+   "variants": [
+    {
+     "if": {
+      "answer": "key_answer",
+      "eq": "cash"
+     },
+     "text": "You told the officer outside this was cash."
+    },
+    {
+     "if": {
+      "answer": "key_answer",
+      "eq": "medical_papers"
+     },
+     "text": "You told the officer outside these were your medical papers."
+    },
+    {
+     "if": {
+      "answer": "key_answer",
+      "eq": "prescription"
+     },
+     "text": "You told the officer outside this was a prescription."
+    },
+    {
+     "if": {
+      "answer": "key_answer",
+      "eq": "dropoff_letter"
+     },
+     "text": "You told the officer outside this was a letter."
+    }
+   ],
+   "next": "why_q"
+  },
+  "why_q": {
+   "type": "line",
+   "speaker": "OFFICER CARR",
+   "text": "Why are you carrying blank paper across the border?",
+   "next": "why"
+  },
+  "why": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "asked_me",
+     "text": "Somebody asked me to bring it.",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 1
+      }
+     ],
+     "next": "who_q"
+    },
+    {
+     "id": "tia_cards",
+     "text": "It's for my tía. She makes cards.",
+     "variants": [
+      {
+       "if": {
+        "answer": "cover_story",
+        "ne": "family"
+       },
+       "effects": [
+        {
+         "suspicion": "secondary",
+         "add": 2
+        }
+       ]
+      }
+     ],
+     "next": "outcome"
+    },
+    {
+     "id": "dont_know",
+     "text": "I don't know.",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 2
+      }
+     ],
+     "next": "outcome"
+    }
+   ]
+  },
+  "who_q": {
+   "type": "line",
+   "speaker": "OFFICER CARR",
+   "text": "Who?",
+   "next": "who"
+  },
+  "who": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "tire_shop",
+     "text": "A guy at a tire shop.",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 1
+      },
+      {
+       "flag": "told_officer_tireshop",
+       "set": true
+      },
+      {
+       "meter": "loyalty",
+       "add": -1,
+       "once": "told_officer_tireshop"
+      }
+     ],
+     "next": "outcome"
+    },
+    {
+     "id": "family_friend",
+     "text": "A friend of my family.",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 1
+      }
+     ],
+     "next": "outcome"
+    },
+    {
+     "id": "rather_not",
+     "text": "I'd rather not say.",
+     "effects": [
+      {
+       "suspicion": "secondary",
+       "add": 2
+      }
+     ],
+     "next": "outcome"
+    }
+   ]
+  },
+  "outcome": {
+   "type": "branch",
+   "cases": [
+    {
+     "if": {
+      "suspicion": "secondary",
+      "gte": "@encounters.secondary.refuseAt"
+     },
+     "next": "denied"
+    }
+   ],
+   "else": "slide_ev"
+  },
+  "slide_ev": {
+   "type": "event",
+   "name": "carr_slides_everything_back",
+   "next": "slide"
+  },
+  "slide": {
+   "type": "narration",
+   "text": "She puts the pages back in the envelope and slides everything across the desk.",
+   "next": "can_go"
+  },
+  "can_go": {
+   "type": "line",
+   "speaker": "OFFICER CARR",
+   "text": "You can go.",
+   "next": "pass"
+  },
+  "pass": {
+   "type": "event",
+   "name": "secondary_pass",
+   "next": "end",
+   "effects": [
+    {
+     "meter": "heat",
+     "add": 1
+    }
+   ]
+  },
+  "denied": {
+   "type": "line",
+   "speaker": "OFFICER CARR",
+   "text": "We're denying your entry today. Someone will walk you back.",
+   "next": "form_ev"
+  },
+  "form_ev": {
+   "type": "event",
+   "name": "carr_writes_form",
+   "next": "form"
+  },
+  "form": {
+   "type": "narration",
+   "text": "She writes something on a form and doesn't look up again.",
+   "next": "refused"
+  },
+  "refused": {
+   "type": "event",
+   "name": "refused",
+   "next": "end",
+   "effects": [
+    {
+     "meter": "heat",
+     "add": 2
+    },
+    {
+     "flag": "card_flagged",
+     "set": true
+    },
+    {
+     "attempt": 1
+    },
+    {
+     "clearAnswers": [
+      "cover_story",
+      "cover_detail",
+      "booth_address",
+      "booth_time",
+      "key_answer"
+     ]
+    }
+   ]
+  },
+  "end": {
+   "type": "end"
+  }
+ }
+}

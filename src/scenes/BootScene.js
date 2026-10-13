@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { assetUrl } from '../systems/assetUrl.js';
+import { gameState } from '../systems/GameState.js';
 import { FONT_KEY } from '../systems/pixelText.js';
 import { createWalkAnimations } from '../objects/walkAnims.js';
 import { createFireAnimations } from '../objects/FireEffects.js';
@@ -54,6 +55,7 @@ export default class BootScene extends Phaser.Scene {
     this.load.json('curb_map', assetUrl('assets/data/curb_map.json'));
     this.load.json('cutscene_curb', assetUrl('assets/data/cutscenes/curb.json'));
     this.load.json('closing_tasks', assetUrl('assets/data/closing_tasks.json'));
+    this.load.json('encounter_config', assetUrl('assets/data/encounter_config.json'));
     // Mission 1
     this.load.image('apartment_tiles', assetUrl('assets/images/apartment_tiles.png'));
     this.load.spritesheet('apartment_props', assetUrl('assets/images/apartment_props.png'), { frameWidth: 16, frameHeight: 16 });
@@ -73,6 +75,7 @@ export default class BootScene extends Phaser.Scene {
   }
 
   create() {
+    gameState.setEncounterConfig(this.cache.json.get('encounter_config'));
     createPlayerAnimations(this.anims);
     createKitchenDoorAnimations(this.anims);
     createFireAnimations(this.anims);

@@ -1,0 +1,149 @@
+{
+ "_comment": "Mission 1, Scene 3: the line. Walk-over triggers start it at 'arrive', 'sign', 'pocket' and 'stop' (in that order). Events: dog_enters (the handler and dog start down the line), dog_reaches_mateo and dog_passes (wait: the scene resumes when the dog gets there), hand_to_jacket, open_envelope and envelope_put_away (wait), line_moves (Mateo walks to the booth).",
+ "id": "m1_line",
+ "presenter": "box",
+ "lockMovement": true,
+ "start": "arrive",
+ "nodes": {
+  "arrive": {
+   "type": "narration",
+   "text": "The pedestrian line runs under a long metal awning. It's already hot.",
+   "next": "arrive2"
+  },
+  "arrive2": {
+   "type": "narration",
+   "text": "A woman fans herself with a store flyer. A man ahead holds a sleeping boy on his shoulder. Two teenagers share a pair of earbuds.",
+   "next": "end"
+  },
+  "sign": {
+   "type": "narration",
+   "text": "A sign on the wall: BORDER CROSSING CARD HOLDERS: EMPLOYMENT NOT AUTHORIZED.",
+   "next": "end"
+  },
+  "pocket": {
+   "type": "narration",
+   "text": "Mateo checks his pocket. His passport, and his border crossing card.",
+   "next": "end"
+  },
+  "stop": {
+   "type": "narration",
+   "text": "The line stops moving.",
+   "next": "dog_enters"
+  },
+  "dog_enters": {
+   "type": "event",
+   "name": "dog_enters",
+   "next": "dog"
+  },
+  "dog": {
+   "type": "narration",
+   "text": "An officer walks a dog slowly down the line. The dog sniffs a cooler, a stroller, a shopping bag.",
+   "next": "dog_reaches"
+  },
+  "dog_reaches": {
+   "type": "event",
+   "name": "dog_reaches_mateo",
+   "next": "hand_ev",
+   "wait": true
+  },
+  "hand_ev": {
+   "type": "event",
+   "name": "hand_to_jacket",
+   "next": "hand"
+  },
+  "hand": {
+   "type": "narration",
+   "text": "Mateo's hand goes to his jacket. He moves it away.",
+   "next": "dog_passes"
+  },
+  "dog_passes": {
+   "type": "event",
+   "name": "dog_passes",
+   "next": "passed",
+   "wait": true
+  },
+  "passed": {
+   "type": "narration",
+   "text": "The dog passes him without stopping.",
+   "next": "still"
+  },
+  "still": {
+   "type": "narration",
+   "text": "The line still isn't moving.",
+   "next": "envelope_offer"
+  },
+  "envelope_offer": {
+   "type": "branch",
+   "cases": [
+    {
+     "if": {
+      "flag": "envelope_opened"
+     },
+     "next": "moves"
+    }
+   ],
+   "else": "envelope"
+  },
+  "envelope": {
+   "type": "choice",
+   "options": [
+    {
+     "id": "open",
+     "text": "Open the envelope.",
+     "effects": [
+      {
+       "flag": "envelope_opened",
+       "set": true
+      }
+     ],
+     "next": "open_ev"
+    },
+    {
+     "id": "leave",
+     "text": "Leave it.",
+     "next": "moves"
+    }
+   ]
+  },
+  "open_ev": {
+   "type": "event",
+   "name": "open_envelope",
+   "next": "open1",
+   "wait": true
+  },
+  "open1": {
+   "type": "narration",
+   "text": "He turns away from the line and slides a thumb under the flap. The signature tears down the middle.",
+   "next": "open2"
+  },
+  "open2": {
+   "type": "narration",
+   "text": "Inside: three sheets of paper, folded once. All of them blank.",
+   "next": "open3"
+  },
+  "open3": {
+   "type": "narration",
+   "text": "He folds them back in and puts the envelope away.",
+   "next": "put_away"
+  },
+  "put_away": {
+   "type": "event",
+   "name": "envelope_put_away",
+   "next": "moves",
+   "wait": true
+  },
+  "moves": {
+   "type": "narration",
+   "text": "The line moves.",
+   "next": "line_moves"
+  },
+  "line_moves": {
+   "type": "event",
+   "name": "line_moves",
+   "next": "end"
+  },
+  "end": {
+   "type": "end"
+  }
+ }
+}
