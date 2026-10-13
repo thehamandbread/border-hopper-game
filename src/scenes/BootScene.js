@@ -100,6 +100,17 @@ export default class BootScene extends Phaser.Scene {
     this.load.image('closed_sign', assetUrl('assets/images/closed_sign.png'));
     this.load.json('threehills_map', assetUrl('assets/data/threehills_map.json'));
     this.load.json('dialogue_m1_threehills', assetUrl('assets/data/dialogue/m1_threehills.json'));
+    // Mission 1: the alley (stealth)
+    this.load.image('alley_tiles', assetUrl('assets/images/alley_tiles.png'));
+    this.load.spritesheet('dumpster', assetUrl('assets/images/dumpster.png'), { frameWidth: 32, frameHeight: 32 });
+    this.load.image('pallets', assetUrl('assets/images/pallets.png'));
+    this.load.image('parked_car', assetUrl('assets/images/parked_car.png'));
+    this.load.image('notice', assetUrl('assets/images/notice.png'));
+    this.load.spritesheet('wall_camera', assetUrl('assets/images/wall_camera.png'), tile);
+    this.load.spritesheet('stealth_icons', assetUrl('assets/images/stealth_icons.png'), { frameWidth: 10, frameHeight: 10 });
+    this.load.spritesheet('guard_walk', assetUrl('assets/images/guard_walk.png'), figure);
+    this.load.json('alley_map', assetUrl('assets/data/alley_map.json'));
+    this.load.json('stealth_config', assetUrl('assets/data/stealth_config.json'));
   }
 
   create() {
@@ -127,6 +138,7 @@ export default class BootScene extends Phaser.Scene {
     }
     this.anims.create({ key: 'woman-fan', frames: frames('queue_npcs', 4, 5), frameRate: 3, repeat: -1 });
     createWalkAnimations(this.anims, 'carr_walk', 'carr-walk', 7);
+    createWalkAnimations(this.anims, 'guard_walk', 'guard-walk', 6);
     this.anims.create({ key: 'carr-writing', frames: frames('carr_walk', 16, 17), frameRate: 3, repeat: -1 }); // at her desk
     // Dev-only: ?checkpoint=<id> (dev tools start the checkpoint instead of the normal first scene).
     if (import.meta.env.DEV && this.game.devTools?.handleBoot()) {

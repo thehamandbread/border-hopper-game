@@ -31,7 +31,7 @@ Outputs:
   secondary_scene.png, crossing_lineup_1x/6x.png
   Three Hills and stealth: alley_tiles.png, threehills_tiles.png, dumpster.png, pallets.png, parked_car.png,
   wall_camera.png, stealth_icons.png, guard_walk.png, walt_door.png, food_truck.png, bus_bench.png,
-  closed_sign.png (see the README), and previews alley_scene.png, threehills_scene.png,
+  closed_sign.png, notice.png (see the README), and previews alley_scene.png, threehills_scene.png,
   threehills_lineup_1x/6x.png
 Paths are resolved relative to this file, so it runs from any working directory.
 """
@@ -4792,6 +4792,21 @@ def make_closed_sign():
     return img
 
 
+def make_notice():
+    """16x16 overlay: a printed notice taped to a door or wall, gray lines where the words go (no text
+    baked in; the words are game text). Draw it over the phone store's back door (door_top)."""
+    img = Image.new("RGBA", (T, T), (0, 0, 0, 0))
+    px = img.load()
+    fill(px, 4, 4, 11, 13, (236, 234, 226))
+    fill(px, 5, 5, 10, 5, (60, 60, 64))                 # a bold heading line
+    for y in (7, 9, 11):
+        fill(px, 5, y, 10 if y != 11 else 8, y, (150, 150, 150))
+    outline(img)
+    fill(px, 3, 3, 5, 3, (214, 214, 196))               # tape at the top corners, over the outline
+    fill(px, 10, 3, 12, 3, (214, 214, 196))
+    return img
+
+
 # ---- Three Hills previews ----
 def make_alley_preview(tiles, dumpsters, pallets, car, camera, guard, walt, icons, mateo_frames):
     """The stealth sandbox's 28x9 alley, mocked up: back walls along the top, roofs along the bottom."""
@@ -4880,12 +4895,14 @@ def save_three_hills(frames):
     bench.save(ASSET_DIR / "bus_bench.png")
     sign = make_closed_sign()
     sign.save(ASSET_DIR / "closed_sign.png")
+    notice = make_notice()
+    notice.save(ASSET_DIR / "notice.png")
 
     for name, im in (("alley_tiles", alley_sheet), ("threehills_tiles", th_sheet)):
         im.resize((im.width * 6, im.height * 6), Image.NEAREST).save(PREVIEW_DIR / f"{name}_6x.png")
     for name, im in (("dumpster", dumpsters), ("pallets", pallets), ("parked_car", car), ("wall_camera", camera),
                      ("stealth_icons", icons), ("guard_walk", guard), ("walt_door", walt), ("food_truck", truck),
-                     ("bus_bench", bench), ("closed_sign", sign)):
+                     ("bus_bench", bench), ("closed_sign", sign), ("notice", notice)):
         bg = Image.new("RGBA", im.size, (150, 140, 124, 255))
         bg.alpha_composite(im)
         bg.resize((im.width * 6, im.height * 6), Image.NEAREST).save(PREVIEW_DIR / f"{name}_6x.png")

@@ -276,6 +276,16 @@ export const CHECKPOINTS = [
     },
   },
   {
+    id: 'm1_alley',
+    label: 'M1: the alley (visiting family, Fourth Street)',
+    scene: 'AlleyScene',
+    setup: () => {
+      crossingState(gameState);
+      passedBooth(gameState, { cover_story: 'family', cover_detail: 'tia', booth_address: 'fourth_street', key_answer: 'tia_letter' });
+      gameState.setFlag('m1_back_door_text', true);
+    },
+  },
+  {
     id: 'stealth_sandbox',
     label: 'Dev: stealth sandbox (guard, camera, cover)',
     scene: 'StealthSandboxScene',

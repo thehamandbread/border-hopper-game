@@ -369,6 +369,9 @@ Storefronts are three rows: `storefront_roof`, then the sign row (plain wall and
 ### `closed_sign.png` (12x10)
 The cardboard sign taped inside the laundromat's window: marker strokes where the words go (no text baked in; CLOSED FOR REPAIRS is game text).
 
+### `notice.png` (16x16)
+A printed notice taped up, gray lines where the words go (no text baked in; the notice is game text). Draw it over `phone_door_top`.
+
 ### `food_truck.png` (64x40)
 A taco truck from the side, facing right: cream body, red stripe, the serving window open under a striped awning, a blank menu board.
 

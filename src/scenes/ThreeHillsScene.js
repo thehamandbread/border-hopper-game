@@ -86,7 +86,7 @@ export default class ThreeHillsScene extends StoryScene {
     const m = this.alleyMouth;
     if (open && p.x > m.x0 && p.x < m.x1 && p.y < m.y - 2) {
       this.leaving = true;
-      this.goToScene('ThreeHillsStubScene', { fade: true, data: { label: 'The alley (next build)' } });
+      this.goToScene('AlleyScene', { fade: true });
     }
   }
 }

@@ -8,6 +8,7 @@ import ApartmentScene from './scenes/ApartmentScene.js';
 import TireShopScene from './scenes/TireShopScene.js';
 import PortScene from './scenes/PortScene.js';
 import SecondaryScene from './scenes/SecondaryScene.js';
+import AlleyScene from './scenes/AlleyScene.js';
 import ThreeHillsScene from './scenes/ThreeHillsScene.js';
 import ThreeHillsStubScene from './scenes/ThreeHillsStubScene.js';
 
@@ -26,7 +27,7 @@ const config = {
     default: 'arcade',
     arcade: { debug: false },
   },
-  scene: [BootScene, MovementTestScene, RestaurantScene, CurbScene, ApartmentScene, TireShopScene, PortScene, SecondaryScene, ThreeHillsScene, ThreeHillsStubScene],
+  scene: [BootScene, MovementTestScene, RestaurantScene, CurbScene, ApartmentScene, TireShopScene, PortScene, SecondaryScene, ThreeHillsScene, AlleyScene, ThreeHillsStubScene],
 };
 
 if (import.meta.env.DEV) {
